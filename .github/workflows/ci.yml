@@ -442,11 +442,16 @@ jobs:
               f"verify estrutural do arsc falhou: {proc.stderr}"
           print("[A2] ok huge-arsc: sha256 bate + 10k entradas x 40 locales válidas")
 
-          # --- unknown-perms: exatamente 4 strings inventadas
+          # --- unknown-perms: exatamente 4 strings inventadas (o xmltree do
+          # aapt2 imprime o valor 2x — resolvido e "(Raw: ...)" — dedupe por
+          # conjunto; e 5 uses-permission no total: INTERNET + 4 falsas)
           tree = xmltree(dist / "unknown-perms.apk")
-          fakes = len(re.findall(r"dev\.apktester\.fake\.", tree))
-          assert fakes == 4, f"esperava 4 permissões falsas, achei {fakes}"
-          print("[A2] ok unknown-perms: 4 strings dev.apktester.fake.*")
+          fakes = set(re.findall(r"dev\.apktester\.fake\.[A-Z_]+", tree))
+          assert len(fakes) == 4, f"esperava 4 permissões falsas, achei {sorted(fakes)}"
+          n_up = len(re.findall(r"^ +E: uses-permission ", tree, re.M))
+          assert n_up == 5, f"esperava 5 uses-permission (1 real + 4 falsas), achei {n_up}"
+          print(f"[A2] ok unknown-perms: 4 strings dev.apktester.fake.* + "
+                f"5 uses-permission")
 
           # --- exported-audit: 9 componentes declarados, armadilhas no binário
           tree = xmltree(dist / "exported-audit.apk")
