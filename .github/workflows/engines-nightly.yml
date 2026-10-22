@@ -108,6 +108,23 @@ jobs:
           name: compat-matrix
           path: pages-src
 
+      - name: Gerar index.html (raiz do site)
+        run: |
+          {
+            echo '<!doctype html>'
+            echo '<html lang="pt-BR">'
+            echo '  <head>'
+            echo '    <meta charset="utf-8">'
+            echo '    <meta http-equiv="refresh" content="0; url=compat-matrix.md">'
+            echo '    <title>APK Tester — Matriz de compatibilidade</title>'
+            echo '  </head>'
+            echo '  <body>'
+            echo '    <p>Matriz de compatibilidade APK Tester x RustyDroid:</p>'
+            echo '    <p><a href="compat-matrix.md">docs/compat-matrix.md</a></p>'
+            echo '  </body>'
+            echo '</html>'
+          } > pages-src/index.html
+
       - name: Empacotar artifact de Pages
         uses: actions/upload-pages-artifact@v3
         with:
