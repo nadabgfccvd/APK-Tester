@@ -1,0 +1,77 @@
+# esqueleto A0 — Size Gate do flagship "Behemoth" (dev.apktester.behemoth).
+# A1 liga o build real; A6 fecha a engenharia de tamanho até o gate [850 MB, 1000 MB].
+name: Size Gate
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'suites/flagship/**'
+      - 'tools/size-budget.sh'
+
+permissions:
+  contents: read
+
+jobs:
+  size-gate:
+    name: "Flagship: gate [850 MB, 1000 MB] (esqueleto A0)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # A1/A6: download/build real do flagship (release, R8 full, resource shrinking ON,
+      # zipalign, libs nativas descomprimidas) via tools/build-variants.sh --variant flagship.
+      - name: Build do flagship (placeholder A1/A6)
+        run: |
+          mkdir -p dist
+          if [ -f dist/flagship.apk ]; then
+            echo "dist/flagship.apk presente"
+          else
+            echo "[esqueleto A0] dist/flagship.apk ausente até A1; gate roda em modo placeholder"
+            cp contracts/flagship/size-report.csv dist/size-report.csv
+          fi
+
+      - name: Gate de tamanho (tools/size-budget.sh)
+        run: |
+          # A6: gate real — FAIL fora da faixa [850 MB, 1000 MB] e emite o size-report.csv
+          # (bytes por categoria: textures/meshes/shaders/audio/dex/arsc/so/locales/...).
+          if [ -x tools/size-budget.sh ] && [ -f dist/flagship.apk ]; then
+            tools/size-budget.sh --apk dist/flagship.apk --min-mb 850 --max-mb 1000
+            cp contracts/flagship/size-report.csv dist/size-report.csv
+          else
+            echo "[esqueleto A0] gate real ignorado: APK e/ou tools/size-budget.sh ainda não existem (A1/A6)"
+          fi
+
+      - name: Upload do size-report.csv (artefato)
+        uses: actions/upload-artifact@v4
+        with:
+          name: size-report
+          path: contracts/flagship/size-report.csv
+          if-no-files-found: warn
+
+      - name: Drift check (FAIL acima de +2% vs último relatório)
+        run: |
+          # Script de diff inline (placeholder de A6): compara o total do size-report novo
+          # contra o último relatório publicado (baseline via env/artefato do release).
+          SIZE_REPORT_NOVO="contracts/flagship/size-report.csv" \
+          SIZE_REPORT_BASELINE="${{ env.SIZE_REPORT_BASELINE || '' }}" \
+          python3 - <<'PYEOF'
+          import csv, os, sys
+
+          novo = os.environ.get("SIZE_REPORT_NOVO", "")
+          antigo = os.environ.get("SIZE_REPORT_BASELINE", "")
+
+          if not antigo or not os.path.exists(antigo):
+              print("[esqueleto A0] sem baseline anterior; drift check pulado")
+              sys.exit(0)
+
+          def total(path):
+              with open(path, newline="", encoding="utf-8") as fh:
+                  return sum(int(row["bytes"]) for row in csv.DictReader(fh))
+
+          t_novo, t_antigo = total(novo), total(antigo)
+          if t_antigo and t_novo > t_antigo * 1.02:
+              sys.exit(f"FAIL: drift de tamanho > +2% ({t_antigo} -> {t_novo} bytes)")
+          print(f"drift ok: {t_antigo} -> {t_novo} bytes")
+          PYEOF

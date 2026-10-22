@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Discussions do RustyDroid (repo irmão)
+    url: https://github.com/nadabgfccvd/RustyDroid/discussions
+    about: Dúvidas sobre o runtime (parser ZIP/AXML/ARSc/DEX, Dalvik VM, detector de engines, CLI) pertencem ao RustyDroid.
+  - name: Repositório RustyDroid
+    url: https://github.com/nadabgfccvd/RustyDroid
+    about: Runtime alvo desta suíte de fixtures; bugs de execução/detecção devem ser abertos lá.

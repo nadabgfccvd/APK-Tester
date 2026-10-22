@@ -1,0 +1,122 @@
+[
+  {
+    "name": "bug",
+    "color": "fc2929",
+    "description": "Defeito em fixture, contrato, gerador, script ou CI"
+  },
+  {
+    "name": "fixture_gap",
+    "color": "0e8a16",
+    "description": "Engine/fixture ausente ou drift do detector vs answer key"
+  },
+  {
+    "name": "size_regression",
+    "color": "d93f0b",
+    "description": "Regressão de tamanho do flagship Behemoth (gate [850,1000] MB)"
+  },
+  {
+    "name": "ci",
+    "color": "5319e7",
+    "description": "Pipelines e workflows do GitHub Actions"
+  },
+  {
+    "name": "docs",
+    "color": "0075ca",
+    "description": "Documentação mdBook e páginas do site"
+  },
+  {
+    "name": "governance",
+    "color": "3f2f6e",
+    "description": "Templates, ADRs, licenças, milestones e políticas do repositório"
+  },
+  {
+    "name": "flagship",
+    "color": "8b4fa8",
+    "description": "Behemoth (dev.apktester.behemoth) — flagship de 850 MB a 1 GB"
+  },
+  {
+    "name": "engines",
+    "color": "006b75",
+    "description": "Suites engine-01..engine-32 (um APK por linguagem)"
+  },
+  {
+    "name": "sdk-ladder",
+    "color": "f9d0c4",
+    "description": "Escada minSdk 9-36 e BELOW_FLOOR estruturado"
+  },
+  {
+    "name": "parser-torture",
+    "color": "bfd4f2",
+    "description": "Fixtures de tortura de parser (ZIP64, assinaturas, arsc gigante, dex, unknown-perms)"
+  },
+  {
+    "name": "tier-a",
+    "color": "0e8a16",
+    "description": "Engines com build real no CI"
+  },
+  {
+    "name": "tier-b",
+    "color": "fbca04",
+    "description": "Toolchains pesadas, gated no job nightly"
+  },
+  {
+    "name": "tier-c",
+    "color": "d4c5f9",
+    "description": "Fixtures sintéticas honestas de detecção (payload não executável)"
+  },
+  {
+    "name": "A0",
+    "color": "ededed",
+    "description": "Fase A0 — scaffold, governança, CI esqueleto"
+  },
+  {
+    "name": "A1",
+    "color": "ededed",
+    "description": "Fase A1 — flagship skeleton (manifest completo, PermissionsHub)"
+  },
+  {
+    "name": "A2",
+    "color": "ededed",
+    "description": "Fase A2 — sdk-ladder + parser-torture"
+  },
+  {
+    "name": "A3",
+    "color": "ededed",
+    "description": "Fase A3 — engines Tier C (fixtures)"
+  },
+  {
+    "name": "A4",
+    "color": "ededed",
+    "description": "Fase A4 — engines Tier A (builds reais)"
+  },
+  {
+    "name": "A5",
+    "color": "ededed",
+    "description": "Fase A5 — 3D/shaders (:sim3d + shader-library)"
+  },
+  {
+    "name": "A6",
+    "color": "ededed",
+    "description": "Fase A6 — engenharia de tamanho até o gate [850,1000] MB"
+  },
+  {
+    "name": "A7",
+    "color": "ededed",
+    "description": "Fase A7 — Tier B nightly + compat-nightly + docs"
+  },
+  {
+    "name": "A8",
+    "color": "ededed",
+    "description": "Fase A8 — gate v1.0 (determinismo + release)"
+  },
+  {
+    "name": "good first issue",
+    "color": "7057ff",
+    "description": "Boa primeira contribuição"
+  },
+  {
+    "name": "help wanted",
+    "color": "008672",
+    "description": "Ajuda da comunidade é bem-vinda"
+  }
+]

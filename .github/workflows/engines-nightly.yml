@@ -1,0 +1,116 @@
+# esqueleto A0 — Engines Nightly: Tier B + compat matrix + GH Pages.
+# A7 liga os builds reais do Tier B e a execução do RustyDroid no CI (rustydroid no runner).
+name: Engines Nightly
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pages: write
+  id-token: write
+
+jobs:
+  # esqueleto A0: matriz Tier B (toolchains pesadas, gated no nightly; real chega em A7).
+  tier-b-matrix:
+    name: "Tier B build (esqueleto A0): ${{ matrix.engine }}"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        engine:
+          - engine-04-scala
+          - engine-13-flutter
+          - engine-14-react-native
+          - engine-15-cordova
+          - engine-17-nativescript
+          - engine-22-lua-defold
+          - engine-23-godot
+          - engine-26-qt-qml
+          - engine-28-avalonia-dotnet
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Placeholder de build Tier B (real chega em A7)
+        run: |
+          # A7: build real via tools/build-variants.sh --engine ${{ matrix.engine }} --tier nightly
+          echo "[esqueleto A0] engine ${{ matrix.engine }}: placeholder Tier B"
+
+  # compat-nightly: roda o RustyDroid contra todas as fixtures e agrega
+  # docs/compat-matrix.md. Hoje (A0, sem rustydroid no runner) todas as
+  # linhas viram SKIP e o job passa — comportamento garantido pelo script.
+  compat-nightly:
+    name: Compat nightly (RustyDroid x fixtures)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Rodar scripts/compat-nightly.sh
+        run: bash scripts/compat-nightly.sh
+
+      - name: Upload de docs/compat-matrix.md
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compat-matrix
+          path: docs/compat-matrix.md
+          if-no-files-found: warn
+
+      - name: Abrir issue fixture_gap em regressão
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            echo '## Regressão de compatibilidade (nightly)'
+            echo ''
+            echo 'O job `compat-nightly` falhou: um ou mais fixtures divergem do answer key'
+            echo '(`contracts/engines/expected-engines.json`) ou o `rustydroid inspect --json` reprovou.'
+            echo ''
+            echo '- Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+            echo '- Matriz completa: artefato `compat-matrix` deste run (`docs/compat-matrix.md`).'
+            echo ''
+            echo '## Próximos passos'
+            echo '1. Baixar o artefato `compat-matrix` e listar os engines com FAIL.'
+            echo '2. Reproduzir localmente com `bash scripts/compat-nightly.sh`.'
+            echo '3. Corrigir o fixture OU o detector (ADR 0003: detecção não valida payload nem autoriza execução).'
+          } > /tmp/issue-body.md
+          gh issue create \
+            --label fixture_gap \
+            --title "fixture_gap: regressão de compatibilidade no nightly (run ${{ github.run_id }})" \
+            --body-file /tmp/issue-body.md
+
+  # Publica docs/compat-matrix.md no GH Pages. Roda mesmo se o compat-nightly
+  # apontar gaps (a matriz publicada é justamente o que importa), mas não roda
+  # em cancelamento.
+  pages:
+    name: Publicar matriz de compatibilidade (GH Pages)
+    needs: [tier-b-matrix, compat-nightly]
+    if: ${{ always() && needs.tier-b-matrix.result != 'cancelled' && needs.compat-nightly.result != 'cancelled' }}
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Baixar artefato compat-matrix
+        uses: actions/download-artifact@v4
+        with:
+          name: compat-matrix
+          path: pages-src
+
+      - name: Empacotar artifact de Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: pages-src
+
+      - name: Deploy no GH Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

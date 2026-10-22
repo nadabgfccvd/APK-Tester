@@ -1,0 +1,107 @@
+# esqueleto A0 — CI do APK Tester.
+# A4 substitui o placeholder do job tier-a-skeleton por builds reais
+# (tools/build-variants.sh --engine <dir>); contracts-check e lint já são finais.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint (shellcheck, compileall, bash -n)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: shellcheck (tools/*.sh, scripts/*.sh)
+        run: |
+          shopt -s nullglob
+          files=(tools/*.sh scripts/*.sh)
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "[esqueleto A0] nenhum script .sh ainda; nada a checar"
+            exit 0
+          fi
+          shellcheck "${files[@]}"
+
+      - name: python3 -m compileall (tools, scripts)
+        run: |
+          args=()
+          [ -d tools ] && args+=(tools)
+          [ -d scripts ] && args+=(scripts)
+          if [ "${#args[@]}" -eq 0 ]; then
+            echo "[esqueleto A0] nenhum diretorio tools/ ou scripts/ ainda"
+            exit 0
+          fi
+          python3 -m compileall "${args[@]}"
+
+      - name: bash -n (sintaxe de todos os .sh)
+        run: |
+          shopt -s nullglob
+          status=0
+          for f in tools/*.sh scripts/*.sh; do
+            bash -n "$f" || status=1
+          done
+          exit "$status"
+
+  # esqueleto A0: matriz Tier A (builds reais chegam em A4).
+  tier-a-skeleton:
+    name: "Tier A build (esqueleto A0): ${{ matrix.engine }}"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        engine:
+          - engine-01-java
+          - engine-02-kotlin
+          - engine-03-kmp
+          - engine-06-groovy
+          - engine-07-c-ndk
+          - engine-08-cpp-ndk
+          - engine-09-rust
+          - engine-10-go
+          - engine-12-zig
+          - engine-16-tauri
+          - engine-24-haxe
+          - engine-25-python-chaquopy
+          - engine-30-wasm-in-app
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Placeholder de build Tier A (real chega em A4)
+        run: |
+          # A4: build real via tools/build-variants.sh --engine ${{ matrix.engine }}
+          if [ -f "suites/engines/${{ matrix.engine }}/build.sh" ]; then
+            bash -n "suites/engines/${{ matrix.engine }}/build.sh"
+          fi
+          echo "[esqueleto A0] engine ${{ matrix.engine }}: placeholder — build real chega em A4"
+
+  # contracts-check: valida JSON dos answer keys e o schema de suites.json.
+  contracts-check:
+    name: Contratos (JSON válido + schema)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validar contracts/**/*.json e suites.json (schema_version == 1)
+        run: |
+          python3 -c "
+          import glob, json, sys
+          files = sorted(glob.glob('contracts/**/*.json', recursive=True))
+          if not files:
+              print('[esqueleto A0] nenhum JSON em contracts/ ainda')
+              sys.exit(0)
+          for f in files:
+              json.load(open(f, encoding='utf-8'))
+              print('JSON ok:', f)
+          suites = json.load(open('contracts/suites.json', encoding='utf-8'))
+          assert suites.get('schema_version') == 1, 'suites.json schema_version != 1'
+          print('suites.json: schema_version == 1 ok,', len(suites.get('suites', [])), 'suites')
+          "

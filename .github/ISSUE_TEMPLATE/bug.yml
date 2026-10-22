@@ -1,0 +1,38 @@
+name: Bug Report
+description: Reporte um bug no APK Tester (fixture, contrato, gerador, script ou CI).
+labels: [bug]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Descrição
+      description: O que aconteceu? Em qual fase (A0–A8) isso se aplica?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Fixture / passos para reproduzir
+      description: Qual fixture (ex. suites/engines/engine-09-rust), comandos exatos e flags usados.
+      placeholder: |
+        bash tools/build-variants.sh --engine engine-09-rust
+        rustydroid inspect --json suites/engines/engine-09-rust/dist/app.apk
+    validations:
+      required: true
+  - type: input
+    id: rustydroid-version
+    attributes:
+      label: Versão do RustyDroid
+      description: "Ex.: rustydroid 0.5.0 — escreva 'n/a' se o bug é de CI/geradores/contratos."
+  - type: textarea
+    id: expected-vs-got
+    attributes:
+      label: Esperado vs obtido (diff do answer key)
+      description: >
+        Diff numérico entre a saída de `rustydroid inspect --json` e os contratos
+        (zero-drift esperado). Cole as linhas divergentes.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Cole logs relevantes (CI, compat-nightly, maxprobe). Use code fences.

@@ -1,0 +1,68 @@
+# esqueleto A0 — Release: build de tudo, prova de determinismo e GitHub Release.
+# A4+ liga o build real das suites; A8 fecha o gate v1.0 (matriz verde + determinismo).
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build, determinismo e release (esqueleto A0)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # A4+: build real via tools/build-variants.sh --all
+      # (Tier A no CI; Tier B via artefatos do nightly; Tier C via tools/fixture-pack.py).
+      - name: Build de todas as suites (placeholder A4+)
+        run: |
+          mkdir -p dist
+          echo "[esqueleto A0] placeholder de build — APKs reais chegam em A4/A6/A7"
+
+      - name: Prova de determinismo (tools/verify-deterministic.sh)
+        run: |
+          # Duas builds consecutivas devem ser byte-idênticas exceto a assinatura.
+          if [ -x tools/verify-deterministic.sh ]; then
+            tools/verify-deterministic.sh
+          else
+            echo "[esqueleto A0] tools/verify-deterministic.sh ainda não existe (A4/A8)"
+          fi
+
+      - name: Empacotar contracts/ + APKs de suites/**/dist
+        run: |
+          mkdir -p dist/release/apks
+          cp -r contracts dist/release/contracts
+          found=0
+          while IFS= read -r -d '' apk; do
+            cp "$apk" dist/release/apks/
+            found=$((found + 1))
+          done < <(find suites -type f -path '*/dist/*.apk' -print0 2>/dev/null || true)
+          tar -czf dist/apk-tester-release.tar.gz -C dist/release .
+          echo "empacotado: contracts/ + ${found} APK(s)"
+
+      - name: Rascunhar notas de release a partir do CHANGELOG.md
+        run: |
+          if [ -f CHANGELOG.md ]; then
+            # extrai a primeira seção "## [x.y.z]" do Keep a Changelog
+            awk '/^## /{if (seen) exit; seen=1; next} seen{print}' CHANGELOG.md > release-notes.md
+            if [ ! -s release-notes.md ]; then
+              head -n 40 CHANGELOG.md > release-notes.md
+            fi
+          else
+            echo "Notas de release: ver CHANGELOG.md do repositório." > release-notes.md
+          fi
+          cat release-notes.md
+
+      - name: Criar draft release com artefatos
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          body_path: release-notes.md
+          # A8: adicionar também "dist/release/apks/*.apk" quando as suites buildarem.
+          files: dist/apk-tester-release.tar.gz

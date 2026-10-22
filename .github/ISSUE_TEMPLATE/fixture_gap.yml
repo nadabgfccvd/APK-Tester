@@ -1,0 +1,46 @@
+name: Fixture Gap
+description: Engine/fixture ausente ou drift do detector (rd engine detect diverge do answer key).
+labels: [fixture_gap]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Tipo de gap
+      options:
+        - Fixture ausente (engine do registry sem APK)
+        - Drift do detector (rd engine detect diverge de expected-engines.json)
+        - Artefatos do detector divergentes (classes.dex / ELF / assets)
+        - Outro
+    validations:
+      required: true
+  - type: input
+    id: engine
+    attributes:
+      label: Engine afetado
+      description: "Diretório de suites/engines/, ex.: engine-13-flutter"
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Esperado (answer key)
+      description: Trecho de contracts/engines/expected-engines.json (rustydroid_engines + detector_artifacts).
+  - type: textarea
+    id: got
+    attributes:
+      label: Obtido
+      description: Saída de `rd engine detect` e/ou linha FAIL de docs/compat-matrix.md.
+  - type: dropdown
+    id: phase
+    attributes:
+      label: Fase relacionada
+      options:
+        - "A2"
+        - "A3"
+        - "A4"
+        - "A5"
+        - "A6"
+        - "A7"
+        - não sei
+    validations:
+      required: true
