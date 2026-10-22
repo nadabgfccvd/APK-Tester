@@ -23,7 +23,8 @@ com um **answer key** verificável por máquina, para que
    35, 36; abaixo do piso 26 do runtime a resposta correta é o erro estruturado
    `BELOW_FLOOR(minSdk=X)`, nunca um crash.
 3. **Literalmente toda permissão da plataforma declarada** no flagship
-   (~160 strings do AOSP, incluindo `@hide`/internas), mais appops/roles.
+   (1004 strings do snapshot verbatim do AOSP master, incluindo
+   `@hide`/internas), mais appops/roles.
 4. **3D pesado + shaders** e um **flagship otimizado de 850 MB mínimo a
    1 GB máximo** — tamanho é conteúdo (texturas/meshes/áudio/shaders
    procedurais com seed), nunca padding.
@@ -86,19 +87,37 @@ bash tools/verify-deterministic.sh
 bash scripts/compat-nightly.sh
 ```
 
+## Build do flagship (A1)
+
+O esqueleto do flagship "Behemoth" é um módulo Gradle completo
+(`suites/flagship/`):
+
+```bash
+cd suites/flagship
+./gradlew :app:assembleClassicDebug :app:assembleModernDebug
+```
+
+Requisitos: JDK 17, Android SDK (platform 36 + build-tools 35.0.0),
+AGP 8.9.2 e Gradle 8.11.1 (via wrapper `./gradlew`). Strings, ícones e
+assets do app são gerados em tempo de build pelos Exec tasks do Gradle
+(`gen-strings` / `gen-icons` / `gen-assets`, seed 20261022) — nada disso
+fica commitado; o manifesto e as auditorias são regenerados por
+`tools/gen-flagship-manifest.py` e o CI prova zero-drift com
+`git diff --exit-code` contra o que está commitado.
+
 ## Fases A0–A8
 
-| Fase | Escopo | Critério de "green" |
-|------|--------|---------------------|
-| A0 | scaffold + governança + CI esqueleto + geradores | CI esqueleto verde, contracts válidos, docs compilam |
-| A1 | flagship skeleton (probe harness, manifest com TODAS as permissões, PermissionsHub + ButtonGrid + IconGrid) | flagship ~30 MB roda no RustyDroid com probes OK/NOT_IMPLEMENTED |
-| A2 | sdk-ladder (minSdk 9 primeiro) + parser-torture | `BELOW_FLOOR(minSdk=9)` estruturado; torturas parseadas sem crash |
-| A3 | engines Tier C (fixtures sintéticas honestas) + expected-engines.json | detector casa os 32 |
-| A4 | engines Tier A (builds reais: Java, Kotlin, KMP, Groovy, C, C++, Rust, Go, Zig, Tauri, Haxe, Chaquopy, WASM) | matriz Tier A verde no CI |
-| A5 | 3D/shaders (:sim3d golden sim + shader-library) | checksums golden reprodutíveis; GLES = erro estruturado |
-| A6 | engenharia de tamanho até o gate [850, 1000] MB | size-report.csv reconcilia bytes; gate passa |
-| A7 | Tier B nightly + compat-nightly + docs site | matriz publicada no Pages; issues fixture_gap automáticas |
-| A8 | gate v1.0 | matriz completa verde, determinismo provado, release v1.0.0 |
+| Fase | Escopo | Critério de "green" | Status |
+|------|--------|---------------------|--------|
+| A0 | scaffold + governança + CI esqueleto + geradores | CI esqueleto verde, contracts válidos, docs compilam | **entregue** |
+| A1 | flagship skeleton (probe harness, manifest com TODAS as permissões, PermissionsHub + ButtonGrid + IconGrid) | flagship ~30 MB roda no RustyDroid com probes OK/NOT_IMPLEMENTED | **entregue** (build real classic/modern no CI; diff no RustyDroid com o runtime) |
+| A2 | sdk-ladder (minSdk 9 primeiro) + parser-torture | `BELOW_FLOOR(minSdk=9)` estruturado; torturas parseadas sem crash | planejado |
+| A3 | engines Tier C (fixtures sintéticas honestas) + expected-engines.json | detector casa os 32 | planejado |
+| A4 | engines Tier A (builds reais: Java, Kotlin, KMP, Groovy, C, C++, Rust, Go, Zig, Tauri, Haxe, Chaquopy, WASM) | matriz Tier A verde no CI | planejado |
+| A5 | 3D/shaders (:sim3d golden sim + shader-library) | checksums golden reprodutíveis; GLES = erro estruturado | planejado |
+| A6 | engenharia de tamanho até o gate [850, 1000] MB | size-report.csv reconcilia bytes; gate passa | planejado |
+| A7 | Tier B nightly + compat-nightly + docs site | matriz publicada no Pages; issues fixture_gap automáticas | planejado |
+| A8 | gate v1.0 | matriz completa verde, determinismo provado, release v1.0.0 | planejado |
 
 ## Hard-truths (leia antes de contribuir)
 

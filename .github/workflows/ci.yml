@@ -1,4 +1,6 @@
-# esqueleto A0 — CI do APK Tester.
+# CI do APK Tester — A0 entregue (esqueleto) e A1 entregue (flagship).
+# O job flagship-skeleton faz o build real do Behemoth (Gradle, flavors
+# classic/modern) com zero-drift do manifesto e cross-check de contagens.
 # A4 substitui o placeholder do job tier-a-skeleton por builds reais
 # (tools/build-variants.sh --engine <dir>); contracts-check e lint já são finais.
 name: CI
@@ -105,3 +107,78 @@ jobs:
           assert suites.get('schema_version') == 1, 'suites.json schema_version != 1'
           print('suites.json: schema_version == 1 ok,', len(suites.get('suites', [])), 'suites')
           "
+
+  # A1: build real do flagship "Behemoth" (Gradle, flavors classic/modern).
+  # O gerador de manifesto/auditorias roda de novo e o git diff prova zero drift.
+  flagship-skeleton:
+    name: "Flagship Behemoth (A1): classic + modern"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Componentes Android SDK (platform 36 + build-tools 35.0.0)
+        run: |
+          yes | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" \
+            "platforms;android-36" "build-tools;35.0.0" > /dev/null
+          echo "ANDROID_HOME=${ANDROID_HOME}" >> "${GITHUB_ENV}"
+
+      - name: Regenerar manifesto + auditorias (zero drift contra o commit)
+        run: |
+          python3 tools/gen-flagship-manifest.py --out .
+          git diff --exit-code -- \
+            suites/flagship/AndroidManifest.xml \
+            suites/flagship/app/src/main/AndroidManifest.xml \
+            suites/flagship/app/src/classic/AndroidManifest.xml \
+            suites/flagship/app/src/modern/AndroidManifest.xml \
+            contracts/flagship/permissions-audit.md \
+            contracts/flagship/manifest-audit.md \
+            contracts/flagship/manifest.json \
+            suites/flagship/app/src/main/assets/permissions/
+          echo "[A1] zero drift: manifesto/auditorias regeneradas == commitadas"
+
+      - name: Cross-check de contagens (manifesto vs registry vs auditoria)
+        run: |
+          python3 - <<'PY'
+          import json, re, xml.etree.ElementTree as ET
+          from pathlib import Path
+          ns = "{http://schemas.android.com/apk/res/android}"
+          reg = json.loads(Path("contracts/flagship/permissions-registry.json").read_text(encoding="utf-8"))
+          platform = {e["name"] for e in reg["permissions"]}
+          root = ET.parse("suites/flagship/AndroidManifest.xml").getroot()
+          used = {e.attrib[f"{ns}name"] for e in root if e.tag.endswith("uses-permission")}
+          used23 = {e.attrib[f"{ns}name"] for e in root if e.tag.endswith("uses-permission-sdk-23")}
+          assert used == platform, f"manifesto vs registry: {len(used ^ platform)} divergentes"
+          assert used23 == set(reg["flagship_usage"]["uses_permission_sdk_23"])
+          audit = Path("contracts/flagship/permissions-audit.md").read_text(encoding="utf-8")
+          rows = set(re.findall(r"^\|\s*(android\.permission\.[A-Z0-9_]+)\s*\|", audit, re.M))
+          assert rows == platform, "auditoria vs registry divergente"
+          print(f"[A1] contagens ok: {len(platform)} permissoes, {len(used23)} sdk-23")
+          PY
+
+      - name: Build (Gradle, classic+modern x debug)
+        run: |
+          cd suites/flagship
+          ./gradlew --no-daemon :app:assembleClassicDebug :app:assembleModernDebug
+
+      - name: Verificar permissoes no APK binario (aapt2)
+        run: |
+          AAPT2="${ANDROID_HOME}/build-tools/35.0.0/aapt2"
+          APK="suites/flagship/app/build/outputs/apk/classic/debug/app-classic-debug.apk"
+          test -f "${APK}"
+          COUNT="$("${AAPT2}" dump xmltree "${APK}" --file AndroidManifest.xml | grep -c 'E: uses-permission')"
+          echo "[A1] uses-permission no APK binario: ${COUNT}"
+          test "${COUNT}" -ge 1004
+
+      - name: Upload dos APKs (artefato de CI)
+        uses: actions/upload-artifact@v4
+        with:
+          name: flagship-skeleton-apks
+          path: suites/flagship/app/build/outputs/apk/*/debug/*.apk
+          if-no-files-found: error

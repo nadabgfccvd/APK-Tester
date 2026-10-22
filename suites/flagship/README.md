@@ -25,14 +25,15 @@ o código faltante nunca é tocado em APIs antigas.
 
 ## O que o Behemoth carrega
 
-- **Permissões — literalmente todas (~160):** todo o conjunto de
+- **Permissões — literalmente todas (1004, snapshot verbatim do AOSP
+  master):** todo o conjunto de
   `frameworks/base/core/res/AndroidManifest.xml` — `normal`, `dangerous`
   (todos os grupos), `signature`/`signatureOrSystem` (todos os `BIND_*`,
   `WRITE_SECURE_SETTINGS`, `DUMP`, `READ_LOGS`, …), special-app-access,
   todos os `FOREGROUND_SERVICE_*`, variantes deprecadas com `maxSdkVersion`,
-  e strings `@hide`/internas (marcadas na auditoria). Também declara
-  `<uses-permission-sdk-23>`, `<permission>` custom (normal + signature),
-  `<permission-group>` e `<permission-tree>`.
+  e strings `@hide`/internas (marcadas na auditoria; 677 de 1004). Também
+  declara `<uses-permission-sdk-23>`, `<permission>` custom (normal +
+  signature), `<permission-group>` e `<permission-tree>`.
   Gabarito: `contracts/flagship/permissions-audit.md`. Strings de permissão
   inventadas ficam APENAS em `suites/parser-torture/unknown-perms`.
 - **Manifest de superfície máxima (stress CORE-12):** 30+ activities, 2
@@ -41,7 +42,7 @@ o código faltante nunca é tocado em APIs antigas.
   instrumentation, `<queries>`, `<uses-feature>`, glEsVersion, deep links
   com autoVerify, configs de tela, backup/network security (com conflito
   deliberado documentado), `sharedUserId` só no classic.
-- **UI de automação:** PermissionsHub (um botão por permissão, ~160),
+- **UI de automação:** PermissionsHub (um botão por permissão, 1004),
   ButtonGrid 1.200 botões (`btn_0001`…`btn_1200`), IconGrid 600 ImageViews,
   500+ vector drawables, adaptive/monochrome icons, zoo de widgets,
   RecyclerView 10k, hierarquia aninhada de 60 níveis, tela Compose
@@ -59,7 +60,7 @@ o código faltante nunca é tocado em APIs antigas.
 ## Contratos (gabaritos)
 
 - `contracts/flagship/manifest-audit.md` — auditoria do manifest
-- `contracts/flagship/permissions-audit.md` — as ~160 permissões com
+- `contracts/flagship/permissions-audit.md` — as 1004 permissões com
   protectionLevel, grupo, maxSdk e flag `@hide`
 - `contracts/flagship/api-probe-registry.json` — registro de probes
 - `contracts/flagship/size-report.csv` — bytes por categoria (texturas /
@@ -67,11 +68,38 @@ o código faltante nunca é tocado em APIs antigas.
   `tools/size-budget.sh`
 - `contracts/flagship/sim3d-golden.json` — checksums golden do `:sim3d`
 
+## Build
+
+```bash
+cd suites/flagship
+./gradlew :app:assembleClassicDebug :app:assembleModernDebug
+```
+
+Requisitos: JDK 17, Android SDK com `platforms;android-36` e
+`build-tools;35.0.0`, AGP 8.9.2 e Gradle 8.11.1 (wrapper `./gradlew`).
+No CI, o job `flagship-skeleton` do `.github/workflows/ci.yml` roda este
+build, regenera o manifesto/auditorias com `tools/gen-flagship-manifest.py`
+(provando zero drift com `git diff --exit-code`) e valida a superfície de
+permissões no APK binário com `aapt2`.
+
+## Estrutura do módulo `:app`
+
+| caminho | conteúdo |
+|---|---|
+| `app/src/main/java/.../probe/` | probe harness (`MAXPROBE/<MODULE_ID>` + `maxprobe-report.json`), `BehemothInstrumentation` e telas de hub |
+| `app/src/main/java/.../services/` | 17 services: 15 de sistema com `BIND_*` (Accessibility, NotificationListener, IME, VoiceInteraction, CallScreening, InCall, Print, Autofill, Tile, HostApdu, MediaBrowser, Wallpaper, Dream, Vpn, Credential) + Messenger + Foreground (todos os foregroundServiceType; DeviceAdmin é receiver — no total são 16 serviços de sistema) |
+| `app/src/main/java/.../receivers/` | 10 receivers (BOOT/LOCALE/TIME/TIMEZONE/PACKAGE_REPLACED/MY_PACKAGE_REPLACED/USER_PRESENT/POWER/SCREEN + DeviceAdminReceiver) |
+| `app/src/main/java/.../providers/` | 2 providers: `BehemothProvider` (SQLite CRUD) e `GuardedProvider` (read/writePermission por permissão custom signature) |
+| `app/src/main/java/.../widgets/` | 2 app widgets (`BehemothAppWidget`, `SecondAppWidget`) |
+| `app/src/main/res/` | res "de mão" commitado (XML de appwidget, regras de backup/rede, locales) |
+| `app/src/classic/` + `app/src/modern/` | overlays de manifesto por flavor (minSdk 9 vs 26; `sharedUserId` e `extractNativeLibs=true` só no classic) |
+| `app/build/generated/` + `app/src/main/assets/` | res e assets gerados em tempo de build pelos Exec tasks (`gen-strings` / `gen-icons` / `gen-assets`, seed 20261022) e pelo gerador de manifesto (assets `permissions/registry.json` + `permissions.tsv`) |
+
 ## Status
 
 | Item | Status |
 |---|---|
-| Esqueleto do flagship (probe harness + manifest completo + PermissionsHub + ButtonGrid + IconGrid, ~30 MB) | **chega em A1** |
+| Esqueleto do flagship (probe harness + manifest completo + PermissionsHub + ButtonGrid + IconGrid, ~30 MB) | **entregue (A1)** — módulo `:app` Gradle (AGP 8.9.2, Gradle 8.11.1, JDK 17) com flavors classic/modern; 5 activities, 2 activity-aliases, 17 services (16 de sistema contando o DeviceAdmin receiver), 10 receivers, 2 providers, 2 widgets, 1 instrumentation; 1004 `uses-permission`, 2 `<permission>` + 1 `<permission-group>` + 1 `<permission-tree>`; build real e zero-drift no CI |
 | Pilar 3D/shaders (`:sim3d` golden + shader-library) | planejado (A5) |
 | Size gate completo ∈ [850 MB, 1000 MB] + `size-report.csv` | planejado (A6) |
 

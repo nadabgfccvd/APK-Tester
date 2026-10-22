@@ -64,8 +64,9 @@ Documentação em inglês: [README.en.md](README.en.md) · Site de documentaçã
    plataforma e o fixture híbrido unificado (TST-14).
 2. **minSdk 9 existe na suíte** — escada completa 9→36, não apenas o piso 26.
 3. **Literalmente todas as permissões de plataforma** declaradas em algum
-   lugar: o flagship declara o conjunto completo (~160, incluindo strings
-   `@hide`/internas), mais cobertura de appops e roles.
+   lugar: o flagship declara o conjunto completo do snapshot verbatim do
+   AOSP master (1004 strings, incluindo `@hide`/internas), mais cobertura
+   de appops e roles.
 4. **3D pesado + shaders** e flagship totalmente otimizado de 850 MB–1 GB:
    tamanho é conteúdo (texturas/meshes/áudio/shaders procedurais) — nunca
    lixo de *padding*.
@@ -151,8 +152,8 @@ Cada fase termina compilando verde. Critérios de saída detalhados em
 
 | Fase | Escopo | Status |
 |---|---|---|
-| **A0** | Scaffold do repositório + kit de governança + esqueletos de CI + geradores `tools/` | **em progresso** |
-| A1 | Esqueleto do flagship (probe harness, manifest completo com TODAS as permissões, PermissionsHub, ButtonGrid, IconGrid) | planejado |
+| **A0** | Scaffold do repositório + kit de governança + esqueletos de CI + geradores `tools/` | **entregue** |
+| **A1** | Esqueleto do flagship (probe harness, manifest completo com TODAS as permissões, PermissionsHub, ButtonGrid, IconGrid) | **entregue (A1)** — módulo `:app` Gradle (classic minSdk 9 / modern minSdk 26), 1004 permissões com registry verbatim do AOSP master e build real no CI |
 | A2 | `sdk-ladder` (minSdk 9 primeiro!) + pacote `parser-torture` | planejado |
 | A3 | Fixtures Tier C da matriz de engines + `expected-engines.json` | planejado |
 | A4 | Builds reais Tier A (Java, Kotlin, C/C++, Rust, Go, Zig, WASM, …) | planejado |
