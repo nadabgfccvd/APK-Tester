@@ -33,7 +33,7 @@ public final class LadderReport {
 
     /**
      * Escapa aspas, barra invertida e caracteres de controle para JSON;
-     * caracteres abaixo de 0x20 viram \u%04x com Locale.US. null vira "".
+     * caracteres abaixo de 0x20 viram \\u%04x com Locale.US. null vira "".
      */
     public static String escape(String value) {
         if (value == null) {

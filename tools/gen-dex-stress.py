@@ -56,7 +56,7 @@ METHOD_REF_SITES = (
     ("IntUnaryOperator", "this::twice", "acc = m_000.applyAsInt(acc);"),
     ("ToIntFunction<String>", "String::length", 'acc += m_001.applyAsInt("apktester");'),
     ("IntPredicate", "this::positive", "acc += m_002.test(acc) ? 1 : 0;"),
-    ("Supplier<int[]>", "int[]::new", "acc += m_003.get().length;"),
+    ("IntFunction<int[]>", "int[]::new", "acc += m_003.apply(8).length;"),
     ("Predicate<Object>", "Objects::isNull", "acc += m_004.test(null) ? 1 : 0;"),
     ("BiFunction<Integer, Integer, Integer>", "this::sum", "acc += m_005.apply(acc, 1);"),
     ("UnaryOperator<String>", "String::trim", 'acc += m_006.apply(" a ").length();'),
@@ -64,10 +64,10 @@ METHOD_REF_SITES = (
 )
 INVOKE_IMPORTS = ("java.util.Objects", "java.util.function.BiFunction",
                   "java.util.function.Consumer", "java.util.function.Function",
-                  "java.util.function.IntPredicate", "java.util.function.IntSupplier",
-                  "java.util.function.IntUnaryOperator", "java.util.function.Predicate",
-                  "java.util.function.Supplier", "java.util.function.ToIntFunction",
-                  "java.util.function.UnaryOperator")
+                  "java.util.function.IntFunction", "java.util.function.IntPredicate",
+                  "java.util.function.IntSupplier", "java.util.function.IntUnaryOperator",
+                  "java.util.function.Predicate", "java.util.function.Supplier",
+                  "java.util.function.ToIntFunction", "java.util.function.UnaryOperator")
 def seed_from(base: int, label: str) -> int:
     """Sub-semente estável derivada de (base, rótulo) via SHA-256."""
     digest = hashlib.sha256(f"{base}:{label}".encode("utf-8")).digest()
