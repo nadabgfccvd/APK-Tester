@@ -17,6 +17,9 @@ de compatibilidade verde).
   registro do RustyDroid, drift do AOSP, previsão de breach do gate de tamanho,
   auditoria de governança), memória persistente em `bot/state/`, issues
   deduplicadas por fingerprint.
+- APKBot: labels padrão do GitHub (accessibility, documentation, duplicate,
+  enhancement, invalid, question, wontfix) espelhadas em `labels.json` —
+  divergência detectada pelo próprio bot na primeira execução.
 
 ### Planejado (fases A1–A8)
 
