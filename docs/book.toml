@@ -1,0 +1,13 @@
+[book]
+title = "APK Tester — Suite de Fixtures Ouro"
+authors = ["nadabgfccvd", "xisto-agent"]
+language = "pt-BR"
+multilingual = false
+src = "src"
+
+[build]
+build-dir = "book"
+
+[output.html]
+git-repository-url = "https://github.com/nadabgfccvd/APK-Tester"
+edit-url-template = "https://github.com/nadabgfccvd/APK-Tester/edit/main/docs/src/{path}"

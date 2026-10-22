@@ -1,0 +1,469 @@
+{
+  "schema_version": 1,
+  "description": "Suítes de cenário do APK Tester, consumidas por `rustydroid test contracts/suites.json`. Cada entrada declara o APK, o cenário e o que o RustyDroid DEVE responder (answer key executável): engines detectados, minSdk e se BELOW_FLOOR estruturado é o resultado correto (abaixo do piso 26) ou se o APK deve ser executado (>= 26).",
+  "suites": [
+    {
+      "id": "engine-01-smoke",
+      "apk": "suites/engines/engine-01-java",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["java"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-02-smoke",
+      "apk": "suites/engines/engine-02-kotlin",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["kotlin"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-03-smoke",
+      "apk": "suites/engines/engine-03-kmp",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["kmp"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-04-smoke",
+      "apk": "suites/engines/engine-04-scala",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["scala"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-05-smoke",
+      "apk": "suites/engines/engine-05-clojure",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["clojure"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-06-smoke",
+      "apk": "suites/engines/engine-06-groovy",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["groovy"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-07-smoke",
+      "apk": "suites/engines/engine-07-c-ndk",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["c"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-08-smoke",
+      "apk": "suites/engines/engine-08-cpp-ndk",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["cpp"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-09-smoke",
+      "apk": "suites/engines/engine-09-rust",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["rust"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-10-smoke",
+      "apk": "suites/engines/engine-10-go",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["go"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-11-smoke",
+      "apk": "suites/engines/engine-11-objc",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["objc"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-12-smoke",
+      "apk": "suites/engines/engine-12-zig",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["zig"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-13-smoke",
+      "apk": "suites/engines/engine-13-flutter",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["flutter"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-14-smoke",
+      "apk": "suites/engines/engine-14-react-native",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["react-native"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-15-smoke",
+      "apk": "suites/engines/engine-15-cordova",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["cordova"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-16-smoke",
+      "apk": "suites/engines/engine-16-tauri",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["tauri"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-17-smoke",
+      "apk": "suites/engines/engine-17-nativescript",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["nativescript"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-18-smoke",
+      "apk": "suites/engines/engine-18-maui-xamarin",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["maui-xamarin"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-19-smoke",
+      "apk": "suites/engines/engine-19-unity-mono",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["unity-mono"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-20-smoke",
+      "apk": "suites/engines/engine-20-unity-il2cpp",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["unity-il2cpp"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-21-smoke",
+      "apk": "suites/engines/engine-21-unreal",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["unreal"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-22-smoke",
+      "apk": "suites/engines/engine-22-lua-defold",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["lua-defold"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-23-smoke",
+      "apk": "suites/engines/engine-23-godot",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["godot"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-24-smoke",
+      "apk": "suites/engines/engine-24-haxe",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["haxe"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-25-smoke",
+      "apk": "suites/engines/engine-25-python-chaquopy",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["python-chaquopy"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-26-smoke",
+      "apk": "suites/engines/engine-26-qt-qml",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["qt-qml"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-27-smoke",
+      "apk": "suites/engines/engine-27-b4x-appinventor",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["b4x-appinventor"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-28-smoke",
+      "apk": "suites/engines/engine-28-avalonia-dotnet",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["avalonia-dotnet"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-29-smoke",
+      "apk": "suites/engines/engine-29-python-kivy-beeware",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["python-kivy-beeware"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-30-smoke",
+      "apk": "suites/engines/engine-30-wasm-in-app",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["wasm"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-31-smoke",
+      "apk": "suites/engines/engine-31-hybrid",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["tst-14-hybrid"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "engine-32-smoke",
+      "apk": "suites/engines/engine-32-twa-pwa",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["twa"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      }
+    },
+    {
+      "id": "flagship",
+      "apk": "suites/flagship",
+      "scenario": "install+inspect+detect",
+      "expects": {
+        "rustydroid_engines": ["kotlin", "cpp", "rust"],
+        "min_sdk": 26,
+        "below_floor_allowed": false
+      },
+      "notes": "Alvo: flavor 'modern' (minSdk 26, androidx/compose). O flavor 'classic' (minSdk 9, framework-only) não é executável no RustyDroid — BELOW_FLOOR(minSdk=9) estruturado — e é coberto pelas suites sdk-ladder abaixo."
+    },
+    {
+      "id": "sdk-ladder-09",
+      "apk": "suites/sdk-ladder/minsdk-09",
+      "scenario": "install+inspect",
+      "expects": {
+        "rustydroid_engines": ["java"],
+        "min_sdk": 9,
+        "below_floor_allowed": true,
+        "expected_result": "BELOW_FLOOR(minSdk=9) estruturado — nunca crash"
+      }
+    },
+    {
+      "id": "sdk-ladder-12",
+      "apk": "suites/sdk-ladder/minsdk-12",
+      "scenario": "install+inspect",
+      "expects": {
+        "rustydroid_engines": ["java"],
+        "min_sdk": 12,
+        "below_floor_allowed": true,
+        "expected_result": "BELOW_FLOOR(minSdk=12) estruturado — nunca crash"
+      }
+    },
+    {
+      "id": "sdk-ladder-14",
+      "apk": "suites/sdk-ladder/minsdk-14",
+      "scenario": "install+inspect",
+      "expects": {
+        "rustydroid_engines": ["java"],
+        "min_sdk": 14,
+        "below_floor_allowed": true,
+        "expected_result": "BELOW_FLOOR(minSdk=14) estruturado — nunca crash"
+      }
+    },
+    {
+      "id": "sdk-ladder-16",
+      "apk": "suites/sdk-ladder/minsdk-16",
+      "scenario": "install+inspect",
+      "expects": {
+        "rustydroid_engines": ["java"],
+        "min_sdk": 16,
+        "below_floor_allowed": true,
+        "expected_result": "BELOW_FLOOR(minSdk=16) estruturado — nunca crash"
+      }
+    },
+    {
+      "id": "sdk-ladder-19",
+      "apk": "suites/sdk-ladder/minsdk-19",
+      "scenario": "install+inspect",
+      "expects": {
+        "rustydroid_engines": ["java"],
+        "min_sdk": 19,
+        "below_floor_allowed": true,
+        "expected_result": "BELOW_FLOOR(minSdk=19) estruturado — nunca crash"
+      }
+    },
+    {
+      "id": "sdk-ladder-21",
+      "apk": "suites/sdk-ladder/minsdk-21",
+      "scenario": "install+inspect",
+      "expects": {
+        "rustydroid_engines": ["java"],
+        "min_sdk": 21,
+        "below_floor_allowed": true,
+        "expected_result": "BELOW_FLOOR(minSdk=21) estruturado — nunca crash"
+      }
+    },
+    {
+      "id": "sdk-ladder-23",
+      "apk": "suites/sdk-ladder/minsdk-23",
+      "scenario": "install+inspect",
+      "expects": {
+        "rustydroid_engines": ["java"],
+        "min_sdk": 23,
+        "below_floor_allowed": true,
+        "expected_result": "BELOW_FLOOR(minSdk=23) estruturado — nunca crash"
+      }
+    },
+    {
+      "id": "sdk-ladder-26",
+      "apk": "suites/sdk-ladder/minsdk-26",
+      "scenario": "install+inspect+test",
+      "expects": {
+        "rustydroid_engines": ["java"],
+        "min_sdk": 26,
+        "below_floor_allowed": false,
+        "expected_result": "execução (piso do runtime)"
+      }
+    },
+    {
+      "id": "sdk-ladder-29",
+      "apk": "suites/sdk-ladder/minsdk-29",
+      "scenario": "install+inspect+test",
+      "expects": {
+        "rustydroid_engines": ["java"],
+        "min_sdk": 29,
+        "below_floor_allowed": false,
+        "expected_result": "execução (switches de comportamento por targetSdk)"
+      }
+    },
+    {
+      "id": "sdk-ladder-33",
+      "apk": "suites/sdk-ladder/minsdk-33",
+      "scenario": "install+inspect+test",
+      "expects": {
+        "rustydroid_engines": ["java"],
+        "min_sdk": 33,
+        "below_floor_allowed": false,
+        "expected_result": "execução (switches de comportamento por targetSdk)"
+      }
+    },
+    {
+      "id": "sdk-ladder-35",
+      "apk": "suites/sdk-ladder/minsdk-35",
+      "scenario": "install+inspect+test",
+      "expects": {
+        "rustydroid_engines": ["java"],
+        "min_sdk": 35,
+        "below_floor_allowed": false,
+        "expected_result": "execução (switches de comportamento por targetSdk)"
+      }
+    },
+    {
+      "id": "sdk-ladder-36",
+      "apk": "suites/sdk-ladder/minsdk-36",
+      "scenario": "install+inspect+test",
+      "expects": {
+        "rustydroid_engines": ["java"],
+        "min_sdk": 36,
+        "below_floor_allowed": false,
+        "expected_result": "execução (switches de comportamento por targetSdk)"
+      }
+    }
+  ]
+}

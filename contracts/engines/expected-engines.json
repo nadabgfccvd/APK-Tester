@@ -1,0 +1,326 @@
+{
+  "schema_version": 1,
+  "description": "Chave de respostas do `rd engine detect` para as 32 fixtures de engines do APK Tester. Cada entrada declara o engine id esperado, o diretório, tier (A/B/C), estratégia de build (real | nightly | fixture), os engine ids que o RustyDroid DEVE reportar e os artefatos que o detector deve casar. Fixtures Tier C são sintéticas e honestas: 'detection fixture, payload not executable' (ADR 0002/0003).",
+  "engines": [
+    {
+      "id": "engine-01",
+      "dir": "engine-01-java",
+      "language": "Java",
+      "tier": "A",
+      "build": "real",
+      "rustydroid_engines": ["java"],
+      "detector_artifacts": ["classes.dex", "classes2.dex", "dex-strings:invoke-custom"],
+      "notes": "Multi-dex com invoke-custom; build real no CI (A4)."
+    },
+    {
+      "id": "engine-02",
+      "dir": "engine-02-kotlin",
+      "language": "Kotlin",
+      "tier": "A",
+      "build": "real",
+      "rustydroid_engines": ["kotlin"],
+      "detector_artifacts": ["classes.dex", "META-INF/*.kotlin_module", "dex-strings:kotlin.jvm.internal"],
+      "notes": "Metadata Kotlin em META-INF + intrinsics kotlin.jvm.internal no DEX."
+    },
+    {
+      "id": "engine-03",
+      "dir": "engine-03-kmp",
+      "language": "Kotlin Multiplatform",
+      "tier": "A",
+      "build": "real",
+      "rustydroid_engines": ["kmp"],
+      "detector_artifacts": ["classes.dex", "META-INF/*.kotlin_module", "dex-strings:kotlin.multiplatform"],
+      "notes": "Shared module KMP/Compose-MP no mesmo DEX do app Android."
+    },
+    {
+      "id": "engine-04",
+      "dir": "engine-04-scala",
+      "language": "Scala",
+      "tier": "B",
+      "build": "nightly",
+      "rustydroid_engines": ["scala"],
+      "detector_artifacts": ["classes.dex", "dex-strings:scala.runtime"],
+      "notes": "Runtime scala.runtime embutido no DEX; build nightly (A7)."
+    },
+    {
+      "id": "engine-05",
+      "dir": "engine-05-clojure",
+      "language": "Clojure",
+      "tier": "C",
+      "build": "fixture",
+      "rustydroid_engines": ["clojure"],
+      "detector_artifacts": ["classes.dex", "dex-strings:clojure.lang", "assets/fixture-marker.txt"],
+      "notes": "detection fixture, payload not executable. Stub com strings clojure.lang e layout correto (tools/fixture-pack.py)."
+    },
+    {
+      "id": "engine-06",
+      "dir": "engine-06-groovy",
+      "language": "Groovy",
+      "tier": "A",
+      "build": "real",
+      "rustydroid_engines": ["groovy"],
+      "detector_artifacts": ["classes.dex", "dex-strings:org.codehaus.groovy"],
+      "notes": "Runtime Groovy (dex do runtime + código gerado)."
+    },
+    {
+      "id": "engine-07",
+      "dir": "engine-07-c-ndk",
+      "language": "C (NDK)",
+      "tier": "A",
+      "build": "real",
+      "rustydroid_engines": ["c"],
+      "detector_artifacts": ["lib/arm64-v8a/libnative-c.so", "lib/x86_64/libnative-c.so"],
+      "notes": "ELF C puro com exports JNI Java_*; sem STL."
+    },
+    {
+      "id": "engine-08",
+      "dir": "engine-08-cpp-ndk",
+      "language": "C++ (NDK)",
+      "tier": "A",
+      "build": "real",
+      "rustydroid_engines": ["cpp"],
+      "detector_artifacts": ["lib/arm64-v8a/libnative-cpp.so", "lib/x86_64/libnative-cpp.so", "lib/x86_64/libc++_shared.so"],
+      "notes": "ELF C++ com libc++_shared.so (marcador de STL)."
+    },
+    {
+      "id": "engine-09",
+      "dir": "engine-09-rust",
+      "language": "Rust",
+      "tier": "A",
+      "build": "real",
+      "rustydroid_engines": ["rust"],
+      "detector_artifacts": ["lib/arm64-v8a/librust_native.so", "lib/x86_64/librust_native.so", "elf-strings:rust_begin_unwind"],
+      "notes": "cargo-ndk jni crate; marcador ELF do runtime Rust."
+    },
+    {
+      "id": "engine-10",
+      "dir": "engine-10-go",
+      "language": "Go",
+      "tier": "A",
+      "build": "real",
+      "rustydroid_engines": ["go"],
+      "detector_artifacts": ["lib/x86_64/libgojni.so", "dex-strings:go.Seq"],
+      "notes": "gomobile bind: libgojni.so + bridge golang.org/x/mobile no DEX."
+    },
+    {
+      "id": "engine-11",
+      "dir": "engine-11-objc",
+      "language": "Objective-C",
+      "tier": "C",
+      "build": "fixture",
+      "rustydroid_engines": ["objc"],
+      "detector_artifacts": ["lib/x86_64/libobjc-fixture.so", "assets/fixture-marker.txt"],
+      "notes": "detection fixture, payload not executable. Stub ELF com marcadores objc_* (runtime ObjC é raro em Android — fixture honesta)."
+    },
+    {
+      "id": "engine-12",
+      "dir": "engine-12-zig",
+      "language": "Zig",
+      "tier": "A",
+      "build": "real",
+      "rustydroid_engines": ["zig"],
+      "detector_artifacts": ["lib/x86_64/libzig_native.so", "elf-strings:zig"],
+      "notes": "zig cc produzindo .so; seção .comment/características zig."
+    },
+    {
+      "id": "engine-13",
+      "dir": "engine-13-flutter",
+      "language": "Dart/Flutter",
+      "tier": "B",
+      "build": "nightly",
+      "rustydroid_engines": ["flutter"],
+      "detector_artifacts": ["lib/x86_64/libflutter.so", "lib/x86_64/libapp.so", "assets/flutter_assets/"],
+      "notes": "libapp.so (AOT Dart) + flutter_assets; build nightly (A7)."
+    },
+    {
+      "id": "engine-14",
+      "dir": "engine-14-react-native",
+      "language": "JS/React Native",
+      "tier": "B",
+      "build": "nightly",
+      "rustydroid_engines": ["react-native"],
+      "detector_artifacts": ["lib/x86_64/libhermes.so", "assets/index.android.bundle", "dex-strings:com.facebook.react"],
+      "notes": "Bundle Hermes (magic bytecode) + classes com.facebook.react; build nightly (A7)."
+    },
+    {
+      "id": "engine-15",
+      "dir": "engine-15-cordova",
+      "language": "JS/Cordova",
+      "tier": "B",
+      "build": "nightly",
+      "rustydroid_engines": ["cordova"],
+      "detector_artifacts": ["assets/www/index.html", "assets/www/cordova.js", "assets/www/cordova_plugins.js"],
+      "notes": "WebView app: assets/www completo; build nightly (A7)."
+    },
+    {
+      "id": "engine-16",
+      "dir": "engine-16-tauri",
+      "language": "Rust/Tauri v2",
+      "tier": "A",
+      "build": "real",
+      "rustydroid_engines": ["tauri"],
+      "detector_artifacts": ["lib/x86_64/libtauri_android.so", "lib/x86_64/libwry.so"],
+      "notes": "Tauri v2 mobile: libs tauri/wry (Rust) + WebView system."
+    },
+    {
+      "id": "engine-17",
+      "dir": "engine-17-nativescript",
+      "language": "JS/NativeScript",
+      "tier": "B",
+      "build": "nightly",
+      "rustydroid_engines": ["nativescript"],
+      "detector_artifacts": ["lib/x86_64/libnativescript.so", "assets/app/"],
+      "notes": "Runtime NativeScript + app JS em assets/app; build nightly (A7)."
+    },
+    {
+      "id": "engine-18",
+      "dir": "engine-18-maui-xamarin",
+      "language": "C#/MAUI/Xamarin",
+      "tier": "C",
+      "build": "fixture",
+      "rustydroid_engines": ["maui-xamarin"],
+      "detector_artifacts": ["assemblies/*.dll", "lib/x86_64/libmonodroid.so"],
+      "notes": "detection fixture, payload not executable. Stubs de assemblies/*.dll + libmonodroid.so (layout Mono correto)."
+    },
+    {
+      "id": "engine-19",
+      "dir": "engine-19-unity-mono",
+      "language": "C#/Unity Mono",
+      "tier": "C",
+      "build": "fixture",
+      "rustydroid_engines": ["unity-mono"],
+      "detector_artifacts": ["assets/bin/Data/Managed/Assembly-CSharp.dll", "lib/x86_64/libunity.so", "lib/x86_64/libmonobdwgc-2.0.so"],
+      "notes": "detection fixture, payload not executable. Assembly-CSharp.dll stub + runtime Mono do Unity."
+    },
+    {
+      "id": "engine-20",
+      "dir": "engine-20-unity-il2cpp",
+      "language": "C#/Unity IL2CPP",
+      "tier": "C",
+      "build": "fixture",
+      "rustydroid_engines": ["unity-il2cpp"],
+      "detector_artifacts": ["lib/x86_64/libil2cpp.so", "assets/bin/Data/Managed/Metadata/global-metadata.dat", "lib/x86_64/libunity.so"],
+      "notes": "detection fixture, payload not executable. libil2cpp.so + global-metadata.dat stubs (layout IL2CPP correto)."
+    },
+    {
+      "id": "engine-21",
+      "dir": "engine-21-unreal",
+      "language": "C++/Unreal",
+      "tier": "C",
+      "build": "fixture",
+      "rustydroid_engines": ["unreal"],
+      "detector_artifacts": ["lib/x86_64/libUE4.so", "assets/*.pak"],
+      "notes": "detection fixture, payload not executable. libUE4.so stub + .pak placeholder."
+    },
+    {
+      "id": "engine-22",
+      "dir": "engine-22-lua-defold",
+      "language": "Lua/Defold",
+      "tier": "B",
+      "build": "nightly",
+      "rustydroid_engines": ["lua-defold"],
+      "detector_artifacts": ["lib/x86_64/libdmengine.so", "assets/game.arcd", "assets/game.arci"],
+      "notes": "Engine Defold (dmengine) + archive game.arcd/arci; build nightly (A7)."
+    },
+    {
+      "id": "engine-23",
+      "dir": "engine-23-godot",
+      "language": "GDScript/Godot",
+      "tier": "B",
+      "build": "nightly",
+      "rustydroid_engines": ["godot"],
+      "detector_artifacts": ["lib/x86_64/libgodot_android.so", "assets/*.pck"],
+      "notes": "Export headless do Godot: libgodot_android.so + pack .pck; build nightly (A7)."
+    },
+    {
+      "id": "engine-24",
+      "dir": "engine-24-haxe",
+      "language": "Haxe",
+      "tier": "A",
+      "build": "real",
+      "rustydroid_engines": ["haxe"],
+      "detector_artifacts": ["classes.dex", "dex-strings:haxe.root"],
+      "notes": "Target hxjava: classes haxe.root no DEX."
+    },
+    {
+      "id": "engine-25",
+      "dir": "engine-25-python-chaquopy",
+      "language": "Python/Chaquopy",
+      "tier": "A",
+      "build": "real",
+      "rustydroid_engines": ["python-chaquopy"],
+      "detector_artifacts": ["classes.dex", "lib/x86_64/libpython3*.so", "assets/chaquopy/"],
+      "notes": "Chaquopy: libpython3.x.so + assets/chaquopy (bootstrap e stdlib zip)."
+    },
+    {
+      "id": "engine-26",
+      "dir": "engine-26-qt-qml",
+      "language": "QML/Qt",
+      "tier": "B",
+      "build": "nightly",
+      "rustydroid_engines": ["qt-qml"],
+      "detector_artifacts": ["lib/x86_64/libQt6Core*.so", "assets/qml/"],
+      "notes": "Qt libs (QtCore etc.) + assets QML; build nightly (A7)."
+    },
+    {
+      "id": "engine-27",
+      "dir": "engine-27-b4x-appinventor",
+      "language": "B4X/App Inventor",
+      "tier": "C",
+      "build": "fixture",
+      "rustydroid_engines": ["b4x-appinventor"],
+      "detector_artifacts": ["classes.dex", "dex-strings:anywheresoftware.b4a"],
+      "notes": "detection fixture, payload not executable. Stub DEX com strings anywheresoftware.b4a / com.google.appinventor."
+    },
+    {
+      "id": "engine-28",
+      "dir": "engine-28-avalonia-dotnet",
+      "language": "C#/Avalonia",
+      "tier": "B",
+      "build": "nightly",
+      "rustydroid_engines": ["avalonia-dotnet"],
+      "detector_artifacts": ["assemblies/Avalonia.Controls.dll", "lib/x86_64/libmonodroid.so", "lib/x86_64/libskiasharp.so"],
+      "notes": ".NET Android com assemblies Avalonia.* + SkiaSharp; build nightly (A7)."
+    },
+    {
+      "id": "engine-29",
+      "dir": "engine-29-python-kivy-beeware",
+      "language": "Python/Kivy/BeeWare",
+      "tier": "C",
+      "build": "fixture",
+      "rustydroid_engines": ["python-kivy-beeware"],
+      "detector_artifacts": ["lib/x86_64/libpython3*.so", "assets/python/main.py"],
+      "notes": "detection fixture, payload not executable. Stub libpython + entrypoint python empacotado (layout python-for-android/briefcase)."
+    },
+    {
+      "id": "engine-30",
+      "dir": "engine-30-wasm-in-app",
+      "language": "Rust/WASM (host embutido)",
+      "tier": "A",
+      "build": "real",
+      "rustydroid_engines": ["wasm"],
+      "detector_artifacts": ["assets/module.wasm", "lib/x86_64/libwasmer.so"],
+      "notes": "Módulo WASM compilado em assets + host wasmer/wasmtime nativo + bridge JNI."
+    },
+    {
+      "id": "engine-31",
+      "dir": "engine-31-hybrid",
+      "language": "Kotlin+Rust+Hermes+WASM",
+      "tier": "A",
+      "build": "real",
+      "rustydroid_engines": ["tst-14-hybrid"],
+      "detector_artifacts": ["classes.dex", "lib/x86_64/librust_hybrid.so", "assets/index.android.bundle", "assets/module.wasm"],
+      "notes": "TST-14: os quatro marcadores (Kotlin DEX, ELF Rust, bundle Hermes, módulo WASM) num ÚNICO APK — teste de cobertura unificada."
+    },
+    {
+      "id": "engine-32",
+      "dir": "engine-32-twa-pwa",
+      "language": "TWA/PWA",
+      "tier": "C",
+      "build": "fixture",
+      "rustydroid_engines": ["twa"],
+      "detector_artifacts": ["dex-strings:asset_statements", "dex-strings:androidx.browser.trusted", "assets/fixture-marker.txt"],
+      "notes": "detection fixture, payload not executable. Marcadores de TWA (digital asset links, androidx.browser trusted) + activity vazia."
+    }
+  ]
+}
