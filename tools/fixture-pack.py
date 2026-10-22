@@ -431,6 +431,17 @@ def build_plan(args, cfg: dict, work: str, out_apk: str, tools: dict,
              "command": ["zip", "-j", "-X", unsigned, "classes.dex"],
              "cwd": os.path.join(work, "dex")},
         ]
+    if mode == "unaligned":
+        steps.append({
+            "id": "dealign",
+            "description": "coloca assets/unaligned*.bin (STORED) como PRIMEIRA "
+                           "entrada com o nome calibrado p/ dados em "
+                           "offset mod 4 = 1 — desalinhamento GARANTIDO "
+                           "(aapt2 sozinho já sai alinhado; zipalign -c "
+                           "DEVE reprovar)",
+            "command": [sys.executable, os.path.abspath(__file__),
+                        "--dealign", unsigned, "--seed", str(args.seed)],
+            "cwd": None})
     if cfg["zip64"]:
         steps.append({
             "id": "zip64-augment",
@@ -545,6 +556,53 @@ def build_plan(args, cfg: dict, work: str, out_apk: str, tools: dict,
         "keystore": keystore, "tools": tools, "notes": notes, "steps": steps,
         "all_tools_available": all(t["available"] for t in tools.values()),
     }
+
+
+def zip_dealign(zip_path: str, seed: int) -> None:
+    """Reescreve o ZIP com assets/unaligned*.bin (STORED) como PRIMEIRA entrada.
+
+    O comprimento do nome é calibrado em duas passadas para que os DADOS da
+    primeira entrada caiam em offset % 4 == 1 — desalinhamento determinístico
+    e comprovável por aritmética, sem depender de mtimes nem do aapt2 (que
+    sozinho já produz um APK alinhado — por isso o zipalign -c passava).
+    """
+    blob = (b"apktester-unaligned/"
+            + hashlib.sha256(f"{seed}:dealign".encode("ascii")).digest()[:12])
+    assert len(blob) == 32
+    with zipfile.ZipFile(zip_path) as zf:
+        infos = zf.infolist()
+        payload = [(i, zf.read(i)) for i in infos]
+
+    def first_entry_data_offset(path: str) -> int:
+        with zipfile.ZipFile(path) as zf:
+            info = zf.getinfo(zf.namelist()[0])
+            return info.header_offset + 30 + len(info.filename) + len(info.extra)
+
+    tmp = zip_path + ".dealign"
+    name = "assets/unaligned.bin"
+    with zipfile.ZipFile(tmp, "w", allowZip64=True) as zf:
+        first = zipfile.ZipInfo(name)
+        first.compress_type = zipfile.ZIP_STORED
+        zf.writestr(first, blob)
+        for info, data in payload:
+            zf.writestr(info, data)
+    # O extra que o zipfile anexa é estável para um nome dado: crescer o nome
+    # em p bytes desloca os dados em exatamente p. Escolhe p para mod 4 == 1.
+    offset0 = first_entry_data_offset(tmp)
+    pad = (1 - offset0) % 4
+    if pad:
+        name = "assets/unaligned" + "x" * pad + ".bin"
+        with zipfile.ZipFile(tmp, "w", allowZip64=True) as zf:
+            first = zipfile.ZipInfo(name)
+            first.compress_type = zipfile.ZIP_STORED
+            zf.writestr(first, blob)
+            for info, data in payload:
+                zf.writestr(info, data)
+    final = first_entry_data_offset(tmp)
+    assert final % 4 == 1, (
+        f"desalinhamento não garantido: dados da 1a entrada em {final} "
+        f"(mod 4 = {final % 4})")
+    os.replace(tmp, zip_path)
 
 
 def zip64_augment(zip_path: str, entries: int, seed: int) -> None:
@@ -750,6 +808,8 @@ def parse_args(argv=None):
     ap.add_argument("--entries", type=int, default=0, help=argparse.SUPPRESS)
     ap.add_argument("--strip-entry", nargs=2, metavar=("ZIP", "ENTRY"),
                     help=argparse.SUPPRESS)
+    ap.add_argument("--dealign", metavar="ZIP", default=None,
+                    help=argparse.SUPPRESS)
     ap.add_argument("--dex-partition", nargs=3,
                     metavar=("SRCROOT", "OUTJSON", "N"),
                     help=argparse.SUPPRESS)
@@ -799,6 +859,17 @@ def main(argv=None) -> int:
             return 1
         print(f"[fixture-pack] strip-entry: '{entry}' removida de "
               f"{zip_path}", file=sys.stderr)
+        return 0
+    if args.dealign:
+        try:
+            zip_dealign(args.dealign, args.seed)
+        except (OSError, zipfile.BadZipFile) as exc:
+            print(f"[fixture-pack] ERRO: dealign falhou: {exc}",
+                  file=sys.stderr)
+            return 1
+        print(f"[fixture-pack] dealign: assets/unaligned.bin (STORED, dados "
+              f"no offset 41) como primeira entrada de {args.dealign}",
+              file=sys.stderr)
         return 0
     if args.dex_partition:
         srcroot, outjson, n = args.dex_partition
