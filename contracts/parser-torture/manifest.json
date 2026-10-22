@@ -6,7 +6,7 @@
   },
   {
    "path": "contracts/parser-torture/fixtures-audit.md",
-   "sha256": "9a35151a5f29ab74c20cd7bc9f576594e5af0c93709f822e759d7b6bd312b0d8"
+   "sha256": "c9ac97c2b96a376bb9463e6ff68e6d8f68d0ed34fe6e366acb5836799dbc1584"
   },
   {
    "path": "contracts/parser-torture/huge-arsc-audit.md",

@@ -12,7 +12,7 @@ Cada fixture ataca UMA suposição perigosa dos parsers do RustyDroid
 |---|---|---|---|---|---|---|---|---|
 | `sig-v1-only` | `sig-v1-only.apk` | 9 | 36 | sim | nao | nao | apenas assinatura v1 (JAR) presente | parser lê esquema v1 isolado |
 | `sig-v2-only` | `sig-v2-only.apk` | 24 | 36 | nao | sim | nao | apenas assinatura v2 (APK Signing Block) | parser lê esquema v2 sem v1 |
-| `sig-v3-only` | `sig-v3-only.apk` | 28 | 36 | nao | nao | nao | apenas assinatura v3 (rotação de chave) | parser lê esquema v3 sem v1/v2 |
+| `sig-v3-only` | `sig-v3-only.apk` | 28 | 36 | nao | nao | sim | apenas assinatura v3 (rotação de chave) | parser lê esquema v3 sem v1/v2 |
 | `unaligned` | `unaligned.apk` | 26 | 36 | sim | sim | nao | entradas sem zipalign | entradas desalinhadas parseadas |
 | `zip64` | `zip64-65k.apk` | 26 | 36 | sim | sim | nao | >65.535 entradas (Zip64 EOCD) como data entries | offsets/contagens Zip64 corretos |
 | `huge-arsc` | `huge-arsc.apk` | 26 | 36 | sim | sim | nao | resources.arsc sintético: 10k entradas x 40 locales + 7 densidades | ARSc 10k x 40 locales parseado sem OOM/timeout |
