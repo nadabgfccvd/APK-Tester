@@ -1,0 +1,36 @@
+# --- Python (geradores em tools/) ---
+__pycache__/
+*.pyc
+tools/.cache/
+
+# --- Artefatos de build locais ---
+out/
+build/
+dist/
+suites/**/build/
+*.apk.unaligned
+.gradle/
+
+# --- Configuracao local de ambiente Android ---
+local.properties
+
+# --- Node (engines Tier B: RN, Cordova, NativeScript) ---
+node_modules/
+
+# --- Rust (engine-09-rust, modulo :rust do flagship) ---
+target/
+
+# --- Site de documentacao (mdBook) ---
+docs/book/
+
+# --- Logs e empacotamento ---
+dev.log
+*.tar.xz
+
+# --- macOS ---
+.DS_Store
+
+# NOTA sobre APKs: "*.apk" NAO e ignorado globalmente. APKs sao artefatos de
+# release: nunca sao commitados — apenas gerados localmente pelos geradores em
+# tools/ ou pelo CI (que os anexa a releases). Commitar um APK exigiria
+# decisao explicita registrada em ADR (docs/src/adr/).
