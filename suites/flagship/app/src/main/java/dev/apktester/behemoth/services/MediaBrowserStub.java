@@ -1,7 +1,7 @@
 package dev.apktester.behemoth.services;
 
 import android.media.browse.MediaBrowser;
-import android.media.browse.MediaBrowserService;
+import android.service.media.MediaBrowserService;
 import android.os.Bundle;
 import java.util.Collections;
 import java.util.List;

@@ -7,10 +7,10 @@ import android.service.credentials.BeginCreateCredentialResponse;
 import android.service.credentials.BeginGetCredentialRequest;
 import android.service.credentials.BeginGetCredentialResponse;
 import android.service.credentials.ClearCredentialStateRequest;
-import android.service.credentials.ClearCredentialStateException;
-import android.service.credentials.CreateCredentialException;
+import android.credentials.ClearCredentialStateException;
+import android.credentials.CreateCredentialException;
 import android.service.credentials.CredentialProviderService;
-import android.service.credentials.GetCredentialException;
+import android.credentials.GetCredentialException;
 
 /**
  * Fixture de registro/deteccao de servico de sistema (A1): estende

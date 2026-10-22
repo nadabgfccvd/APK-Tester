@@ -5,6 +5,8 @@ import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.widget.RemoteViews;
 
+import dev.apktester.behemoth.R;
+
 /**
  * Segundo app widget do Behemoth (receiver declarado no manifesto com o
  * meta-data android.appwidget.provider ->
