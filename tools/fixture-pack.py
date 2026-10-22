@@ -102,7 +102,7 @@ MODES = {
              "BELOW_FLOOR(minSdk=9) esperado no RustyDroid"),
     "sig-v1-only": _mode(9, 36, v2=False, desc="somente assinatura v1 (JAR)"),
     "sig-v2-only": _mode(24, 36, v1=False, desc="somente assinatura v2"),
-    "sig-v3-only": _mode(28, 36, v1=False, v2=False,
+    "sig-v3-only": _mode(28, 36, v1=False, v2=False, v3=True,
         desc="somente assinatura v3 (rotação de chave)"),
     "unaligned": _mode(26, 36, zipalign=False,
         desc="zipalign pulado de propósito (parser-torture)"),
