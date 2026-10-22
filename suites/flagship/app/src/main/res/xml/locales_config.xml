@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Locales do app (android:localeConfig, API 33). A lista deve acompanhar
+    DEFAULT_LOCALES de tools/gen-strings.py (values-pt-rBR mapeia pt-BR e
+    values-pt mapeia pt).
+-->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="en"/>
+    <locale android:name="pt-BR"/>
+    <locale android:name="es"/>
+    <locale android:name="ar"/>
+    <locale android:name="he"/>
+    <locale android:name="ja"/>
+    <locale android:name="zh"/>
+    <locale android:name="de"/>
+    <locale android:name="fr"/>
+    <locale android:name="ru"/>
+    <locale android:name="hi"/>
+    <locale android:name="pt"/>
+</locale-config>

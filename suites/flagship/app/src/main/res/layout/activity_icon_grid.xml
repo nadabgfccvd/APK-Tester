@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Grade de 600 icones vetoriais gerados (ic_vector_0001..0600). -->
+<GridView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/icon_grid"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:horizontalSpacing="4dp"
+    android:numColumns="5"
+    android:stretchMode="columnWidth"
+    android:verticalSpacing="4dp"/>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Policies de device-admin para o DeviceAdminReceiverStub. O manifesto NAO
+    anexa este arquivo via meta-data na A1 (fixture simples); mantido pronto
+    para as probes de device policy dos marcos seguintes.
+-->
+<device-admin xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-policies>
+        <limit-password/>
+        <watch-login/>
+        <reset-password/>
+        <force-lock/>
+        <wipe-data/>
+    </uses-policies>
+</device-admin>

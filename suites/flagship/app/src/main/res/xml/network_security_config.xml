@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    network_security_config: base-config bloqueia cleartext; host 10.0.0.1
+    permite cleartext para o probe NET-RP-001 (record/replay local). O
+    conflito com android:usesCleartextTraffic="false" do manifesto e
+    DELIBERADO e esta documentado no manifest-audit (o atributo do manifesto
+    e ignorado quando a NSC esta presente).
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false"/>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">10.0.0.1</domain>
+    </domain-config>
+</network-security-config>

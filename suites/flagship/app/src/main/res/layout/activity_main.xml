@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tela principal: resumo dos probes + navegacao explicita para as 4 telas. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/main_summary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:paddingBottom="12dp"/>
+
+    <Button
+        android:id="@+id/main_open_permissions_hub"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="openPermissionsHub"
+        android:text="@string/main_open_permissions_hub"/>
+
+    <Button
+        android:id="@+id/main_open_button_grid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="openButtonGrid"
+        android:text="@string/main_open_button_grid"/>
+
+    <Button
+        android:id="@+id/main_open_icon_grid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="openIconGrid"
+        android:text="@string/main_open_icon_grid"/>
+
+    <Button
+        android:id="@+id/main_open_probe_report"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="openProbeReport"
+        android:text="@string/main_open_probe_report"/>
+</LinearLayout>

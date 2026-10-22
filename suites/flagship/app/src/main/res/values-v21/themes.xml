@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Override do tema base a partir da API 21 (Material do framework). -->
+<resources>
+    <style name="Theme.Behemoth" parent="android:Theme.Material"/>
+</resources>

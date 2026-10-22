@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Recursos autorais do Behemoth (A1). Os nomes aqui NAO colidem com os
+    strings gerados por tools/gen-strings.py (app_name, *_title, btn_*,
+    ic_*, probe_result_* sao propriedade do gerador e sao apenas reusados).
+-->
+<resources>
+    <string name="behemoth_widget_second_label">Behemoth Widget II</string>
+    <string name="behemoth_accessibility_description">Fixture de classificacao do RustyDroid</string>
+    <string name="main_open_permissions_hub">Permissions Hub</string>
+    <string name="main_open_button_grid">Button Grid</string>
+    <string name="main_open_icon_grid">Icon Grid</string>
+    <string name="main_open_probe_report">MaxProbe Report</string>
+    <string name="probe_report_empty">Nenhum probe registrado nesta sessao.</string>
+    <string name="probe_deeplink_none">Sem deep link</string>
+    <string name="permission_hub_note">Permissoes signature/@hide sao fixtures de classificacao: nao podem ser concedidas em dispositivo real.</string>
+
+    <!-- Tema base compativel com API 1 (o override Material entra em values-v21). -->
+    <style name="Theme.Behemoth" parent="android:Theme"/>
+</resources>

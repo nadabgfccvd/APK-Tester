@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Regras do auto-backup completo (fullBackupContent): apenas o banco behemoth.db. -->
+<full-backup-content>
+    <include
+        domain="database"
+        path="behemoth.db"/>
+</full-backup-content>
