@@ -151,7 +151,7 @@ framework-only para o classic compilar limpo.
 | supports-screens | any/large/normal/small/xlarge + resizeable |
 | compatible-screens | 4 (small/ldpi, normal/hdpi, large/xhdpi, xlarge/xxhdpi) |
 | supports-gl-texture | 3 |
-| uses-native-library | 3 (libEGL.so, libOpenSLES.so opcionais; libc.so required) |
+| uses-native-library | 3 dentro de <application> (libEGL.so, libOpenSLES.so opcionais; libc.so required) |
 
 ### Deep links
 

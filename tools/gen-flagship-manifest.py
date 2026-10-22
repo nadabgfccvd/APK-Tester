@@ -337,9 +337,6 @@ def build_main_manifest(registry: dict) -> str:
     add("    </compatible-screens>")
     for tex in SUPPORTS_GL_TEXTURES:
         add(f'    <supports-gl-texture {_attr("name", tex)}/>')
-    for lib, required in USES_NATIVE_LIBS:
-        add(f'    <uses-native-library {_attr("name", lib)} '
-            f'{_attr("required", str(required).lower())}/>')
 
     # ---- queries ------------------------------------------------------------
     add("")
@@ -378,6 +375,9 @@ def build_main_manifest(registry: dict) -> str:
     add("        <!-- CONFLITO DELIBERADO (auditado): networkSecurityConfig permite "
         "cleartext para 10.0.0.1 enquanto usesCleartextTraffic=false — o RustyDroid "
         "deve reportar a divergencia em vez de crashar -->")
+    for lib, required in USES_NATIVE_LIBS:
+        add(f'        <uses-native-library {_attr("name", lib)} '
+            f'{_attr("required", str(required).lower())}/>')
 
     for act in ACTIVITIES:
         add(f'        <activity {_attr("name", act["class"])} '
@@ -839,7 +839,7 @@ def build_manifest_audit(registry: dict) -> str:
     add("| supports-screens | any/large/normal/small/xlarge + resizeable |")
     add("| compatible-screens | 4 (small/ldpi, normal/hdpi, large/xhdpi, xlarge/xxhdpi) |")
     add(f"| supports-gl-texture | {len(SUPPORTS_GL_TEXTURES)} |")
-    add(f"| uses-native-library | {len(USES_NATIVE_LIBS)} (libEGL.so, libOpenSLES.so opcionais; libc.so required) |")
+    add(f"| uses-native-library | {len(USES_NATIVE_LIBS)} dentro de <application> (libEGL.so, libOpenSLES.so opcionais; libc.so required) |")
     add("")
     add("### Deep links")
     add("")

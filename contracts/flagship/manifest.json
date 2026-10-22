@@ -2,7 +2,7 @@
  "artifacts": [
   {
    "path": "contracts/flagship/manifest-audit.md",
-   "sha256": "15ea86931987895e20d670b02881ca546897d68cd93da5ef669ca0c14858485a"
+   "sha256": "f1b28491508187a500adc3949aa590c81aef6b601885123c08af451d23c989e5"
   },
   {
    "path": "contracts/flagship/permissions-audit.md",
@@ -10,7 +10,7 @@
   },
   {
    "path": "suites/flagship/AndroidManifest.xml",
-   "sha256": "e7fadf5a37e3d61e8f16af3e23bf93e82b2a9f070ad69148fe2fcf2184eb7d2e"
+   "sha256": "4e8a1217c8b0799f5ea7f87fa9d875cfd78385beb89dd2b385b88508ae82eb9d"
   },
   {
    "path": "suites/flagship/app/src/classic/AndroidManifest.xml",
@@ -18,7 +18,7 @@
   },
   {
    "path": "suites/flagship/app/src/main/AndroidManifest.xml",
-   "sha256": "e7fadf5a37e3d61e8f16af3e23bf93e82b2a9f070ad69148fe2fcf2184eb7d2e"
+   "sha256": "4e8a1217c8b0799f5ea7f87fa9d875cfd78385beb89dd2b385b88508ae82eb9d"
   },
   {
    "path": "suites/flagship/app/src/main/assets/permissions/permissions.tsv",
