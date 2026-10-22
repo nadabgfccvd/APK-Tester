@@ -1,0 +1,40 @@
+{
+ "artifacts": [
+  {
+   "path": "contracts/flagship/manifest-audit.md",
+   "sha256": "dc85e8e194852e4bbf44f0713090f9186b1019f979275061debdde7b15d526dd"
+  },
+  {
+   "path": "contracts/flagship/permissions-audit.md",
+   "sha256": "3f9a7479da04a94737a1e9693bb4b7385a5335f7a46bd5eb99618a591c5012d6"
+  },
+  {
+   "path": "suites/flagship/AndroidManifest.xml",
+   "sha256": "e9b705d9c20e75918dfed375acaeef81e9f7f299280e4c45a5520b499267a174"
+  },
+  {
+   "path": "suites/flagship/app/src/classic/AndroidManifest.xml",
+   "sha256": "6e368866596ce60db090bcb5d1825363e4373e5d4c9cd8451f2ca059a3d50590"
+  },
+  {
+   "path": "suites/flagship/app/src/main/AndroidManifest.xml",
+   "sha256": "e9b705d9c20e75918dfed375acaeef81e9f7f299280e4c45a5520b499267a174"
+  },
+  {
+   "path": "suites/flagship/app/src/main/assets/permissions/permissions.tsv",
+   "sha256": "b0f15fa99bc71fe220f0382bf73b7e04d3c8b7342c7d2e95156678063033feb9"
+  },
+  {
+   "path": "suites/flagship/app/src/main/assets/permissions/registry.json",
+   "sha256": "cf830d9e2f459c28574fc29e40677bc5357d3485b85f433c29d84e8785e7cc84"
+  },
+  {
+   "path": "suites/flagship/app/src/modern/AndroidManifest.xml",
+   "sha256": "60689a97cd329b9e38a39df7c50b0184a5070b62712062336d54dd120e80c682"
+  }
+ ],
+ "note": "gerado; NAO editar a mao — regenere com a ferramenta",
+ "registry_snapshot_sha256": "336cc3ed0c0182b9a6d9345f6003e042285b9bfbd67d74c5c5959d01186280fc",
+ "seed": 20261022,
+ "tool": "tools/gen-flagship-manifest.py"
+}

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Gerado por tools/gen-flagship-manifest.py — overlay do flavor modern
+     (minSdk 26). Em A1 nao adiciona atributos: androidx/compose chegam em
+     A5/A6. Mantido como ponto de mergulho do merger. NAO editar a mao. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+</manifest>

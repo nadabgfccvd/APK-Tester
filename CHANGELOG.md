@@ -12,6 +12,19 @@ de compatibilidade verde).
 
 ### Adicionado
 
+- Flagship esqueleto: registry canônico de permissões
+  (`contracts/flagship/permissions-registry.json`, snapshot verbatim do
+  AOSP master, 1004 strings) + ferramenta `tools/snapshot-aosp-permissions.py`;
+- Flagship esqueleto: gerador `tools/gen-flagship-manifest.py` (manifesto
+  completo + `permissions-audit.md` + `manifest-audit.md` + assets de
+  runtime + ledger `contracts/flagship/manifest.json`);
+- Flagship esqueleto: módulo `:app` Gradle (AGP 8.9.2, Gradle 8.11.1,
+  JDK 17; flavors classic minSdk 9 / modern minSdk 26) com probe harness
+  (`MAXPROBE/<MODULE_ID>` + `maxprobe-report.json`), PermissionsHub (1
+  botão por permissão, 1004), ButtonGrid 1200, IconGrid 600, 17 services,
+  10 receivers, 2 providers, 2 widgets, instrumentation;
+- CI: job `flagship-skeleton` (build real classic/modern + zero-drift do
+  manifesto + cross-check de contagens + aapt2 no APK binário);
 - APKBot: bot autônomo anti-regressão (8 verificações: determinismo entre
   execuções, flakiness, staleness, consistência da matriz de engines, drift do
   registro do RustyDroid, drift do AOSP, previsão de breach do gate de tamanho,
@@ -21,10 +34,8 @@ de compatibilidade verde).
   enhancement, invalid, question, wontfix) espelhadas em `labels.json` —
   divergência detectada pelo próprio bot na primeira execução.
 
-### Planejado (fases A1–A8)
+### Planejado (fases A2–A8)
 
-- A1 — esqueleto do flagship "Behemoth" (probe harness, manifest completo com
-  TODAS as permissões, PermissionsHub, ButtonGrid, IconGrid);
 - A2 — escada `sdk-ladder` (minSdk 9 primeiro) + pacote `parser-torture`;
 - A3 — fixtures Tier C da matriz de engines + `expected-engines.json`;
 - A4 — builds reais Tier A (Java, Kotlin, C/C++, Rust, Go, Zig, WASM, …);
