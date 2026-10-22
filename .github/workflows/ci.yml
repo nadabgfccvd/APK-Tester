@@ -342,27 +342,39 @@ jobs:
 
           # --- assinaturas: cada modo tem o ESQUEMA EXATO prometido.
           # Regex sem o verbo ("Verified"/"Verificied" — typo histórico do
-          # apksigner varia entre versões de build-tools).
+          # apksigner varia entre versões de build-tools). O range de
+          # plataformas do verify é LIMITADO por fixture: apksigner simula
+          # a instalação (API 24+ exige v2 "ou posterior") e estas fixtures
+          # são ALVOS DE PARSER, não de instalação — v1-only se verifica
+          # contra 9..23, v2-only contra 24+, v3-only contra 28+.
           def scheme_flag(out, scheme):
               m = re.search(rf"\b{scheme}\s+scheme:\s*(true|false)\b", out, re.I)
               return m.group(1).lower() if m else None
 
-          schemes = {"sig-v1-only.apk": (True, False, False),
-                     "sig-v2-only.apk": (False, True, False),
-                     "sig-v3-only.apk": (False, False, True)}
-          for apk, (v1, v2, v3) in schemes.items():
+          schemes = {
+              "sig-v1-only.apk": ((True, False, False),
+                                  ["--min-sdk-version", "9",
+                                   "--max-sdk-version", "23"]),
+              "sig-v2-only.apk": ((False, True, False),
+                                  ["--min-sdk-version", "24"]),
+              "sig-v3-only.apk": ((False, False, True),
+                                  ["--min-sdk-version", "28"]),
+          }
+          for apk, (want_flags, range_args) in schemes.items():
               proc = subprocess.run(
-                  [str(bt / "apksigner"), "verify", "--verbose", str(dist / apk)],
+                  [str(bt / "apksigner"), "verify", "--verbose"] + range_args
+                  + [str(dist / apk)],
                   capture_output=True, text=True)
               out = proc.stdout + "\n" + proc.stderr
               got = (scheme_flag(out, "v1"), scheme_flag(out, "v2"),
                      scheme_flag(out, "v3"))
-              want = ("true" if v1 else "false", "true" if v2 else "false",
-                      "true" if v3 else "false")
+              want = tuple("true" if f else "false" for f in want_flags)
               assert got == want, \
                   f"{apk}: esquemas {got} != {want} (rc={proc.returncode})\n" \
                   f"--- saida do apksigner ---\n{out[:1200]}"
-              print(f"[A2] ok assinatura: {apk} v1={v1} v2={v2} v3={v3}")
+              print(f"[A2] ok assinatura: {apk} v1={want_flags[0]} "
+                    f"v2={want_flags[1]} v3={want_flags[2]} "
+                    f"(range {range_args})")
 
           # --- unaligned: zipalign DEVE reprovar (contraste aprova)
           rc = subprocess.run([str(bt / "zipalign"), "-c", "4",

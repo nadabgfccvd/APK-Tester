@@ -37,12 +37,17 @@ Cada fixture ataca UMA suposição perigosa dos parsers do RustyDroid
   (R8 real chega nos builds Tier A / release A6).
 - `huge-arsc`: o resources.arsc sintético é gerado no pack e NÃO é
   commitado — o sha256 canônico em `arsc-report.json` (e a auditoria
-  [huge-arsc-audit.md](huge-arsc-audit.md)) é a âncora.
+  [h[huge-arsc-audit.md](huge-arsc-audit.md)) é a âncora.
 - `multidex-8`: corpus do `gen-dex-stress` fatiado em 8 lotes
   contíguos -> classes.dex..classes8.dex na raiz do APK.
 - `sig-v1-only` (minSdk 9), `sig-v2-only` (minSdk 24) e `multidex-8`
   (minSdk 21) ficam abaixo do piso 26 do RustyDroid: `below_floor_allowed`
   cobre o BELOW_FLOOR estruturado — nunca crash.
+- Verificação de assinatura no CI limita o range de plataformas do
+  `apksigner verify` (`--min-sdk-version`/`--max-sdk-version`): o
+  apksigner simula INSTALAÇÃO (API 24+ exige v2 "ou posterior") e
+  estas fixtures são alvos de PARSER, não de instalação — v1-only
+  se verifica contra 9..23, v2-only contra 24+, v3-only contra 28+.
 
 ## Contratos deste diretório
 
