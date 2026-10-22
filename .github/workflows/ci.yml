@@ -341,14 +341,18 @@ jobs:
                   capture_output=True, text=True, check=True).stdout
 
           # --- assinaturas: cada modo tem o ESQUEMA EXATO prometido.
-          # Regex sem o verbo ("Verified"/"Verificied" — typo histórico do
-          # apksigner varia entre versões de build-tools). O range de
+          # Regex tolerante à variação do apksigner entre versões de
+          # build-tools: verbo ("Verified"/"Verificied" histórico) fora do
+          # match e descrição em parênteses opcional — ex. build-tools 35:
+          # "Verified using v1 scheme (JAR signing): true". O range de
           # plataformas do verify é LIMITADO por fixture: apksigner simula
           # a instalação (API 24+ exige v2 "ou posterior") e estas fixtures
           # são ALVOS DE PARSER, não de instalação — v1-only se verifica
           # contra 9..23, v2-only contra 24+, v3-only contra 28+.
           def scheme_flag(out, scheme):
-              m = re.search(rf"\b{scheme}\s+scheme:\s*(true|false)\b", out, re.I)
+              m = re.search(
+                  rf"\b{scheme}\s+scheme(?:\s*\([^)]*\))?:\s*(true|false)\b",
+                  out, re.I)
               return m.group(1).lower() if m else None
 
           schemes = {
