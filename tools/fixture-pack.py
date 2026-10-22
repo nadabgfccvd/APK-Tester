@@ -106,10 +106,10 @@ MODES = {
         desc="somente assinatura v3 (rotação de chave)"),
     "unaligned": _mode(26, 36, zipalign=False,
         desc="zipalign pulado de propósito (parser-torture)"),
-    "zip64": _mode(26, 36, zip64=True, zipalign=False, entries=65600,
-        desc=">65k entradas (força Zip64 EOCD) como data entries; zipalign "
-             "pulado — o zipalign não suporta Zip64 e a patologia aqui é a "
-             "estrutura Zip64, não o alinhamento"),
+    "zip64": _mode(26, 36, zip64=True, v2=False, entries=65600,
+        desc=">65k entradas (força Zip64 EOCD) como data entries; assinatura "
+             "v1 ANTES do augment (a reescrita preserva os digests JAR, que "
+             "cobrem o conteúdo não comprimido)"),
     "unknown-perms": _mode(26, 36, fake_perms=True,
         desc="permissões inventadas dev.apktester.fake.*"),
     "obfuscated": _mode(26, 36, obfuscated=True,
@@ -444,15 +444,6 @@ def build_plan(args, cfg: dict, work: str, out_apk: str, tools: dict,
             "command": [sys.executable, os.path.abspath(__file__),
                         "--dealign", unsigned, "--seed", str(args.seed)],
             "cwd": None})
-    if cfg["zip64"]:
-        steps.append({
-            "id": "zip64-augment",
-            "description": f"adiciona {cfg['zip64_entries']} data entries via "
-                           "zipfile force_zip64 (>65k força Zip64 EOCD)",
-            "command": [sys.executable, os.path.abspath(__file__),
-                        "--zip64-augment", "--into", unsigned, "--entries",
-                        str(cfg["zip64_entries"]), "--seed", str(args.seed)],
-            "cwd": None})
     if cfg["obfuscated"]:
         steps.append({
             "id": "zip-mapping",
@@ -497,6 +488,16 @@ def build_plan(args, cfg: dict, work: str, out_apk: str, tools: dict,
                     "--v2-signing-enabled", str(cfg["v2"]).lower(),
                     "--v3-signing-enabled", str(cfg["v3"]).lower(),
                     "--out", out_apk, aligned], "cwd": None})
+    if cfg["zip64"]:
+        steps.append({
+            "id": "zip64-augment",
+            "description": f"adiciona {cfg['zip64_entries']} data entries "
+                           "(>65k força Zip64 EOCD) REESCREVENDO o APK já "
+                           "assinado v1",
+            "command": [sys.executable, os.path.abspath(__file__),
+                        "--zip64-augment", "--into", out_apk, "--entries",
+                        str(cfg["zip64_entries"]), "--seed", str(args.seed)],
+            "cwd": None})
 
     notes = [
         "fontes são POJOs sem imports android.*: javac roda sem android.jar; "

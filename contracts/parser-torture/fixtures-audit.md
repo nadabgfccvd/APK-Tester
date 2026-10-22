@@ -14,7 +14,7 @@ Cada fixture ataca UMA suposição perigosa dos parsers do RustyDroid
 | `sig-v2-only` | `sig-v2-only.apk` | 24 | 36 | nao | sim | nao | apenas assinatura v2 (APK Signing Block) | parser lê esquema v2 sem v1 |
 | `sig-v3-only` | `sig-v3-only.apk` | 28 | 36 | nao | nao | sim | apenas assinatura v3 (rotação de chave) | parser lê esquema v3 sem v1/v2 |
 | `unaligned` | `unaligned.apk` | 26 | 36 | sim | sim | nao | entradas sem zipalign | entradas desalinhadas parseadas |
-| `zip64` | `zip64-65k.apk` | 26 | 36 | sim | sim | nao | >65.535 entradas (Zip64 EOCD) como data entries | offsets/contagens Zip64 corretos |
+| `zip64` | `zip64-65k.apk` | 26 | 36 | sim | nao | nao | >65.535 entradas (Zip64 EOCD) como data entries | offsets/contagens Zip64 corretos |
 | `huge-arsc` | `huge-arsc.apk` | 26 | 36 | sim | sim | nao | resources.arsc sintético: 10k entradas x 40 locales + 7 densidades | ARSc 10k x 40 locales parseado sem OOM/timeout |
 | `multidex-8` | `multidex-8.apk` | 21 | 36 | sim | sim | nao | 8 arquivos classesN.dex (multidex nativo, minSdk 21) | 8 classesN.dex carregados |
 | `unknown-perms` | `unknown-perms.apk` | 26 | 36 | sim | sim | nao | strings de permissão inventadas dev.apktester.fake.* | permissões desconhecidas classificadas como unknown — nunca crash |
