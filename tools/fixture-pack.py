@@ -559,48 +559,49 @@ def build_plan(args, cfg: dict, work: str, out_apk: str, tools: dict,
 
 
 def zip_dealign(zip_path: str, seed: int) -> None:
-    """Reescreve o ZIP com assets/unaligned*.bin (STORED) como PRIMEIRA entrada.
+    """Reescreve o ZIP com os DADOS de resources.arsc em offset mod 4 == 1.
 
-    O comprimento do nome é calibrado em duas passadas para que os DADOS da
-    primeira entrada caiam em offset % 4 == 1 — desalinhamento determinístico
-    e comprovável por aritmética, sem depender de mtimes nem do aapt2 (que
-    sozinho já produz um APK alinhado — por isso o zipalign -c passava).
+    O zipalign de build-tools recentes so confere o alinhamento EXIGIDO pela
+    plataforma (resources.arsc nao-comprimido e 4-alinhado para
+    targetSdk >= 30; .so em pagina com -p) — entradas armazenadas genericas
+    nao sao mais reprovadas. A patologia e calibrada entao SOBRE o arsc: um
+    blob STORED ("assets/unaligned.bin") entra como PRIMEIRA entrada e o
+    comprimento dele (32..35 bytes) desloca o arsc ate offset mod 4 == 1 —
+    deterministico por aritmetica, duas passadas.
     """
-    blob = (b"apktester-unaligned/"
-            + hashlib.sha256(f"{seed}:dealign".encode("ascii")).digest()[:12])
-    assert len(blob) == 32
     with zipfile.ZipFile(zip_path) as zf:
         infos = zf.infolist()
         payload = [(i, zf.read(i)) for i in infos]
+    if not any(i.filename == "resources.arsc" for i, _ in payload):
+        raise ValueError("resources.arsc ausente — nada a desalinhar")
 
-    def first_entry_data_offset(path: str) -> int:
-        with zipfile.ZipFile(path) as zf:
-            info = zf.getinfo(zf.namelist()[0])
-            return info.header_offset + 30 + len(info.filename) + len(info.extra)
-
-    tmp = zip_path + ".dealign"
-    name = "assets/unaligned.bin"
-    with zipfile.ZipFile(tmp, "w", allowZip64=True) as zf:
-        first = zipfile.ZipInfo(name)
-        first.compress_type = zipfile.ZIP_STORED
-        zf.writestr(first, blob)
-        for info, data in payload:
-            zf.writestr(info, data)
-    # O extra que o zipfile anexa é estável para um nome dado: crescer o nome
-    # em p bytes desloca os dados em exatamente p. Escolhe p para mod 4 == 1.
-    offset0 = first_entry_data_offset(tmp)
-    pad = (1 - offset0) % 4
-    if pad:
-        name = "assets/unaligned" + "x" * pad + ".bin"
-        with zipfile.ZipFile(tmp, "w", allowZip64=True) as zf:
-            first = zipfile.ZipInfo(name)
+    def write_with_blob_len(path: str, blob_len: int) -> None:
+        blob = (b"apktester-unaligned/"
+                + hashlib.sha256(
+                    f"{seed}:dealign:{blob_len}".encode("ascii")).digest() * 2
+                )[:blob_len]
+        with zipfile.ZipFile(path, "w", allowZip64=True) as zf:
+            first = zipfile.ZipInfo("assets/unaligned.bin")
             first.compress_type = zipfile.ZIP_STORED
             zf.writestr(first, blob)
             for info, data in payload:
                 zf.writestr(info, data)
-    final = first_entry_data_offset(tmp)
+
+    def data_offset(path: str, entry: str) -> int:
+        with zipfile.ZipFile(path) as zf:
+            info = zf.getinfo(entry)
+            return (info.header_offset + 30 + len(info.filename)
+                    + len(info.extra))
+
+    tmp = zip_path + ".dealign"
+    write_with_blob_len(tmp, 32)
+    base = data_offset(tmp, "resources.arsc")
+    delta = (1 - base) % 4
+    if delta:
+        write_with_blob_len(tmp, 32 + delta)
+    final = data_offset(tmp, "resources.arsc")
     assert final % 4 == 1, (
-        f"desalinhamento não garantido: dados da 1a entrada em {final} "
+        f"desalinhamento do arsc nao garantido: offset {final} "
         f"(mod 4 = {final % 4})")
     os.replace(tmp, zip_path)
 
@@ -867,9 +868,9 @@ def main(argv=None) -> int:
             print(f"[fixture-pack] ERRO: dealign falhou: {exc}",
                   file=sys.stderr)
             return 1
-        print(f"[fixture-pack] dealign: assets/unaligned.bin (STORED, dados "
-              f"no offset 41) como primeira entrada de {args.dealign}",
-              file=sys.stderr)
+        print(f"[fixture-pack] dealign: assets/unaligned.bin (STORED) como "
+              f"primeira entrada de {args.dealign}; dados do resources.arsc "
+              f"calibrados para offset mod 4 == 1", file=sys.stderr)
         return 0
     if args.dex_partition:
         srcroot, outjson, n = args.dex_partition

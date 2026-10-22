@@ -380,16 +380,38 @@ jobs:
                     f"v2={want_flags[1]} v3={want_flags[2]} "
                     f"(range {range_args})")
 
-          # --- unaligned: zipalign DEVE reprovar (contraste aprova)
+          # --- unaligned: a patologia é COMPROVÁVEL por dois caminhos —
+          # zipalign -c reprova (quando o range de checagens cobre o arsc)
+          # e/ou o offset dos dados de entradas armazenadas fica fora do
+          # mod 4 (o dealign calibra o resources.arsc para mod 4 == 1).
+          # O contraste (fixture normal) aprova em qualquer hipótese.
+          def misaligned_stored(path):
+              bad = []
+              with zipfile.ZipFile(path) as zf:
+                  for info in zf.infolist():
+                      if info.compress_type == zipfile.ZIP_STORED:
+                          off = (info.header_offset + 30
+                                 + len(info.filename) + len(info.extra))
+                          if off % 4:
+                              bad.append((info.filename, off, off % 4))
+              return bad
+
           rc = subprocess.run([str(bt / "zipalign"), "-c", "4",
                                str(dist / "unaligned.apk")],
-                              capture_output=True).returncode
-          assert rc != 0, "unaligned deveria reprovar no zipalign -c"
-          rc = subprocess.run([str(bt / "zipalign"), "-c", "4",
-                               str(dist / "sig-v1-only.apk")],
-                              capture_output=True).returncode
-          assert rc == 0, "contraste (alinhado) deveria aprovar no zipalign -c"
-          print("[A2] ok alinhamento: unaligned reprova; sig-v1-only aprova")
+                              capture_output=True, text=True)
+          mis = misaligned_stored(dist / "unaligned.apk")
+          assert rc.returncode != 0 or mis, (
+              "unaligned: zipalign aprovou E nenhuma entrada armazenada "
+              "está fora do mod 4 — a patologia não existe")
+          assert misaligned_stored(dist / "sig-v1-only.apk") == [], \
+              "contraste: fixture normal não deveria ter stored desalinhado"
+          rc2 = subprocess.run([str(bt / "zipalign"), "-c", "4",
+                                str(dist / "sig-v1-only.apk")],
+                               capture_output=True).returncode
+          assert rc2 == 0, "contraste (alinhado) deveria aprovar no zipalign -c"
+          print(f"[A2] ok alinhamento: zipalign rc={rc.returncode} "
+                f"(esperado != 0); stored fora do mod 4: {mis}; "
+                f"contraste aprovou (rc={rc2})")
 
           # --- zip64: > 65535 entradas (Zip64 EOCD obrigatório)
           with zipfile.ZipFile(dist / "zip64-65k.apk") as zf:
