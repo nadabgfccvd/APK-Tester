@@ -21,7 +21,19 @@ Modos (--fixture):
   unknown-perms ... permissões inventadas dev.apktester.fake.* (ÚNICO lugar do
                     repo onde string de permissão inventada é permitida)
   obfuscated ...... nomes minificados determinísticos + mapping.txt (proxy
-                    honesto; ofuscação R8 real exige toolchain externa)
+                    honesto; ofuscação R8 real exige toolchain externa); o
+                    mapping.txt também vai DENTRO do APK (assets/mapping.txt)
+  huge-arsc ....... resources.arsc sintético (gen-arsc-stress): 10.000
+                    entradas x 40 locales + densidades; substitui o arsc do
+                    aapt2 no APK (parser-torture)
+  multidex-8 ...... 8 arquivos classesN.dex (multidex nativo, minSdk 21) a
+                    partir do corpus gen-dex-stress, fatiado em 8 lotes
+  exported-audit .. armadilhas de manifesto intencionais (exported/permissões
+                    mal declaradas) — auditoria documenta cada erro
+                    (gen-trap-manifest fornece manifesto + Java)
+
+Nome do APK final: APK_NAMES.get(modo, f"{modo}.apk") — zip64 vira
+zip64-65k.apk e obfuscated vira obfuscated-r8.apk.
 
 Determinismo: stdlib only, seed padrão 20261022, sem timestamps nas saídas
 (o zip CLI grava mtimes; o verify-deterministic.sh compara conteúdo por
@@ -50,10 +62,20 @@ import zipfile
 
 DEFAULT_SEED = 20261022
 TOOL = "fixture-pack.py"
+TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 VERSION_CODE = 900036
 VERSION_NAME = "1.0.0"
 KS_PASS = "pass:apktester"
 KS_ALIAS = "apktester"
+
+# multidex-8: fatiamento do corpus gen-dex-stress em 8 lotes contíguos
+# (128 classes x 60 rotinas = 7680 + strings/fields => ~1k rotinas por dex).
+DEX_BATCHES = 8
+DEX_CORPUS_ARGS = ("--classes", "128", "--methods-per-class", "60",
+                   "--strings", "2000", "--fields", "128")
+# huge-arsc: entradas do resources.arsc sintético (o passo do plano é
+# explícito para o plano JSON não depender do default da ferramenta).
+ARSC_ENTRIES = "10000"
 
 FAKE_PERMS = (
     "dev.apktester.fake.READ_WIDGET_MATRIX",
@@ -63,13 +85,15 @@ FAKE_PERMS = (
 )
 
 # Tabela por modo: sdk, esquemas de assinatura (v1/v2/v3), zipalign e truques
-# do parser-torture (zip64/fake_perms/obfuscated).
+# do parser-torture (zip64/fake_perms/obfuscated/huge-arsc/multidex/traps).
 def _mode(min_sdk, target_sdk, v1=True, v2=True, v3=False, zipalign=True,
-          zip64=False, entries=0, fake_perms=False, obfuscated=False, desc=""):
+          zip64=False, entries=0, fake_perms=False, obfuscated=False,
+          external_manifest=False, desc=""):
     return {"min_sdk": min_sdk, "target_sdk": target_sdk, "v1": v1, "v2": v2,
             "v3": v3, "zipalign": zipalign, "zip64": zip64,
             "zip64_entries": entries, "fake_perms": fake_perms,
-            "obfuscated": obfuscated, "description": desc}
+            "obfuscated": obfuscated, "external_manifest": external_manifest,
+            "description": desc}
 
 
 MODES = {
@@ -88,6 +112,21 @@ MODES = {
         desc="permissões inventadas dev.apktester.fake.*"),
     "obfuscated": _mode(26, 36, obfuscated=True,
         desc="nomes minificados + mapping.txt (proxy honesto sem R8)"),
+    "huge-arsc": _mode(26, 36,
+        desc="resources.arsc sintetico: 10.000 entradas x 40 locales + "
+             "densidades (gen-arsc-stress)"),
+    "multidex-8": _mode(21, 36,
+        desc="8 arquivos classesN.dex (multidex nativo, minSdk 21) a partir "
+             "do corpus gen-dex-stress"),
+    "exported-audit": _mode(26, 36, external_manifest=True,
+        desc="armadilhas de manifesto intencionais (exported/permissoes mal "
+             "declaradas) — auditoria documenta cada erro"),
+}
+
+# Nome do APK final por modo (demais modos usam f"{modo}.apk").
+APK_NAMES = {
+    "zip64": "zip64-65k.apk",
+    "obfuscated": "obfuscated-r8.apk",
 }
 
 
@@ -103,6 +142,14 @@ def component_classes(cfg: dict) -> list:
                 ("d", "provider")]
     return [("MainActivity", "activity"), ("TestService", "service"),
             ("TestReceiver", "receiver"), ("TestProvider", "provider")]
+
+
+def component_kinds(cfg: dict) -> list:
+    """Kinds de componente do plano (exported-audit tem alias e é honesto)."""
+    if cfg["external_manifest"]:
+        return ["activity", "activity-alias", "service", "receiver",
+                "provider"]
+    return ["activity", "service", "receiver", "provider"]
 
 
 def manifest_xml(cfg: dict, mode: str, pkg: str) -> str:
@@ -191,29 +238,39 @@ def strings_xml(mode: str) -> str:
 def generate_tree(cfg: dict, mode: str, seed: int, work: str) -> list:
     """Escreve a árvore de fonte da fixture em --work; devolve os caminhos."""
     pkg = "dev.apktester.fixture." + slugify(mode)
-    pkg_path = pkg.replace(".", "/")
-    files = {
-        "AndroidManifest.xml": manifest_xml(cfg, mode, pkg),
-        "res/values/strings.xml": strings_xml(mode),
-    }
-    java_files = []
-    for cls, role in component_classes(cfg):
-        cls_pkg = "a.a" if cfg["obfuscated"] else pkg
-        rel = f"src/{cls_pkg.replace('.', '/')}/{cls}.java"
-        files[rel] = JAVA_TEMPLATE.format(pkg=cls_pkg, cls=cls, mode=mode,
-                                          role=role, seed=seed)
-        java_files.append(os.path.join(work, rel))
-    if cfg["obfuscated"]:
-        lines = ["# mapping.txt — proxy honesto de ofuscacao (sem R8; nomes gerados offline)"]
-        for cls, _role in component_classes(cfg):
-            lines.append(f"a.a.{cls} -> {pkg}.{cls}:")
-        files["mapping.txt"] = "\n".join(lines) + "\n"
+    if cfg["external_manifest"]:
+        # exported-audit: manifesto e Java vêm de gen-trap-manifest (traproot,
+        # fonte única da tabela TRAPS); aqui só o res/ com o label.
+        files = {"res/values/strings.xml": strings_xml(mode)}
+        java_files = []
+    else:
+        pkg_path = pkg.replace(".", "/")
+        files = {
+            "AndroidManifest.xml": manifest_xml(cfg, mode, pkg),
+            "res/values/strings.xml": strings_xml(mode),
+        }
+        java_files = []
+        for cls, role in component_classes(cfg):
+            cls_pkg = "a.a" if cfg["obfuscated"] else pkg
+            rel = f"src/{cls_pkg.replace('.', '/')}/{cls}.java"
+            files[rel] = JAVA_TEMPLATE.format(pkg=cls_pkg, cls=cls, mode=mode,
+                                              role=role, seed=seed)
+            java_files.append(os.path.join(work, rel))
+        if cfg["obfuscated"]:
+            lines = ["# mapping.txt — proxy honesto de ofuscacao (sem R8; nomes gerados offline)"]
+            for cls, _role in component_classes(cfg):
+                lines.append(f"a.a.{cls} -> {pkg}.{cls}:")
+            mapping = "\n".join(lines) + "\n"
+            # Raiz do work (contrato já existente) + cópia em assets/ que
+            # entra DENTRO do APK para o RustyDroid ler.
+            files["mapping.txt"] = mapping
+            files["assets/mapping.txt"] = mapping
     for rel, content in files.items():
         full = os.path.join(work, rel)
         os.makedirs(os.path.dirname(full), exist_ok=True)
         with open(full, "w", encoding="utf-8", newline="\n") as fh:
             fh.write(content)
-    r_java = os.path.join(work, "gen", pkg_path, "R.java")
+    r_java = os.path.join(work, "gen", pkg.replace(".", "/"), "R.java")
     return java_files + [r_java]
 
 
@@ -261,6 +318,9 @@ def build_plan(args, cfg: dict, work: str, out_apk: str, tools: dict,
     signer = tools["apksigner"]["path"] or "apksigner"
     jv = tools["javac"]["path"] or "javac"
     kt = tools["keytool"]["path"] or "keytool"
+    manifest_src = (os.path.join(work, "traproot", "AndroidManifest.xml")
+                    if cfg["external_manifest"]
+                    else os.path.join(work, "AndroidManifest.xml"))
     steps = [
         {"id": "keystore",
          "description": "keystore de debug para as fixtures (skip se já existe)",
@@ -277,7 +337,7 @@ def build_plan(args, cfg: dict, work: str, out_apk: str, tools: dict,
         {"id": "aapt2-link",
          "description": "liga manifest+res no APK base e gera R.java",
          "command": [a2, "link", "-o", unsigned, "--manifest",
-                     os.path.join(work, "AndroidManifest.xml"), "-I", jar_tok,
+                     manifest_src, "-I", jar_tok,
                      "--java", os.path.join(work, "gen"), "--min-sdk-version",
                      str(cfg["min_sdk"]), "--target-sdk-version",
                      str(cfg["target_sdk"]), "--version-code", str(VERSION_CODE),
@@ -287,18 +347,83 @@ def build_plan(args, cfg: dict, work: str, out_apk: str, tools: dict,
          "command": [jv, "-encoding", "UTF-8", "-source", "8", "-target", "8",
                      "-Xlint:-options", "-d", os.path.join(work, "classes")]
                     + java_files, "cwd": None},
-        {"id": "jar-classes", "description": "empacota os .class p/ o d8",
-         "command": ["zip", "-q", "-r", os.path.join(work, "classes-input.jar"),
-                     "."], "cwd": os.path.join(work, "classes")},
-        {"id": "d8", "description": f"dexa com --min-api {cfg['min_sdk']}",
-         "command": [d8, "--release", "--min-api", str(cfg["min_sdk"])]
-                    + (["--lib", android_jar] if android_jar else [])
-                    + ["--output", os.path.join(work, "dex"),
-                       os.path.join(work, "classes-input.jar")], "cwd": None},
-        {"id": "zip-dex", "description": "anexa classes.dex na raiz do APK",
-         "command": ["zip", "-j", "-X", unsigned, "classes.dex"],
-         "cwd": os.path.join(work, "dex")},
     ]
+    if cfg["external_manifest"]:
+        steps.insert(0, {
+            "id": "gen-trap-manifest",
+            "description": "armadilhas exported-audit: manifesto + POJOs da "
+                           "tabela TRAPS (gen-trap-manifest)",
+            "command": [sys.executable,
+                        os.path.join(TOOLS_DIR, "gen-trap-manifest.py"),
+                        "--out", os.path.join(work, "traproot"), "--seed",
+                        str(args.seed)], "cwd": None})
+    if mode == "multidex-8":
+        steps.insert(0, {
+            "id": "gen-dex-corpus",
+            "description": "corpus-fonte gen-dex-stress (7680 rotinas + "
+                           "strings + campos) p/ fatiar em 8 dexes",
+            "command": [sys.executable,
+                        os.path.join(TOOLS_DIR, "gen-dex-stress.py"),
+                        "--out", os.path.join(work, "dexsrc"), "--seed",
+                        str(args.seed)] + list(DEX_CORPUS_ARGS),
+            "cwd": None})
+        # Pipeline multidex: fatia os .class em 8 lotes contíguos e dexa um
+        # classes.dex por lote (multidex nativo, minSdk 21).
+        dexplan = os.path.join(work, "dexplan.json")
+        steps.append({
+            "id": "dex-partition",
+            "description": f"fatiamento contíguo dos .class em "
+                           f"{DEX_BATCHES} lotes (dexplan.json)",
+            "command": [sys.executable, os.path.abspath(__file__),
+                        "--dex-partition", os.path.join(work, "classes"),
+                        dexplan, str(DEX_BATCHES)], "cwd": None})
+        for i in range(1, DEX_BATCHES + 1):
+            steps.append({
+                "id": f"jar-batch-{i}",
+                "description": f"empacota o lote {i} de classes p/ o d8",
+                "command": ["zip", "-q", "-r",
+                            os.path.join(work, "dexbatch", f"{i}.jar"), "."],
+                "cwd": os.path.join(work, "dexbatch", str(i))})
+        for i in range(1, DEX_BATCHES + 1):
+            steps.append({
+                "id": f"d8-{i}",
+                "description": f"dexa o lote {i} com --min-api "
+                               f"{cfg['min_sdk']} (multidex nativo)",
+                "command": [d8, "--release", "--min-api", str(cfg["min_sdk"])]
+                           + (["--lib", android_jar] if android_jar else [])
+                           + ["--output", os.path.join(work, "dex", str(i)),
+                              os.path.join(work, "dexbatch", f"{i}.jar")],
+                "cwd": None})
+        steps.append({
+            "id": "collect-dex",
+            "description": f"copia work/dex/N/classes.dex -> classes.dex.."
+                           f"classes{DEX_BATCHES}.dex (ordem determinística)",
+            "command": [sys.executable, os.path.abspath(__file__),
+                        "--collect-dex", work,
+                        os.path.join(work, "dexout")], "cwd": None})
+        steps.append({
+            "id": "zip-dex-8",
+            "description": f"anexa classes.dex..classes{DEX_BATCHES}.dex na "
+                           "raiz do APK",
+            "command": ["zip", "-j", "-X", unsigned]
+                       + [f"classes.dex" if i == 1 else f"classes{i}.dex"
+                          for i in range(1, DEX_BATCHES + 1)],
+            "cwd": os.path.join(work, "dexout")})
+    else:
+        steps += [
+            {"id": "jar-classes", "description": "empacota os .class p/ o d8",
+             "command": ["zip", "-q", "-r",
+                         os.path.join(work, "classes-input.jar"), "."],
+             "cwd": os.path.join(work, "classes")},
+            {"id": "d8", "description": f"dexa com --min-api {cfg['min_sdk']}",
+             "command": [d8, "--release", "--min-api", str(cfg["min_sdk"])]
+                        + (["--lib", android_jar] if android_jar else [])
+                        + ["--output", os.path.join(work, "dex"),
+                           os.path.join(work, "classes-input.jar")], "cwd": None},
+            {"id": "zip-dex", "description": "anexa classes.dex na raiz do APK",
+             "command": ["zip", "-j", "-X", unsigned, "classes.dex"],
+             "cwd": os.path.join(work, "dex")},
+        ]
     if cfg["zip64"]:
         steps.append({
             "id": "zip64-augment",
@@ -308,6 +433,35 @@ def build_plan(args, cfg: dict, work: str, out_apk: str, tools: dict,
                         "--zip64-augment", "--into", unsigned, "--entries",
                         str(cfg["zip64_entries"]), "--seed", str(args.seed)],
             "cwd": None})
+    if cfg["obfuscated"]:
+        steps.append({
+            "id": "zip-mapping",
+            "description": "anexa mapping.txt como assets/mapping.txt "
+                           "(o RustyDroid lê de dentro do APK)",
+            "command": ["zip", "-q", "-X", unsigned, "assets/mapping.txt"],
+            "cwd": work})
+    if mode == "huge-arsc":
+        steps += [
+            {"id": "gen-arsc",
+             "description": "resources.arsc sintético "
+                            f"({ARSC_ENTRIES} entradas x 40 locales + "
+                            "densidades; gen-arsc-stress)",
+             "command": [sys.executable,
+                         os.path.join(TOOLS_DIR, "gen-arsc-stress.py"),
+                         "--out", os.path.join(work, "arsc"), "--seed",
+                         str(args.seed), "--entries", ARSC_ENTRIES],
+             "cwd": None},
+            {"id": "strip-arsc",
+             "description": "remove o resources.arsc do aapt2 (o sintetico "
+                            "entra no lugar)",
+             "command": [sys.executable, os.path.abspath(__file__),
+                         "--strip-entry", unsigned, "resources.arsc"],
+             "cwd": None},
+            {"id": "zip-arsc",
+             "description": "anexa o resources.arsc sintético na raiz do APK",
+             "command": ["zip", "-j", "-X", unsigned, "resources.arsc"],
+             "cwd": os.path.join(work, "arsc")},
+        ]
     if cfg["zipalign"]:
         steps.append({
             "id": "zipalign", "description": "alinhamento de 4 bytes (-p p/ .so)",
@@ -352,13 +506,34 @@ def build_plan(args, cfg: dict, work: str, out_apk: str, tools: dict,
                      "existir nesta fixture (nunca no flagship)")
     if cfg["obfuscated"]:
         notes.append("ofuscação R8 real exige toolchain externa; proxy honesto "
-                     "com nomes minificados + mapping.txt no work")
+                     "com nomes minificados + mapping.txt (no work e DENTRO do "
+                     "APK em assets/mapping.txt); R8 real chega nos builds "
+                     "Tier A / release A6")
+    if mode == "huge-arsc":
+        notes += [
+            "resources.arsc sintético (gen-arsc-stress) substitui o do aapt2: "
+            "40 configs de locale sem default + 7 densidades; âncora sha256 "
+            "em suites/parser-torture/huge-arsc/arsc-report.json",
+            "re-parse local do arsc: python3 tools/gen-arsc-stress.py "
+            "--verify <resources.arsc> (gold standard; CI soma aapt2 dump "
+            "resources como segunda opinião)",
+        ]
+    if mode == "multidex-8":
+        notes.append(f"corpus gen-dex-stress fatiado em {DEX_BATCHES} lotes "
+                     "contíguos (work/dexplan.json): classes.dex..classes8.dex "
+                     "na raiz do APK — multidex nativo, minSdk 21")
+    if cfg["external_manifest"]:
+        notes.append("manifesto e Java vêm de tools/gen-trap-manifest.py "
+                     "(fonte única da tabela TRAPS); 9 componentes (7 "
+                     "armadilhas + 2 baselines) documentados em "
+                     "contracts/parser-torture/exported-audit-traps.md")
     return {
         "tool": TOOL, "fixture": mode, "seed": args.seed,
         "description": cfg["description"],
         "application_id": "dev.apktester.fixture." + slugify(mode),
+        "apk_name": os.path.basename(out_apk),
         "min_sdk": cfg["min_sdk"], "target_sdk": cfg["target_sdk"],
-        "components": ["activity", "service", "receiver", "provider"],
+        "components": component_kinds(cfg),
         "work": work, "out_apk": out_apk, "android_jar": android_jar,
         "keystore": keystore, "tools": tools, "notes": notes, "steps": steps,
         "all_tools_available": all(t["available"] for t in tools.values()),
@@ -373,6 +548,123 @@ def zip64_augment(zip_path: str, entries: int, seed: int) -> None:
                 f"{seed}:{i}".encode("ascii")).hexdigest().encode("ascii")
             zf.writestr(f"assets/zip64/e{i:06d}.bin", data,
                         compress_type=zipfile.ZIP_DEFLATED, force_zip64=True)
+
+
+def zip_strip_entry(zip_path: str, entry: str) -> int:
+    """Reescreve o zip sem a entrada pedida (huge-arsc), preservando ordem e
+    conteúdo das demais. Determinístico: mtimes fixos em 1980-01-01 e
+    compress_type/attrs originais. Devolve quantas entradas casaram."""
+    tmp = zip_path + ".strip"
+    removed = 0
+    with zipfile.ZipFile(zip_path) as zin:
+        with zipfile.ZipFile(tmp, "w") as zout:
+            for info in zin.infolist():
+                if info.filename == entry:
+                    removed += 1
+                    continue
+                data = zin.read(info.filename)
+                ni = zipfile.ZipInfo(info.filename,
+                                     date_time=(1980, 1, 1, 0, 0, 0))
+                ni.compress_type = info.compress_type
+                ni.external_attr = info.external_attr
+                ni.internal_attr = info.internal_attr
+                ni.create_system = info.create_system
+                zout.writestr(ni, data)
+    os.replace(tmp, zip_path)
+    return removed
+
+
+def dex_partition(srcroot: str, outjson: str, batches: int) -> dict:
+    """Fatiamento CONTÍGUO determinístico dos .class em N lotes (multidex-8).
+
+    Lista global ordenada; primeiros N-1 lotes com tamanho igual (piso) e o
+    resto vai para o ÚLTIMO lote. Grava OUTJSON (paths relativos a srcroot) e
+    materializa cada lote em <dirname(OUTJSON)>/dexbatch/N/ com a estrutura
+    de pacotes preservada (o zip do lote roda com cwd no diretório do lote).
+    """
+    rels = []
+    for dirpath, _dirnames, filenames in os.walk(srcroot):
+        for fn in filenames:
+            if fn.endswith(".class"):
+                rels.append(os.path.relpath(os.path.join(dirpath, fn),
+                                            srcroot))
+    rels.sort()
+    if len(rels) < batches:
+        raise SystemExit(f"[fixture-pack] ERRO: {len(rels)} .class < "
+                         f"{batches} lotes pedidos")
+    base, rem = divmod(len(rels), batches)
+    chunks, idx = [], 0
+    for b in range(batches):
+        size = base + (rem if b == batches - 1 else 0)
+        chunks.append(rels[idx:idx + size])
+        idx += size
+    batch_root = os.path.join(os.path.dirname(os.path.abspath(outjson)),
+                              "dexbatch")
+    for i, chunk in enumerate(chunks, start=1):
+        batch_dir = os.path.join(batch_root, str(i))
+        for rel in chunk:
+            dst = os.path.join(batch_dir, rel)
+            os.makedirs(os.path.dirname(dst), exist_ok=True)
+            shutil.copyfile(os.path.join(srcroot, rel), dst)
+    doc = {"tool": TOOL, "schema_version": 1, "srcroot": srcroot,
+           "batches_count": batches, "entries_total": len(rels),
+           "strategy": "contiguo-ordenado-resto-no-ultimo",
+           "batches": chunks}
+    os.makedirs(os.path.dirname(os.path.abspath(outjson)), exist_ok=True)
+    with open(outjson, "w", encoding="utf-8", newline="\n") as fh:
+        json.dump(doc, fh, indent=2, sort_keys=True)
+        fh.write("\n")
+    print(f"[fixture-pack] dex-partition: {len(rels)} .class em {batches} "
+          f"lotes -> {outjson}", file=sys.stderr)
+    return doc
+
+
+def collect_dex(work: str, outdir: str) -> None:
+    """Copia work/dex/N/classes.dex -> OUTDIR/classes.dex (N=1), classes2.dex
+    ... classesN.dex (multidex-8), em ordem determinística."""
+    os.makedirs(outdir, exist_ok=True)
+    for i in range(1, DEX_BATCHES + 1):
+        batch_dir = os.path.join(work, "dex", str(i))
+        dexes = sorted(glob.glob(os.path.join(batch_dir, "*.dex")))
+        if dexes != [os.path.join(batch_dir, "classes.dex")]:
+            raise SystemExit(f"[fixture-pack] ERRO: lote {i} gerou "
+                             f"{[os.path.basename(d) for d in dexes]} "
+                             "(esperado só classes.dex)")
+        name = "classes.dex" if i == 1 else f"classes{i}.dex"
+        shutil.copyfile(os.path.join(batch_dir, "classes.dex"),
+                        os.path.join(outdir, name))
+    print(f"[fixture-pack] collect-dex: classes.dex..classes{DEX_BATCHES}.dex "
+          f"em {outdir}", file=sys.stderr)
+
+
+def ensure_trap_root(seed: int, work: str) -> str:
+    """Gera traproot com gen-trap-manifest (mesmos args do passo do plano);
+    precisa existir no make_plan para o plano listar os .java do traproot."""
+    out = os.path.join(work, "traproot")
+    cmd = [sys.executable, os.path.join(TOOLS_DIR, "gen-trap-manifest.py"),
+           "--out", out, "--seed", str(seed)]
+    proc = subprocess.run(cmd, stdout=subprocess.PIPE,
+                          stderr=subprocess.STDOUT)
+    if proc.returncode != 0:
+        print("[fixture-pack] ERRO: gen-trap-manifest falhou:\n"
+              + proc.stdout.decode("utf-8", "replace"), file=sys.stderr)
+        raise SystemExit(1)
+    return out
+
+
+def ensure_dex_corpus(seed: int, work: str) -> str:
+    """Gera o corpus gen-dex-stress (mesmos args do passo do plano); precisa
+    existir no make_plan para o plano listar os .java do corpus."""
+    out = os.path.join(work, "dexsrc")
+    cmd = [sys.executable, os.path.join(TOOLS_DIR, "gen-dex-stress.py"),
+           "--out", out, "--seed", str(seed)] + list(DEX_CORPUS_ARGS)
+    proc = subprocess.run(cmd, stdout=subprocess.PIPE,
+                          stderr=subprocess.STDOUT)
+    if proc.returncode != 0:
+        print("[fixture-pack] ERRO: gen-dex-stress falhou:\n"
+              + proc.stdout.decode("utf-8", "replace"), file=sys.stderr)
+        raise SystemExit(1)
+    return out
 
 
 def execute(plan: dict) -> int:
@@ -396,7 +688,7 @@ def execute(plan: dict) -> int:
 
 
 def selftest() -> int:
-    """--dry-run de todos os 8 modos parseia; --fixture nope sai 2."""
+    """--dry-run dos 11 modos parseia (com apk_name); --fixture nope sai 2."""
     tmp = tempfile.mkdtemp(prefix="apktester-fixturepack-selftest-")
     try:
         for mode in MODES:
@@ -407,16 +699,18 @@ def selftest() -> int:
             parsed = json.loads(json.dumps(plan, sort_keys=True))
             assert parsed["fixture"] == mode and parsed["steps"], \
                 f"plano do modo {mode} inválido"
+            assert parsed.get("apk_name") == APK_NAMES.get(mode, f"{mode}.apk"), \
+                f"apk_name ausente/incorreto no modo {mode}"
             print(f"[fixture-pack] selftest {mode}: plano JSON ok "
-                  f"({len(parsed['steps'])} passos)")
+                  f"({len(parsed['steps'])} passos, apk={parsed['apk_name']})")
         proc = subprocess.run(
             [sys.executable, os.path.abspath(__file__), "--fixture", "nope",
              "--out", os.path.join(tmp, "nope-out")],
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         assert proc.returncode == 2, \
             f"--fixture nope deveria sair 2, veio {proc.returncode}"
-        print("[fixture-pack] selftest OK: 8 modos com plano parseável; "
-              "--fixture nope => exit 2")
+        print("[fixture-pack] selftest OK: 11 modos com plano parseável e "
+              "apk_name; --fixture nope => exit 2")
         return 0
     except AssertionError as exc:
         print(f"[fixture-pack] selftest FALHOU: {exc}", file=sys.stderr)
@@ -442,22 +736,40 @@ def parse_args(argv=None):
         ap.add_argument(f"--{name}", default=None,
                         help=f"caminho do {name} (padrão: shutil.which)")
     ap.add_argument("--selftest", action="store_true",
-                     help="valida planos dos 8 modos em tmp e sai")
+                     help="valida planos dos 11 modos em tmp e sai")
     ap.add_argument("--zip64-augment", action="store_true",
                     help=argparse.SUPPRESS)
     ap.add_argument("--into", default=None, help=argparse.SUPPRESS)
     ap.add_argument("--entries", type=int, default=0, help=argparse.SUPPRESS)
+    ap.add_argument("--strip-entry", nargs=2, metavar=("ZIP", "ENTRY"),
+                    help=argparse.SUPPRESS)
+    ap.add_argument("--dex-partition", nargs=3,
+                    metavar=("SRCROOT", "OUTJSON", "N"),
+                    help=argparse.SUPPRESS)
+    ap.add_argument("--collect-dex", nargs=2, metavar=("WORK", "OUTDIR"),
+                    help=argparse.SUPPRESS)
     return ap.parse_args(argv)
 
 
 def make_plan(args) -> dict:
     """Gera árvore + plano (usado pelo dry-run e pelo selftest)."""
     cfg = MODES[args.fixture]
-    out_apk = os.path.join(os.path.abspath(args.out), f"{args.fixture}.apk")
+    apk_name = APK_NAMES.get(args.fixture, f"{args.fixture}.apk")
+    out_apk = os.path.join(os.path.abspath(args.out), apk_name)
     os.makedirs(os.path.dirname(out_apk), exist_ok=True)
     work = args.work or tempfile.mkdtemp(prefix="apktester-fixturepack-")
     os.makedirs(work, exist_ok=True)
     java_files = generate_tree(cfg, args.fixture, args.seed, work)
+    if cfg["external_manifest"]:
+        ensure_trap_root(args.seed, work)
+        java_files += sorted(glob.glob(
+            os.path.join(work, "traproot", "src", "**", "*.java"),
+            recursive=True))
+    if args.fixture == "multidex-8":
+        ensure_dex_corpus(args.seed, work)
+        java_files += sorted(glob.glob(
+            os.path.join(work, "dexsrc", "java", "**", "*.java"),
+            recursive=True))
     tools, android_jar = discover_tools(args)
     return build_plan(args, cfg, work, out_apk, tools, java_files, android_jar)
 
@@ -466,6 +778,28 @@ def main(argv=None) -> int:
     args = parse_args(argv)
     if args.selftest:
         return selftest()
+    if args.strip_entry:
+        zip_path, entry = args.strip_entry
+        try:
+            removed = zip_strip_entry(zip_path, entry)
+        except (OSError, zipfile.BadZipFile) as exc:
+            print(f"[fixture-pack] ERRO: strip-entry falhou: {exc}",
+                  file=sys.stderr)
+            return 1
+        if removed != 1:
+            print(f"[fixture-pack] ERRO: entrada '{entry}' não encontrada "
+                  f"em {zip_path}", file=sys.stderr)
+            return 1
+        print(f"[fixture-pack] strip-entry: '{entry}' removida de "
+              f"{zip_path}", file=sys.stderr)
+        return 0
+    if args.dex_partition:
+        srcroot, outjson, n = args.dex_partition
+        dex_partition(srcroot, outjson, int(n))
+        return 0
+    if args.collect_dex:
+        collect_dex(args.collect_dex[0], args.collect_dex[1])
+        return 0
     if args.zip64_augment:
         if not args.into or args.entries <= 0:
             print("[fixture-pack] ERRO: --zip64-augment exige --into e "

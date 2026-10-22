@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ARMADILHAS INTENCIONAIS (ver exported-audit-traps.md). Gerado
+     por tools/gen-trap-manifest.py — NAO editar a mao; regenere com a ferramenta. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="dev.apktester.fixture.exportedaudit"
+    android:versionCode="900036"
+    android:versionName="1.0.0">
+
+    <uses-sdk android:minSdkVersion="26"
+              android:targetSdkVersion="36"/>
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <application android:label="@string/app_name" android:hasCode="true">
+        <!-- T1 — armadilha: activity exportada sem permissão -->
+        <activity android:name=".TrapExportedNoPermActivity" android:exported="true">
+        </activity>
+        <!-- T2 — baseline: entry point legítimo -->
+        <activity android:name=".TrapLauncherActivity" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+        <!-- T3 — armadilha: alias oculto divergente do alvo exportado -->
+        <activity-alias android:name=".TrapAlias"
+                  android:targetActivity=".TrapLauncherActivity"
+                  android:exported="false"/>
+        <!-- T4 — armadilha: serviço exportado sem permissão -->
+        <service android:name=".TrapExportedService" android:exported="true"/>
+        <!-- T5 — baseline: serviço privativo -->
+        <service android:name=".TrapBoundService" android:exported="false"/>
+        <!-- T6 — armadilha: receiver aberto -->
+        <receiver android:name=".TrapOpenReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="dev.apktester.fixture.exportedaudit.action.OPEN"/>
+            </intent-filter>
+        </receiver>
+        <!-- T7 — armadilha forte: provider mundialmente legível/gravável -->
+        <provider android:name=".TrapOpenProvider"
+                  android:authorities="dev.apktester.fixture.exportedaudit.open"
+                  android:exported="true"/>
+        <!-- T8 — armadilha: grant amplo -->
+        <provider android:name=".TrapGrantProvider"
+                  android:authorities="dev.apktester.fixture.exportedaudit.grant"
+                  android:exported="false"
+                  android:grantUriPermissions="true">
+            <grant-uri-permission android:pathPattern="/.*"/>
+        </provider>
+        <!-- T9 — armadilha: foregroundServiceType sem a permissão exigida -->
+        <service android:name=".TrapForegroundTypeService" android:exported="false" android:foregroundServiceType="location"/>
+    </application>
+</manifest>

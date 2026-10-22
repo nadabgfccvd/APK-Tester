@@ -1,0 +1,81 @@
+{
+ "baselines": 2,
+ "components": {
+  "activities": 2,
+  "activity_alias": 1,
+  "providers": 2,
+  "receivers": 1,
+  "services": 3
+ },
+ "generated_by": "tools/gen-trap-manifest.py",
+ "min_sdk": 26,
+ "package": "dev.apktester.fixture.exportedaudit",
+ "schema_version": 1,
+ "seed": 20261022,
+ "target_sdk": 36,
+ "traps": [
+  {
+   "class": ".TrapExportedNoPermActivity",
+   "expected_finding": "componente exportado sem permissão de invocação — qualquer app pode iniciá-la",
+   "id": "T1",
+   "issue": "activity exportada sem android:permission",
+   "kind": "activity"
+  },
+  {
+   "class": ".TrapLauncherActivity",
+   "expected_finding": "launcher padrão; o relato NÃO deve apontá-la como achado",
+   "id": "T2",
+   "issue": "nenhum — baseline de launcher",
+   "kind": "activity"
+  },
+  {
+   "class": ".TrapAlias",
+   "expected_finding": "divergência alias x alvo: o alias não deve herdar a exposição do targetActivity",
+   "id": "T3",
+   "issue": "alias oculto (exported=false) apontando para activity exportada",
+   "kind": "activity-alias"
+  },
+  {
+   "class": ".TrapExportedService",
+   "expected_finding": "serviço exportado sem permissão — qualquer app pode bind/start",
+   "id": "T4",
+   "issue": "service exportado sem android:permission",
+   "kind": "service"
+  },
+  {
+   "class": ".TrapBoundService",
+   "expected_finding": "serviço privado; o relato NÃO deve apontá-lo como achado",
+   "id": "T5",
+   "issue": "nenhum — baseline de serviço privado",
+   "kind": "service"
+  },
+  {
+   "class": ".TrapOpenReceiver",
+   "expected_finding": "receiver implicitamente exportado sem permissão de broadcast",
+   "id": "T6",
+   "issue": "receiver aberto por intent-filter (action custom) sem android:permission",
+   "kind": "receiver"
+  },
+  {
+   "class": ".TrapOpenProvider",
+   "expected_finding": "provider exportado sem guarda de leitura/escrita — armadilha forte",
+   "id": "T7",
+   "issue": "provider exportado SEM readPermission/writePermission (mundialmente legível e gravável)",
+   "kind": "provider"
+  },
+  {
+   "class": ".TrapGrantProvider",
+   "expected_finding": "concessão de URI ampla: acesso delegável a qualquer caminho do provider",
+   "id": "T8",
+   "issue": "grantUriPermissions=true com pathPattern amplo /.*",
+   "kind": "provider"
+  },
+  {
+   "class": ".TrapForegroundTypeService",
+   "expected_finding": "tipo em foreground sem a permissão exigida (regra de targetSdk 34+)",
+   "id": "T9",
+   "issue": "foregroundServiceType=location sem ACCESS_FINE_LOCATION nem FOREGROUND_SERVICE declaradas",
+   "kind": "service"
+  }
+ ]
+}

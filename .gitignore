@@ -27,6 +27,12 @@ docs/book/
 dev.log
 *.tar.xz
 
+# --- Gerados em tempo de empacotamento/CI (nunca commitados; a âncora é o
+#     sha256 dentro do report/contrato) ---
+suites/parser-torture/huge-arsc/resources.arsc
+suites/parser-torture/exported-audit/src/
+dist2/
+
 # --- macOS ---
 .DS_Store
 

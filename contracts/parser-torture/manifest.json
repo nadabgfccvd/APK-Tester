@@ -1,0 +1,35 @@
+{
+ "artifacts": [
+  {
+   "path": "contracts/parser-torture/exported-audit-traps.md",
+   "sha256": "5adf82bed2b3272e853a3bb16310187b1ebd36f528a6390b078b84f0d2f079c6"
+  },
+  {
+   "path": "contracts/parser-torture/fixtures-audit.md",
+   "sha256": "9a35151a5f29ab74c20cd7bc9f576594e5af0c93709f822e759d7b6bd312b0d8"
+  },
+  {
+   "path": "contracts/parser-torture/huge-arsc-audit.md",
+   "sha256": "18aa8df0dd71353adc1fdbe697a5f84deb39aacfc7aed4d8910b03a7f1e50893"
+  },
+  {
+   "path": "contracts/parser-torture/suites-fragment.json",
+   "sha256": "7df493d86320db1e30e59b75eb0771289c89b36d3f65e9c0b8940fcecfcd7519"
+  },
+  {
+   "path": "suites/parser-torture/exported-audit/AndroidManifest.xml",
+   "sha256": "4bf76db7e01fcd802ace6424572b77e760c2f99c1cf0585655b550a616d81ece"
+  },
+  {
+   "path": "suites/parser-torture/exported-audit/traps-report.json",
+   "sha256": "def33f89135facecfcb66f81e2cf9ad115d2ed65823c88294cdebf0941fb0814"
+  },
+  {
+   "path": "suites/parser-torture/huge-arsc/arsc-report.json",
+   "sha256": "6d18da267d58d35dc2795fdded406e54f3b8bcfdff485854e6b52b9bd7d9e639"
+  }
+ ],
+ "note": "gerado; NAO editar a mao — regenere com a ferramenta",
+ "seed": 20261022,
+ "tool": "tools/gen-torture-contracts.py"
+}
