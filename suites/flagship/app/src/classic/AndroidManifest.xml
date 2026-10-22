@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Gerado por tools/gen-flagship-manifest.py — overlay do flavor classic.
-     sharedUserId e extractNativeLibs=true SO no classic (spec do flagship);
-     tools:replace resolve o conflito de extractNativeLibs com o manifesto
-     principal (false). NAO editar a mao: regenere. -->
+     sharedUserId SO no classic (spec do flagship). O atributo
+     extractNativeLibs/useLegacyPackaging e controlado pelo AGP 8 no build
+     (nao no manifesto) e chega junto das libs nativas no marco A4.
+     NAO editar a mao: regenere. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:sharedUserId="dev.apktester.behemoth"
-    tools:replace="android:extractNativeLibs">
-    <application android:extractNativeLibs="true"/>
+    android:sharedUserId="dev.apktester.behemoth">
 </manifest>

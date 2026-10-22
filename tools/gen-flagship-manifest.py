@@ -287,8 +287,7 @@ def build_main_manifest(registry: dict) -> str:
         f'AOSP sha256 {sha_short}). NAO editar a mao: regenere com '
         f'"python3 tools/gen-flagship-manifest.py" no modo integracao. -->')
     add('<manifest')
-    add('    xmlns:android="http://schemas.android.com/apk/res/android"')
-    add('    xmlns:tools="http://schemas.android.com/tools">')
+    add('    xmlns:android="http://schemas.android.com/apk/res/android">')
 
     # ---- permissoes custom -------------------------------------------------
     add("")
@@ -370,7 +369,6 @@ def build_main_manifest(registry: dict) -> str:
     add(f'        {_attr("networkSecurityConfig", "@xml/network_security_config")}')
     add(f'        {_attr("localeConfig", "@xml/locales_config")}')
     add(f'        {_attr("hardwareAccelerated", "true")}')
-    add(f'        {_attr("extractNativeLibs", "false")}')
     add(f'        {_attr("supportsRtl", "true")}')
     add(f'        {_attr("label", "@string/app_name")}')
     add(f'        {_attr("icon", "@mipmap/ic_launcher")}')
@@ -471,14 +469,12 @@ def build_classic_overlay() -> str:
     return "\n".join([
         '<?xml version="1.0" encoding="utf-8"?>',
         '<!-- Gerado por tools/gen-flagship-manifest.py — overlay do flavor classic.',
-        '     sharedUserId e extractNativeLibs=true SO no classic (spec do flagship);',
-        '     tools:replace resolve o conflito de extractNativeLibs com o manifesto',
-        '     principal (false). NAO editar a mao: regenere. -->',
+        '     sharedUserId SO no classic (spec do flagship). O atributo',
+        '     extractNativeLibs/useLegacyPackaging e controlado pelo AGP 8 no build',
+        '     (nao no manifesto) e chega junto das libs nativas no marco A4.',
+        '     NAO editar a mao: regenere. -->',
         '<manifest xmlns:android="http://schemas.android.com/apk/res/android"',
-        '    xmlns:tools="http://schemas.android.com/tools"',
-        f'    android:sharedUserId="{SHARED_USER_ID}"',
-        '    tools:replace="android:extractNativeLibs">',
-        '    <application android:extractNativeLibs="true"/>',
+        f'    android:sharedUserId="{SHARED_USER_ID}">',
         '</manifest>',
     ]) + "\n"
 
@@ -721,7 +717,7 @@ def build_manifest_audit(registry: dict) -> str:
     add("| minSdk | 9 (classic) / 26 (modern) |")
     add("| targetSdk | 36 |")
     add("| sharedUserId | `dev.apktester.behemoth` — **somente** flavor classic |")
-    add("| extractNativeLibs | false no manifesto principal; **true** no classic (overlay, tools:replace) |")
+    add("| extractNativeLibs | atributo removido do manifesto (regra AGP 8); `useLegacyPackaging` por flavor entra com as libs nativas no marco A4 |")
     add("")
     add("## Permissoes")
     add("")
@@ -864,8 +860,10 @@ def build_manifest_audit(registry: dict) -> str:
     add("  (legacy) -> @xml/data_extraction_rules / @xml/backup_rules")
     add("- `android:localeConfig` (API 33) -> @xml/locales_config (12 locales do")
     add("  gen-strings)")
-    add("- `android:extractNativeLibs`: false no principal, true no classic via")
-    add("  overlay com tools:replace (ambas variantes da spec)")
+    add("- `android:extractNativeLibs`: NAO declarado — o AGP 8 proibe o atributo no")
+    add("  manifesto-fonte; o empacotamento de libs nativas (useLegacyPackaging)")
+    add("  sera definido por flavor no build.gradle quando :native/:rust")
+    add("  existirem (A4)")
     add("")
     add("## RustyDroid — diff esperado")
     add("")

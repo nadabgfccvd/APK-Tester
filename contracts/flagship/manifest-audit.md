@@ -19,7 +19,7 @@ contratuais na coluna `alvo`.
 | minSdk | 9 (classic) / 26 (modern) |
 | targetSdk | 36 |
 | sharedUserId | `dev.apktester.behemoth` — **somente** flavor classic |
-| extractNativeLibs | false no manifesto principal; **true** no classic (overlay, tools:replace) |
+| extractNativeLibs | atributo removido do manifesto (regra AGP 8); `useLegacyPackaging` por flavor entra com as libs nativas no marco A4 |
 
 ## Permissoes
 
@@ -172,8 +172,10 @@ framework-only para o classic compilar limpo.
   (legacy) -> @xml/data_extraction_rules / @xml/backup_rules
 - `android:localeConfig` (API 33) -> @xml/locales_config (12 locales do
   gen-strings)
-- `android:extractNativeLibs`: false no principal, true no classic via
-  overlay com tools:replace (ambas variantes da spec)
+- `android:extractNativeLibs`: NAO declarado — o AGP 8 proibe o atributo no
+  manifesto-fonte; o empacotamento de libs nativas (useLegacyPackaging)
+  sera definido por flavor no build.gradle quando :native/:rust
+  existirem (A4)
 
 ## RustyDroid — diff esperado
 
