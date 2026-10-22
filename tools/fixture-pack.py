@@ -609,22 +609,27 @@ def zip_dealign(zip_path: str, seed: int) -> None:
 
 
 def zip64_augment(zip_path: str, entries: int, seed: int) -> None:
-    """Anexa N data entries forçando Zip64 (conteúdo determinístico por seed).
+    """Reescreve o ZIP com N data entries, forçando o EOCD64 (Zip64).
 
-    force_zip64 é argumento de ZipFile.open(mode="w") — NÃO de writestr
-    (bug latente do A0: o caminho de execução nunca tinha rodado). Cada
-    entrada sai com local header Zip64; o count > 0xFFFF força o EOCD64.
+    REESCRITA completa (não append): o modo "a" do zipfile deixava bytes
+    mortos entre o fim do Central Directory e o ZIP64 EOCD, e o apksig
+    rejeita ("Unused space at the end of ZIP Central Directory"). Escrita
+    em passada única garante CD contíguo. O count > 0xFFFF força o EOCD64.
     """
-    with zipfile.ZipFile(zip_path, "a", allowZip64=True,
-                         compression=zipfile.ZIP_DEFLATED) as zf:
+    with zipfile.ZipFile(zip_path) as zf:
+        payload = [(i, zf.read(i)) for i in zf.infolist()]
+    tmp = zip_path + ".zip64"
+    with zipfile.ZipFile(tmp, "w", allowZip64=True) as zf:
+        for info, data in payload:
+            zf.writestr(info, data)
         for i in range(entries):
             data = (b"apktester-zip64/"
                     + hashlib.sha256(
                         f"{seed}:{i}".encode("ascii")).hexdigest()
                        .encode("ascii"))
-            with zf.open(f"assets/zip64/e{i:06d}.bin", "w",
-                         force_zip64=True) as fh:
-                fh.write(data)
+            zf.writestr(f"assets/zip64/e{i:06d}.bin", data,
+                        compress_type=zipfile.ZIP_DEFLATED)
+    os.replace(tmp, zip_path)
 
 
 def zip_strip_entry(zip_path: str, entry: str) -> int:
