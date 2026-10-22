@@ -403,10 +403,16 @@ def build_main_manifest(registry: dict) -> str:
     for cls, guard, action, meta, exported in SERVICES:
         attrs = f'{_attr("name", cls)} {_attr("exported", str(exported).lower())}'
         if cls == ".services.ForegroundStub":
+            # Flags validas do atributo foregroundServiceType (aapt2 API 36):
+            # camera, connectedDevice, dataSync, health, location, mediaPlayback,
+            # mediaProcessing, mediaProjection, microphone, phoneCall,
+            # remoteMessaging, shortService, specialUse, systemExempted.
+            # NOTA: a PERMISSAO da plataforma e FOREGROUND_SERVICE_SYSTEM_EXPERIMENTS,
+            # mas o FLAG do manifesto e systemExempted (nomes divergem no AOSP).
             fgs_types = ("dataSync|mediaPlayback|location|camera|microphone|"
                          "phoneCall|connectedDevice|mediaProjection|"
                          "remoteMessaging|shortService|specialUse|health|"
-                         "systemExperiments")
+                         "systemExempted|mediaProcessing")
             attrs += f' {_attr("foregroundServiceType", fgs_types)}'
         if guard:
             attrs += f' {_attr("permission", guard)}'
@@ -787,10 +793,13 @@ def build_manifest_audit(registry: dict) -> str:
     for svc, base, bind in system_map:
         add(f"| {svc} | {base} | {bind} |")
     add("")
-    add("ForegroundStub declara TODOS os foregroundServiceType (dataSync,")
+    add("ForegroundStub declara TODOS os 14 foregroundServiceType (dataSync,")
     add("mediaPlayback, location, camera, microphone, phoneCall, connectedDevice,")
     add("mediaProjection, remoteMessaging, shortService, specialUse, health,")
-    add("systemExperiments) + property `android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE`.")
+    add("systemExempted, mediaProcessing) + property")
+    add("`android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE`. O nome do flag")
+    add("systemExempted diverge da permissao FOREGROUND_SERVICE_SYSTEM_EXPERIMENTS")
+    add("(divergencia do proprio AOSP, documentada aqui).")
     add("")
     add("## Receivers (10)")
     add("")

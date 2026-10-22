@@ -97,10 +97,13 @@ Alvo final: 8 aliases (r1..r8 com icones do gen-icons).
 | Vpn | VpnService | android.permission.BIND_VPN_SERVICE |
 | Credential | CredentialProviderService | android.permission.BIND_CREDENTIALS_SERVICE |
 
-ForegroundStub declara TODOS os foregroundServiceType (dataSync,
+ForegroundStub declara TODOS os 14 foregroundServiceType (dataSync,
 mediaPlayback, location, camera, microphone, phoneCall, connectedDevice,
 mediaProjection, remoteMessaging, shortService, specialUse, health,
-systemExperiments) + property `android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE`.
+systemExempted, mediaProcessing) + property
+`android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE`. O nome do flag
+systemExempted diverge da permissao FOREGROUND_SERVICE_SYSTEM_EXPERIMENTS
+(divergencia do proprio AOSP, documentada aqui).
 
 ## Receivers (10)
 

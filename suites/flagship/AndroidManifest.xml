@@ -1232,7 +1232,7 @@
                                                 </intent-filter>
         </service>
         <service android:name=".services.MessengerService" android:exported="false"/>
-        <service android:name=".services.ForegroundStub" android:exported="false" android:foregroundServiceType="dataSync|mediaPlayback|location|camera|microphone|phoneCall|connectedDevice|mediaProjection|remoteMessaging|shortService|specialUse|health|systemExperiments"/>
+        <service android:name=".services.ForegroundStub" android:exported="false" android:foregroundServiceType="dataSync|mediaPlayback|location|camera|microphone|phoneCall|connectedDevice|mediaProjection|remoteMessaging|shortService|specialUse|health|systemExempted|mediaProcessing"/>
         <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="apktester-fgs-stress"/>
         <receiver android:name=".receivers.BootReceiver" android:exported="true">
                                                 <intent-filter>
