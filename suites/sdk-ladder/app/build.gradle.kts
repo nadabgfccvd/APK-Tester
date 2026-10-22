@@ -22,7 +22,7 @@ val rungs = Properties().apply {
 
 // "minsdk09.minSdk=9" -> flavor "minsdk09"; ordenado para determinismo do
 // configure (a ordem alfabetica dos ids de 2 digitos equivale a numerica).
-val rungNames = rungs.stringPropertyNames
+val rungNames = rungs.stringPropertyNames()
     .filter { it.endsWith(".minSdk") }
     .map { it.removeSuffix(".minSdk") }
     .sorted()

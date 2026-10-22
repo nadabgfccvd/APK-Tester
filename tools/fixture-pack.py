@@ -270,6 +270,13 @@ def generate_tree(cfg: dict, mode: str, seed: int, work: str) -> list:
         os.makedirs(os.path.dirname(full), exist_ok=True)
         with open(full, "w", encoding="utf-8", newline="\n") as fh:
             fh.write(content)
+    # d8 exige que o --output EXISTA ("Output must be ... an existing
+    # directory"): prepara o destino do dex base e, no multidex-8, os 8
+    # subdiretórios dos lotes (o caminho de execução é exercitado no CI).
+    os.makedirs(os.path.join(work, "dex"), exist_ok=True)
+    if mode == "multidex-8":
+        for i in range(1, DEX_BATCHES + 1):
+            os.makedirs(os.path.join(work, "dex", str(i)), exist_ok=True)
     r_java = os.path.join(work, "gen", pkg.replace(".", "/"), "R.java")
     return java_files + [r_java]
 
