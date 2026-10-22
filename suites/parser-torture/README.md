@@ -35,7 +35,7 @@ determinístico) e acompanhados de auditoria esperada.
 
 | Item | Status |
 |---|---|
-| Pacote completo (10 fixtures + gabaritos) | **construído em A2** |
-| Contratos | auditoria por fixture + `contracts/suites.json` |
-
-Diretório ainda vazio nesta fase (A0).
+| Pacote completo (10 fixtures + gabaritos) | **entregue (A2)** — 11 modos em `tools/fixture-pack.py` (os 10 + `minSdk9` da escada), toolchain real aapt2+d8+zip+zipalign+apksigner |
+| Contratos | `contracts/parser-torture/` (fixtures-audit, huge-arsc-audit, exported-audit-traps, suites-fragment, ledger `manifest.json`) — gerados por `tools/gen-torture-contracts.py`, zero drift |
+| ARSc sintético | `tools/gen-arsc-stress.py` (10.000 entradas × 40 locales + 7 densidades; binário NÃO commitado — sha256 no `arsc-report.json` é a âncora) |
+| Build no CI | job `parser-torture` em `.github/workflows/ci.yml` (empacota as 10 + valida cada uma: esquemas de assinatura, zip64, multidex, arsc, armadilhas, mapping) |

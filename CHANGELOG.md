@@ -34,9 +34,35 @@ de compatibilidade verde).
   enhancement, invalid, question, wontfix) espelhadas em `labels.json` —
   divergência detectada pelo próprio bot na primeira execução.
 
-### Planejado (fases A2–A8)
+- Escada sdk-ladder (A2): projeto Gradle com 12 product flavors
+  (minSdk 9, 12, 14, 16, 19, 21, 23, 26, 29, 33, 35, 36 — minSdk 9 primeiro)
+  criados em tempo de configuração a partir de `rungs.properties` gerado;
+  app mínimo framework-only (1 activity, 1 service, 1 receiver, 1 provider,
+  0 permissões, `ladder-report.json`), applicationId
+  `dev.apktester.ladder.minsdkNN`, versionCode = minSdk;
+- Escada sdk-ladder (A2): gerador `tools/gen-ladder.py` (rungs.properties +
+  asset de runtime + `contracts/sdk-ladder/{answer-key.json,ladder-audit.md}`
+  + ledger, zero drift por construção) e job CI `sdk-ladder` (build dos 12
+  flavors + validação aapt2 badging de cada APK + zero permissões afirmada);
+- Pacote parser-torture (A2): `tools/fixture-pack.py` com 11 modos (os 10
+  do pacote + `minSdk9` da escada) — sig-v1/v2/v3-only, unaligned,
+  zip64-65k, huge-arsc, multidex-8, unknown-perms, exported-audit,
+  obfuscated-r8 (+ `assets/mapping.txt` dentro do APK);
+- Pacote parser-torture (A2): geradores `tools/gen-arsc-stress.py`
+  (resources.arsc sintético: 10.000 entradas × 40 locales + 7 densidades,
+  com `--verify` re-parser independente), `tools/gen-trap-manifest.py`
+  (9 armadilhas intencionais de exported/permissões + POJOs + auditoria) e
+  `tools/gen-torture-contracts.py` (contracts/parser-torture/ zero drift +
+  fragmento de suites.json);
+- Pacote parser-torture (A2): job CI `parser-torture` (empacota as 10
+  fixtures com toolchain real e valida cada uma: esquemas de assinatura por
+  apksigner, reprovação esperada do zipalign, contagem Zip64, 8 dex,
+  sha256 + re-parse do arsc, permissões falsas, armadilhas no binário,
+  mapping + classes ofuscadas) e 10 novas suites em `contracts/suites.json`
+  (total 55).
 
-- A2 — escada `sdk-ladder` (minSdk 9 primeiro) + pacote `parser-torture`;
+### Planejado (fases A3–A8)
+
 - A3 — fixtures Tier C da matriz de engines + `expected-engines.json`;
 - A4 — builds reais Tier A (Java, Kotlin, C/C++, Rust, Go, Zig, WASM, …);
 - A5 — pilar 3D/shaders (`:sim3d` golden + shader-library + texturas/meshes/áudio);

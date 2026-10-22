@@ -464,6 +464,116 @@
         "below_floor_allowed": false,
         "expected_result": "execução (switches de comportamento por targetSdk)"
       }
+    },
+    {
+      "id": "torture-sig-v1-only",
+      "apk": "suites/parser-torture/sig-v1-only",
+      "scenario": "install+inspect",
+      "expects": {
+        "rustydroid_engines": ["java"],
+        "min_sdk": 9,
+        "below_floor_allowed": true,
+        "expected_result": "parser lê esquema v1 isolado"
+      }
+    },
+    {
+      "id": "torture-sig-v2-only",
+      "apk": "suites/parser-torture/sig-v2-only",
+      "scenario": "install+inspect",
+      "expects": {
+        "rustydroid_engines": ["java"],
+        "min_sdk": 24,
+        "below_floor_allowed": true,
+        "expected_result": "parser lê esquema v2 sem v1"
+      }
+    },
+    {
+      "id": "torture-sig-v3-only",
+      "apk": "suites/parser-torture/sig-v3-only",
+      "scenario": "install+inspect",
+      "expects": {
+        "rustydroid_engines": ["java"],
+        "min_sdk": 28,
+        "below_floor_allowed": false,
+        "expected_result": "parser lê esquema v3 sem v1/v2"
+      }
+    },
+    {
+      "id": "torture-unaligned",
+      "apk": "suites/parser-torture/unaligned",
+      "scenario": "install+inspect",
+      "expects": {
+        "rustydroid_engines": ["java"],
+        "min_sdk": 26,
+        "below_floor_allowed": false,
+        "expected_result": "entradas desalinhadas parseadas"
+      }
+    },
+    {
+      "id": "torture-zip64",
+      "apk": "suites/parser-torture/zip64-65k",
+      "scenario": "install+inspect",
+      "expects": {
+        "rustydroid_engines": ["java"],
+        "min_sdk": 26,
+        "below_floor_allowed": false,
+        "expected_result": "offsets/contagens Zip64 corretos"
+      }
+    },
+    {
+      "id": "torture-huge-arsc",
+      "apk": "suites/parser-torture/huge-arsc",
+      "scenario": "install+inspect",
+      "expects": {
+        "rustydroid_engines": ["java"],
+        "min_sdk": 26,
+        "below_floor_allowed": false,
+        "expected_result": "ARSc 10k x 40 locales parseado sem OOM/timeout"
+      }
+    },
+    {
+      "id": "torture-multidex-8",
+      "apk": "suites/parser-torture/multidex-8",
+      "scenario": "install+inspect",
+      "expects": {
+        "rustydroid_engines": ["java"],
+        "min_sdk": 21,
+        "below_floor_allowed": true,
+        "expected_result": "8 classesN.dex carregados"
+      }
+    },
+    {
+      "id": "torture-unknown-perms",
+      "apk": "suites/parser-torture/unknown-perms",
+      "scenario": "install+inspect",
+      "expects": {
+        "rustydroid_engines": ["java"],
+        "min_sdk": 26,
+        "below_floor_allowed": false,
+        "expected_result": "permissões desconhecidas classificadas como unknown — nunca crash"
+      }
+    },
+    {
+      "id": "torture-exported-audit",
+      "apk": "suites/parser-torture/exported-audit",
+      "scenario": "install+inspect",
+      "expects": {
+        "rustydroid_engines": ["java"],
+        "min_sdk": 26,
+        "below_floor_allowed": false,
+        "expected_result": "9 armadilhas reportadas na auditoria"
+      }
+    },
+    {
+      "id": "torture-obfuscated",
+      "apk": "suites/parser-torture/obfuscated-r8",
+      "scenario": "install+inspect",
+      "expects": {
+        "rustydroid_engines": ["java"],
+        "min_sdk": 26,
+        "below_floor_allowed": false,
+        "expected_result": "nomes ofuscados resolvidos via mapping.txt"
+      }
     }
   ]
 }

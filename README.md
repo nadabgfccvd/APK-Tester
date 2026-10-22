@@ -154,7 +154,7 @@ Cada fase termina compilando verde. Critérios de saída detalhados em
 |---|---|---|
 | **A0** | Scaffold do repositório + kit de governança + esqueletos de CI + geradores `tools/` | **entregue** |
 | **A1** | Esqueleto do flagship (probe harness, manifest completo com TODAS as permissões, PermissionsHub, ButtonGrid, IconGrid) | **entregue (A1)** — módulo `:app` Gradle (classic minSdk 9 / modern minSdk 26), 1004 permissões com registry verbatim do AOSP master e build real no CI |
-| A2 | `sdk-ladder` (minSdk 9 primeiro!) + pacote `parser-torture` | planejado |
+| **A2** | `sdk-ladder` (minSdk 9 primeiro!) + pacote `parser-torture` | **entregue (A2)** — 12 flavors a partir de `rungs.properties` gerado (minSdk 9 primeiro, 0 permissões, CI `sdk-ladder`) + 10 fixtures de tortura empacotadas pela toolchain real (CI `parser-torture`) |
 | A3 | Fixtures Tier C da matriz de engines + `expected-engines.json` | planejado |
 | A4 | Builds reais Tier A (Java, Kotlin, C/C++, Rust, Go, Zig, WASM, …) | planejado |
 | A5 | Pilar 3D/shaders (`:sim3d` golden + shader-library + texturas/meshes/áudio) | planejado |

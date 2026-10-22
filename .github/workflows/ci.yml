@@ -182,3 +182,261 @@ jobs:
           name: flagship-skeleton-apks
           path: suites/flagship/app/build/outputs/apk/*/debug/*.apk
           if-no-files-found: error
+
+  # A2: escada minSdk 9->36 — o MESMO app mínimo (1 activity + 1 service +
+  # 1 receiver + 1 provider, 0 permissões) construído em 12 degraus. Os
+  # flavors são lidos de rungs.properties (gerado) em tempo de configuração:
+  # zero drift por construção entre build e answer key.
+  sdk-ladder:
+    name: "SDK Ladder (A2): 12 degraus minSdk 9-36"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Componentes Android SDK (platform 36 + build-tools 35.0.0)
+        run: |
+          yes | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" \
+            "platforms;android-36" "build-tools;35.0.0" > /dev/null
+          echo "ANDROID_HOME=${ANDROID_HOME}" >> "${GITHUB_ENV}"
+
+      - name: Regenerar escada + contratos (zero drift contra o commit)
+        run: |
+          python3 tools/gen-ladder.py --out .
+          git diff --exit-code -- \
+            suites/sdk-ladder/rungs.properties \
+            suites/sdk-ladder/app/src/main/assets/ladder/rungs.json \
+            contracts/sdk-ladder/
+          echo "[A2] zero drift: escada regenerada == commitada"
+
+      - name: Build (Gradle, 12 flavors debug em uma invocação)
+        run: |
+          cd suites/sdk-ladder
+          ./gradlew --no-daemon :app:assembleDebug
+
+      - name: Validar os 12 APKs (badging + componentes + zero permissões)
+        run: |
+          AAPT2="${ANDROID_HOME}/build-tools/35.0.0/aapt2"
+          python3 - "$AAPT2" <<'PY'
+          import re, subprocess, sys
+          from pathlib import Path
+          aapt2 = sys.argv[1]
+          root = Path("suites/sdk-ladder/app/build/outputs/apk")
+          apks = sorted(root.glob("*/debug/*.apk"))
+          assert len(apks) == 12, f"esperava 12 APKs, achei {len(apks)}: {apks}"
+          for apk in apks:
+              flavor = apk.parent.parent.name              # minsdk09..minsdk36
+              min_sdk = int(flavor.replace("minsdk", ""))
+              badging = subprocess.run(
+                  [aapt2, "dump", "badging", str(apk)],
+                  capture_output=True, text=True, check=True).stdout
+              m = re.search(r"^package: name='([^']+)' versionCode='(\d+)'",
+                            badging, re.M)
+              assert m, f"badging sem package: {apk}"
+              name, vcode = m.group(1), int(m.group(2))
+              assert name == f"dev.apktester.ladder.{flavor}", \
+                  f"applicationId inesperado em {apk}: {name}"
+              assert vcode == min_sdk, f"versionCode != minSdk em {apk}: {vcode}"
+              assert f"minSdkVersion:'{min_sdk}'" in badging, \
+                  f"minSdkVersion errado em {apk}"
+              assert "targetSdkVersion:'36'" in badging, f"targetSdk errado em {apk}"
+              tree = subprocess.run(
+                  [aapt2, "dump", "xmltree", str(apk),
+                   "--file", "AndroidManifest.xml"],
+                  capture_output=True, text=True, check=True).stdout
+              comps = len(re.findall(
+                  r"^ +E: (activity|service|receiver|provider) ", tree, re.M))
+              assert comps == 4, \
+                  f"esperava 4 componentes em {apk}, achei {comps}"
+              perms = len(re.findall(r"^ +E: uses-permission ", tree, re.M))
+              assert perms == 0, \
+                  f"a escada não declara permissões, achei {perms} em {apk}"
+              print(f"[A2] ok degrau: {flavor} minSdk={min_sdk} "
+                    f"versionCode={vcode} 4 componentes 0 permissões")
+          PY
+
+      - name: Copiar APKs para os diretórios dos contratos (minsdk-NN)
+        run: |
+          for d in 09 12 14 16 19 21 23 26 29 33 35 36; do
+            mkdir -p "suites/sdk-ladder/minsdk-${d}"
+            cp "suites/sdk-ladder/app/build/outputs/apk/minsdk${d}/debug/app-minsdk${d}-debug.apk" \
+               "suites/sdk-ladder/minsdk-${d}/app-debug.apk"
+          done
+          ls -l suites/sdk-ladder/minsdk-*/app-debug.apk
+
+      - name: Upload dos APKs (artefato de CI)
+        uses: actions/upload-artifact@v4
+        with:
+          name: sdk-ladder-apks
+          path: suites/sdk-ladder/minsdk-*/app-debug.apk
+          if-no-files-found: error
+
+  # A2: pacote parser-torture — 10 fixtures com uma patologia cada, empacotadas
+  # com a toolchain real (aapt2+d8+zip+zipalign+apksigner) e validadas uma a uma.
+  parser-torture:
+    name: "Parser Torture (A2): 10 fixtures + validações"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Componentes Android SDK (platform 36 + build-tools 35.0.0)
+        run: |
+          yes | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" \
+            "platforms;android-36" "build-tools;35.0.0" > /dev/null
+          echo "ANDROID_HOME=${ANDROID_HOME}" >> "${GITHUB_ENV}"
+
+      - name: Regenerar contratos do pacote (zero drift contra o commit)
+        run: |
+          python3 tools/gen-torture-contracts.py --out .
+          python3 tools/gen-trap-manifest.py --out suites/parser-torture/exported-audit
+          python3 tools/gen-arsc-stress.py --out suites/parser-torture/huge-arsc
+          git diff --exit-code -- \
+            contracts/parser-torture/ \
+            suites/parser-torture/exported-audit/AndroidManifest.xml \
+            suites/parser-torture/exported-audit/traps-report.json \
+            suites/parser-torture/huge-arsc/arsc-report.json
+          echo "[A2] zero drift: contratos + manifesto de armadilhas + report do arsc"
+
+      - name: Selftest dos empacotadores
+        run: python3 tools/fixture-pack.py --selftest
+
+      - name: Empacotar as 11 fixtures (toolchain real do SDK)
+        run: |
+          BT="${ANDROID_HOME}/build-tools/35.0.0"
+          mkdir -p dist
+          for f in minSdk9 sig-v1-only sig-v2-only sig-v3-only unaligned zip64 \
+                   huge-arsc multidex-8 unknown-perms exported-audit obfuscated; do
+            python3 tools/fixture-pack.py --fixture "$f" --out dist \
+              --aapt2 "${BT}/aapt2" --d8 "${BT}/d8" \
+              --apksigner "${BT}/apksigner" --zipalign "${BT}/zipalign"
+          done
+          ls -l dist/
+
+      - name: Validar cada fixture (parsers, assinaturas, estrutura)
+        run: |
+          BT="${ANDROID_HOME}/build-tools/35.0.0"
+          python3 - "${BT}" <<'PY'
+          import hashlib, json, re, subprocess, sys, zipfile
+          from pathlib import Path
+          bt = Path(sys.argv[1])
+          dist = Path("dist")
+
+          def xmltree(apk):
+              return subprocess.run(
+                  [str(bt / "aapt2"), "dump", "xmltree", str(apk),
+                   "--file", "AndroidManifest.xml"],
+                  capture_output=True, text=True, check=True).stdout
+
+          # --- assinaturas: cada modo tem o ESQUEMA EXATO prometido
+          schemes = {"sig-v1-only.apk": (True, False, False),
+                     "sig-v2-only.apk": (False, True, False),
+                     "sig-v3-only.apk": (False, False, True)}
+          for apk, (v1, v2, v3) in schemes.items():
+              out = subprocess.run(
+                  [str(bt / "apksigner"), "verify", "--verbose", str(dist / apk)],
+                  capture_output=True, text=True).stdout
+              for scheme, expected in (("v1", v1), ("v2", v2), ("v3", v3)):
+                  want = "true" if expected else "false"
+                  assert f"Verified using {scheme} scheme: {want}" in out, \
+                      f"{apk}: esquema {scheme} deveria ser {want}"
+              print(f"[A2] ok assinatura: {apk} v1={v1} v2={v2} v3={v3}")
+
+          # --- unaligned: zipalign DEVE reprovar (contraste aprova)
+          rc = subprocess.run([str(bt / "zipalign"), "-c", "4",
+                               str(dist / "unaligned.apk")],
+                              capture_output=True).returncode
+          assert rc != 0, "unaligned deveria reprovar no zipalign -c"
+          rc = subprocess.run([str(bt / "zipalign"), "-c", "4",
+                               str(dist / "sig-v1-only.apk")],
+                              capture_output=True).returncode
+          assert rc == 0, "contraste (alinhado) deveria aprovar no zipalign -c"
+          print("[A2] ok alinhamento: unaligned reprova; sig-v1-only aprova")
+
+          # --- zip64: > 65535 entradas (Zip64 EOCD obrigatório)
+          with zipfile.ZipFile(dist / "zip64-65k.apk") as zf:
+              n = len(zf.infolist())
+              assert n > 65535, f"zip64 deveria ter >65535 entradas, tem {n}"
+          print(f"[A2] ok zip64: {n} entradas")
+
+          # --- multidex-8: exatamente classes.dex..classes8.dex
+          with zipfile.ZipFile(dist / "multidex-8.apk") as zf:
+              dexes = sorted(i.filename for i in zf.infolist()
+                             if re.fullmatch(r"classes\d*\.dex", i.filename))
+              assert len(dexes) == 8, f"esperava 8 dex, achei {dexes}"
+          print(f"[A2] ok multidex: {', '.join(dexes)}")
+
+          # --- huge-arsc: sha256 bate com o report commitado + estrutura válida
+          with zipfile.ZipFile(dist / "huge-arsc.apk") as zf:
+              data = zf.read("resources.arsc")
+          report = json.loads(
+              Path("suites/parser-torture/huge-arsc/arsc-report.json").read_text(
+                  encoding="utf-8"))
+          assert hashlib.sha256(data).hexdigest() == report["sha256"], \
+              "sha256 do resources.arsc diverge do report commitado"
+          Path("/tmp/huge-arsc.resources").write_bytes(data)
+          proc = subprocess.run(
+              [sys.executable, "tools/gen-arsc-stress.py", "--verify",
+               "/tmp/huge-arsc.resources"], capture_output=True, text=True)
+          assert proc.returncode == 0, \
+              f"verify estrutural do arsc falhou: {proc.stderr}"
+          print("[A2] ok huge-arsc: sha256 bate + 10k entradas x 40 locales válidas")
+
+          # --- unknown-perms: exatamente 4 strings inventadas
+          tree = xmltree(dist / "unknown-perms.apk")
+          fakes = len(re.findall(r"dev\.apktester\.fake\.", tree))
+          assert fakes == 4, f"esperava 4 permissões falsas, achei {fakes}"
+          print("[A2] ok unknown-perms: 4 strings dev.apktester.fake.*")
+
+          # --- exported-audit: 9 componentes declarados, armadilhas no binário
+          tree = xmltree(dist / "exported-audit.apk")
+          for marker in ("TrapExportedNoPermActivity", "TrapLauncherActivity",
+                         "TrapAlias", "TrapExportedService", "TrapBoundService",
+                         "TrapOpenReceiver", "TrapOpenProvider",
+                         "TrapGrantProvider", "TrapForegroundTypeService"):
+              assert marker in tree, \
+                  f"componente ausente do manifesto binário: {marker}"
+          n_provider = len(re.findall(r"^ +E: provider ", tree, re.M))
+          assert n_provider == 2, f"esperava 2 providers, achei {n_provider}"
+          n_alias = len(re.findall(r"^ +E: activity-alias ", tree, re.M))
+          assert n_alias == 1, f"esperava 1 activity-alias, achei {n_alias}"
+          print("[A2] ok exported-audit: 9 componentes + armadilhas no binário")
+
+          # --- obfuscated-r8: mapping.txt dentro do APK + classes a.a.* no dex
+          with zipfile.ZipFile(dist / "obfuscated-r8.apk") as zf:
+              names = zf.namelist()
+              assert "assets/mapping.txt" in names, "mapping.txt ausente do APK"
+              mapping = zf.read("assets/mapping.txt").decode("utf-8")
+              dex = zf.read("classes.dex")
+          assert "a.a.a -> " in mapping, "mapping sem regra a.a.a"
+          assert b"La/a/a;" in dex, "classes ofuscadas ausentes do dex"
+          print("[A2] ok obfuscated-r8: assets/mapping.txt + a.a.* no dex")
+          PY
+
+      - name: Determinismo do empacotador (duas passadas + apk-mode)
+        run: |
+          BT="${ANDROID_HOME}/build-tools/35.0.0"
+          python3 tools/fixture-pack.py --fixture unaligned --out dist2 \
+            --aapt2 "${BT}/aapt2" --d8 "${BT}/d8" \
+            --apksigner "${BT}/apksigner" --zipalign "${BT}/zipalign"
+          bash tools/verify-deterministic.sh --mode apk \
+            --apk1 dist/unaligned.apk --apk2 dist2/unaligned.apk
+
+      - name: Upload das fixtures (artefato de CI)
+        uses: actions/upload-artifact@v4
+        with:
+          name: parser-torture-fixtures
+          path: dist/*.apk
+          if-no-files-found: error

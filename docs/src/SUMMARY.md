@@ -8,6 +8,8 @@
 
 [Escada minSdk](sdk-ladder.md)
 
+[Parser Torture](parser-torture.md)
+
 [Integração RustyDroid](rustydroid-integration.md)
 
 ---
