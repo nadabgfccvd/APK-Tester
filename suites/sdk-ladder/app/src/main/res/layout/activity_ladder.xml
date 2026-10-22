@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Tela unica do degrau: titulo do flavor (R.string.rung_label, gerado via
+  resValue) + fatos preenchidos pela LadderActivity em runtime.
+-->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/rung_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="12dp"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="@string/app_name"/>
+
+        <TextView
+            android:id="@+id/rung_facts"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/facts_label"
+            android:textSize="14sp"/>
+    </LinearLayout>
+</ScrollView>

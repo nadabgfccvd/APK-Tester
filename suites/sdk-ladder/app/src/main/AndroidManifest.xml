@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Manifest da escada sdk-ladder (app minimo, igual nos 12 degraus).
+
+  Regras duras da suíte:
+  - SEM atributo package= (o AGP 8 proibe; o namespace vem do Gradle) e SEM
+    bloco uses-sdk (o minSdk/targetSdk sao injetados por flavor pelo AGP a
+    partir de rungs.properties — a variavel em teste e apenas o minSdk).
+  - ZERO uses-permission: a escada nao declara nenhuma permissao (afirmado
+    em CI: grep 'E: uses-permission' == 0 no binario).
+  - A autoridade do provider usa ${applicationId} para ficar unica por degrau
+    (dev.apktester.ladder.minsdkNN.provider).
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_ladder"
+        android:label="@string/app_name"
+        android:theme="@style/Theme.Ladder">
+        <activity android:name=".LadderActivity" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+        <service android:name=".LadderService" android:exported="false"/>
+        <receiver android:name=".LadderReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="dev.apktester.ladder.action.PROBE"/>
+            </intent-filter>
+        </receiver>
+        <provider
+            android:name=".LadderProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"/>
+    </application>
+</manifest>

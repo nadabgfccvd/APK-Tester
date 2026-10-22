@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Tema da plataforma (android:Theme, API 1): nenhum Material/AppCompat aqui.
+  O degrau minSdk 9 e framework-only (sem androidx) e os temas Material
+  exigiriam res/values-v21 ou biblioteca de support — o que elevaria a API
+  minima real acima do minSdk declarado, quebrando a lei da escada.
+-->
+<resources>
+    <style name="Theme.Ladder" parent="android:Theme"/>
+</resources>

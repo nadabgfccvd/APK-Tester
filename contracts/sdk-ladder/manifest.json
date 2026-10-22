@@ -1,0 +1,23 @@
+{
+ "artifacts": [
+  {
+   "path": "contracts/sdk-ladder/answer-key.json",
+   "sha256": "6a9e97a4a3b4046dce817c1437c8691b121349e7aa5e31c6777b1540fae633ba"
+  },
+  {
+   "path": "contracts/sdk-ladder/ladder-audit.md",
+   "sha256": "4fed8c4b227711be2ce274b877437b4bd978b88308da522bb3455b915573c7ed"
+  },
+  {
+   "path": "suites/sdk-ladder/app/src/main/assets/ladder/rungs.json",
+   "sha256": "c400696620cd29d1e03d24f29d4807096f2615d1410e9014eac4a216f37c7148"
+  },
+  {
+   "path": "suites/sdk-ladder/rungs.properties",
+   "sha256": "5505b206bed2ee5ebc52230906301e247862aafb71379aae4d04c4a951b8458a"
+  }
+ ],
+ "note": "gerado; NAO editar a mao — regenere com a ferramenta",
+ "seed": 20261022,
+ "tool": "tools/gen-ladder.py"
+}

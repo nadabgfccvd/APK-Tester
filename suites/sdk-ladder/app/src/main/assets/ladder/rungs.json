@@ -1,0 +1,128 @@
+{
+ "floor_rustydroid": 26,
+ "generated_by": "tools/gen-ladder.py",
+ "rungs": [
+  {
+   "application_id": "dev.apktester.ladder.minsdk09",
+   "dir": "minsdk-09",
+   "flavor": "minsdk09",
+   "min_sdk": 9,
+   "rustydroid": "BELOW_FLOOR",
+   "target_sdk": 36,
+   "version_code": 9,
+   "version_name": "1.0.0-min9"
+  },
+  {
+   "application_id": "dev.apktester.ladder.minsdk12",
+   "dir": "minsdk-12",
+   "flavor": "minsdk12",
+   "min_sdk": 12,
+   "rustydroid": "BELOW_FLOOR",
+   "target_sdk": 36,
+   "version_code": 12,
+   "version_name": "1.0.0-min12"
+  },
+  {
+   "application_id": "dev.apktester.ladder.minsdk14",
+   "dir": "minsdk-14",
+   "flavor": "minsdk14",
+   "min_sdk": 14,
+   "rustydroid": "BELOW_FLOOR",
+   "target_sdk": 36,
+   "version_code": 14,
+   "version_name": "1.0.0-min14"
+  },
+  {
+   "application_id": "dev.apktester.ladder.minsdk16",
+   "dir": "minsdk-16",
+   "flavor": "minsdk16",
+   "min_sdk": 16,
+   "rustydroid": "BELOW_FLOOR",
+   "target_sdk": 36,
+   "version_code": 16,
+   "version_name": "1.0.0-min16"
+  },
+  {
+   "application_id": "dev.apktester.ladder.minsdk19",
+   "dir": "minsdk-19",
+   "flavor": "minsdk19",
+   "min_sdk": 19,
+   "rustydroid": "BELOW_FLOOR",
+   "target_sdk": 36,
+   "version_code": 19,
+   "version_name": "1.0.0-min19"
+  },
+  {
+   "application_id": "dev.apktester.ladder.minsdk21",
+   "dir": "minsdk-21",
+   "flavor": "minsdk21",
+   "min_sdk": 21,
+   "rustydroid": "BELOW_FLOOR",
+   "target_sdk": 36,
+   "version_code": 21,
+   "version_name": "1.0.0-min21"
+  },
+  {
+   "application_id": "dev.apktester.ladder.minsdk23",
+   "dir": "minsdk-23",
+   "flavor": "minsdk23",
+   "min_sdk": 23,
+   "rustydroid": "BELOW_FLOOR",
+   "target_sdk": 36,
+   "version_code": 23,
+   "version_name": "1.0.0-min23"
+  },
+  {
+   "application_id": "dev.apktester.ladder.minsdk26",
+   "dir": "minsdk-26",
+   "flavor": "minsdk26",
+   "min_sdk": 26,
+   "rustydroid": "EXECUTE",
+   "target_sdk": 36,
+   "version_code": 26,
+   "version_name": "1.0.0-min26"
+  },
+  {
+   "application_id": "dev.apktester.ladder.minsdk29",
+   "dir": "minsdk-29",
+   "flavor": "minsdk29",
+   "min_sdk": 29,
+   "rustydroid": "EXECUTE",
+   "target_sdk": 36,
+   "version_code": 29,
+   "version_name": "1.0.0-min29"
+  },
+  {
+   "application_id": "dev.apktester.ladder.minsdk33",
+   "dir": "minsdk-33",
+   "flavor": "minsdk33",
+   "min_sdk": 33,
+   "rustydroid": "EXECUTE",
+   "target_sdk": 36,
+   "version_code": 33,
+   "version_name": "1.0.0-min33"
+  },
+  {
+   "application_id": "dev.apktester.ladder.minsdk35",
+   "dir": "minsdk-35",
+   "flavor": "minsdk35",
+   "min_sdk": 35,
+   "rustydroid": "EXECUTE",
+   "target_sdk": 36,
+   "version_code": 35,
+   "version_name": "1.0.0-min35"
+  },
+  {
+   "application_id": "dev.apktester.ladder.minsdk36",
+   "dir": "minsdk-36",
+   "flavor": "minsdk36",
+   "min_sdk": 36,
+   "rustydroid": "EXECUTE",
+   "target_sdk": 36,
+   "version_code": 36,
+   "version_name": "1.0.0-min36"
+  }
+ ],
+ "schema_version": 1,
+ "seed": 20261022
+}

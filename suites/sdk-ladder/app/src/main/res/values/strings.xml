@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Strings do app minimo da escada. A string rung_label NAO vive aqui: ela e
+  gerada via resValue por flavor no app/build.gradle.kts (um valor por
+  degrau, ex.: "APK Ladder minSdk 9") — declara-la tambem neste arquivo
+  chocaria o merger de recursos.
+-->
+<resources>
+    <string name="app_name">APK Ladder</string>
+    <string name="facts_label">Fatos do degrau</string>
+</resources>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Icone do app como ShapeDrawable (API 1): drawable vetorial de icone
+  (VectorDrawable) so existe a partir da API 21 e exigiria support library —
+  o degrau minSdk 9 nao pode ter nenhum dos dois. Cor solida neutra, sem
+  gradiente (GradientDrawable herda de ShapeDrawable, mas mantemos o minimo).
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#FF3D3D3D"/>
+    <size
+        android:width="48dp"
+        android:height="48dp"/>
+</shape>

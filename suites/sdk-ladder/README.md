@@ -50,8 +50,12 @@ crash. Nenhum degrau pode derrubar o runtime.
 
 | Item | Status |
 |---|---|
-| Escada completa (9, 12, 14, 16, 19, 21, 23, 26, 29, 33, 35, 36) | **construída em A2** (minSdk 9 primeiro) |
-| Contratos (gabaritos de `inspect` por degrau) | `contracts/suites.json` na fase A2 |
+| Escada completa (9, 12, 14, 16, 19, 21, 23, 26, 29, 33, 35, 36) | **entregue (A2)** — projeto Gradle com 12 product flavors lidos de `rungs.properties` |
+| Contratos | `contracts/sdk-ladder/answer-key.json` + `ladder-audit.md` + ledger `manifest.json` (gerados por `tools/gen-ladder.py`, zero drift) |
+| Build no CI | job `sdk-ladder` em `.github/workflows/ci.yml` (`:app:assembleDebug` → 12 APKs validados por aapt2 badging) |
 
-Diretório ainda vazio nesta fase (A0). Contexto geral em
-[README.md](../../README.md).
+O app mínimo tem 1 activity, 1 service, 1 receiver e 1 provider
+(`LadderActivity`, `LadderService`, `LadderReceiver`, `LadderProvider` —
+package `dev.apktester.ladder`, applicationId `dev.apktester.ladder.minsdkNN`,
+versionCode = minSdk) e declara **zero permissões** — a variável em teste é
+apenas o minSdk. Contexto geral em [README.md](../../README.md).
