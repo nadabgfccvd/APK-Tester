@@ -106,8 +106,10 @@ MODES = {
         desc="somente assinatura v3 (rotação de chave)"),
     "unaligned": _mode(26, 36, zipalign=False,
         desc="zipalign pulado de propósito (parser-torture)"),
-    "zip64": _mode(26, 36, entries=65600,
-        desc=">65k entradas (força Zip64 EOCD) como data entries"),
+    "zip64": _mode(26, 36, zip64=True, zipalign=False, entries=65600,
+        desc=">65k entradas (força Zip64 EOCD) como data entries; zipalign "
+             "pulado — o zipalign não suporta Zip64 e a patologia aqui é a "
+             "estrutura Zip64, não o alinhamento"),
     "unknown-perms": _mode(26, 36, fake_perms=True,
         desc="permissões inventadas dev.apktester.fake.*"),
     "obfuscated": _mode(26, 36, obfuscated=True,
