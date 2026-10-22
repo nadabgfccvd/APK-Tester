@@ -744,6 +744,26 @@ def ensure_dex_corpus(seed: int, work: str) -> str:
     return out
 
 
+def execute(plan: dict) -> int:
+    """Executa os passos best-effort (logs PT-BR em stderr)."""
+    for step in plan["steps"]:
+        if (step.get("skip_if") == "keystore_existe"
+                and os.path.isfile(plan["keystore"])):
+            print(f"[fixture-pack] {step['id']}: keystore já existe, pulando",
+                  file=sys.stderr)
+            continue
+        print(f"[fixture-pack] {step['id']}: {step['description']}",
+              file=sys.stderr)
+        proc = subprocess.run(step["command"], cwd=step.get("cwd"))
+        if proc.returncode != 0:
+            print(f"[fixture-pack] ERRO: passo {step['id']} saiu com "
+                  f"{proc.returncode}", file=sys.stderr)
+            return 1
+    print(f"[fixture-pack] OK: APK fixture em {plan['out_apk']}",
+          file=sys.stderr)
+    return 0
+
+
 def selftest() -> int:
     """--dry-run dos 11 modos parseia (com apk_name); --fixture nope sai 2."""
     tmp = tempfile.mkdtemp(prefix="apktester-fixturepack-selftest-")
