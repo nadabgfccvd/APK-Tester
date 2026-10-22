@@ -627,6 +627,123 @@ def zip64_augment(zip_path: str, entries: int, seed: int) -> None:
                 fh.write(data)
 
 
+def zip_strip_entry(zip_path: str, entry: str) -> int:
+    """Reescreve o zip sem a entrada pedida (huge-arsc), preservando ordem e
+    conteúdo das demais. Determinístico: mtimes fixos em 1980-01-01 e
+    compress_type/attrs originais. Devolve quantas entradas casaram."""
+    tmp = zip_path + ".strip"
+    removed = 0
+    with zipfile.ZipFile(zip_path) as zin:
+        with zipfile.ZipFile(tmp, "w") as zout:
+            for info in zin.infolist():
+                if info.filename == entry:
+                    removed += 1
+                    continue
+                data = zin.read(info.filename)
+                ni = zipfile.ZipInfo(info.filename,
+                                     date_time=(1980, 1, 1, 0, 0, 0))
+                ni.compress_type = info.compress_type
+                ni.external_attr = info.external_attr
+                ni.internal_attr = info.internal_attr
+                ni.create_system = info.create_system
+                zout.writestr(ni, data)
+    os.replace(tmp, zip_path)
+    return removed
+
+
+def dex_partition(srcroot: str, outjson: str, batches: int) -> dict:
+    """Fatiamento CONTÍGUO determinístico dos .class em N lotes (multidex-8).
+
+    Lista global ordenada; primeiros N-1 lotes com tamanho igual (piso) e o
+    resto vai para o ÚLTIMO lote. Grava OUTJSON (paths relativos a srcroot) e
+    materializa cada lote em <dirname(OUTJSON)>/dexbatch/N/ com a estrutura
+    de pacotes preservada (o zip do lote roda com cwd no diretório do lote).
+    """
+    rels = []
+    for dirpath, _dirnames, filenames in os.walk(srcroot):
+        for fn in filenames:
+            if fn.endswith(".class"):
+                rels.append(os.path.relpath(os.path.join(dirpath, fn),
+                                            srcroot))
+    rels.sort()
+    if len(rels) < batches:
+        raise SystemExit(f"[fixture-pack] ERRO: {len(rels)} .class < "
+                         f"{batches} lotes pedidos")
+    base, rem = divmod(len(rels), batches)
+    chunks, idx = [], 0
+    for b in range(batches):
+        size = base + (rem if b == batches - 1 else 0)
+        chunks.append(rels[idx:idx + size])
+        idx += size
+    batch_root = os.path.join(os.path.dirname(os.path.abspath(outjson)),
+                              "dexbatch")
+    for i, chunk in enumerate(chunks, start=1):
+        batch_dir = os.path.join(batch_root, str(i))
+        for rel in chunk:
+            dst = os.path.join(batch_dir, rel)
+            os.makedirs(os.path.dirname(dst), exist_ok=True)
+            shutil.copyfile(os.path.join(srcroot, rel), dst)
+    doc = {"tool": TOOL, "schema_version": 1, "srcroot": srcroot,
+           "batches_count": batches, "entries_total": len(rels),
+           "strategy": "contiguo-ordenado-resto-no-ultimo",
+           "batches": chunks}
+    os.makedirs(os.path.dirname(os.path.abspath(outjson)), exist_ok=True)
+    with open(outjson, "w", encoding="utf-8", newline="\n") as fh:
+        json.dump(doc, fh, indent=2, sort_keys=True)
+        fh.write("\n")
+    print(f"[fixture-pack] dex-partition: {len(rels)} .class em {batches} "
+          f"lotes -> {outjson}", file=sys.stderr)
+    return doc
+
+
+def collect_dex(work: str, outdir: str) -> None:
+    """Copia work/dex/N/classes.dex -> OUTDIR/classes.dex (N=1), classes2.dex
+    ... classesN.dex (multidex-8), em ordem determinística."""
+    os.makedirs(outdir, exist_ok=True)
+    for i in range(1, DEX_BATCHES + 1):
+        batch_dir = os.path.join(work, "dex", str(i))
+        dexes = sorted(glob.glob(os.path.join(batch_dir, "*.dex")))
+        if dexes != [os.path.join(batch_dir, "classes.dex")]:
+            raise SystemExit(f"[fixture-pack] ERRO: lote {i} gerou "
+                             f"{[os.path.basename(d) for d in dexes]} "
+                             "(esperado só classes.dex)")
+        name = "classes.dex" if i == 1 else f"classes{i}.dex"
+        shutil.copyfile(os.path.join(batch_dir, "classes.dex"),
+                        os.path.join(outdir, name))
+    print(f"[fixture-pack] collect-dex: classes.dex..classes{DEX_BATCHES}.dex "
+          f"em {outdir}", file=sys.stderr)
+
+
+def ensure_trap_root(seed: int, work: str) -> str:
+    """Gera traproot com gen-trap-manifest (mesmos args do passo do plano);
+    precisa existir no make_plan para o plano listar os .java do traproot."""
+    out = os.path.join(work, "traproot")
+    cmd = [sys.executable, os.path.join(TOOLS_DIR, "gen-trap-manifest.py"),
+           "--out", out, "--seed", str(seed)]
+    proc = subprocess.run(cmd, stdout=subprocess.PIPE,
+                          stderr=subprocess.STDOUT)
+    if proc.returncode != 0:
+        print("[fixture-pack] ERRO: gen-trap-manifest falhou:\n"
+              + proc.stdout.decode("utf-8", "replace"), file=sys.stderr)
+        raise SystemExit(1)
+    return out
+
+
+def ensure_dex_corpus(seed: int, work: str) -> str:
+    """Gera o corpus gen-dex-stress (mesmos args do passo do plano); precisa
+    existir no make_plan para o plano listar os .java do corpus."""
+    out = os.path.join(work, "dexsrc")
+    cmd = [sys.executable, os.path.join(TOOLS_DIR, "gen-dex-stress.py"),
+           "--out", out, "--seed", str(seed)] + list(DEX_CORPUS_ARGS)
+    proc = subprocess.run(cmd, stdout=subprocess.PIPE,
+                          stderr=subprocess.STDOUT)
+    if proc.returncode != 0:
+        print("[fixture-pack] ERRO: gen-dex-stress falhou:\n"
+              + proc.stdout.decode("utf-8", "replace"), file=sys.stderr)
+        raise SystemExit(1)
+    return out
+
+
 def selftest() -> int:
     """--dry-run dos 11 modos parseia (com apk_name); --fixture nope sai 2."""
     tmp = tempfile.mkdtemp(prefix="apktester-fixturepack-selftest-")
