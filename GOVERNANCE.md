@@ -18,6 +18,49 @@ Regras do agente de commits: commits assinados/atribuídos ao agente nunca são
 mesclados por ele mesmo; mudanças em contratos (`contracts/`) e em ADRs exigem
 aprovação humana explícita.
 
+## APKBot (automação anti-regressão)
+
+O **APKBot** é o bot autônomo anti-regressão do repositório: implementado em
+`bot/apkbot.py` e agendado pelo workflow
+[.github/workflows/apkbot.yml](.github/workflows/apkbot.yml), executa 8
+verificações (determinismo entre execuções, flakiness, staleness, consistência
+da matriz de engines, drift do registro do RustyDroid, drift do AOSP, previsão
+de breach do gate de tamanho e auditoria de governança), mantém memória
+persistente em `bot/state/` e registra achados em issues deduplicadas por
+fingerprint. Detalhes de operação em `bot/README.md`.
+
+**Identidade:** commits de automação são atribuídos a
+`apkbot[bot] <apkbot@users.noreply.github.com>`. O `xisto-agent` permanece o
+agente de commits de desenvolvimento e o owner permanece `nadabgfccvd` — o
+APKBot não altera essa hierarquia e não tem autoridade de merge.
+
+O APKBot PODE fazer autonomamente:
+
+- commitar apenas o estado do bot em `bot/state/` (inclusive
+  `bot-state.json`), sempre com `[skip ci]` na mensagem;
+- abrir, comentar e fechar issues criadas por ele próprio, sempre com as
+  labels `apkbot:*` (`apkbot`, `apkbot:regression`, `apkbot:drift`,
+  `apkbot:flaky`);
+- criar as labels próprias `apkbot:*` caso ainda não existam no repositório.
+
+O APKBot NUNCA pode:
+
+- mexer em código, fixtures ou contratos (`contracts/`) sem PR revisado por
+  humano — o aprendizado de baseline (*baseline learning*) fica restrito a
+  `bot/state/` e jamais altera gabaritos;
+- fechar ou editar issues abertas por humanos;
+- alterar workflows (`.github/workflows/`), permissões ou o próprio
+  agendamento.
+
+**Cadência:** a cada 6 horas (`cron "0 */6 * * *"`, distinto do Engines
+Nightly às 03:00) e sob demanda via `workflow_dispatch`. Execuções são
+serializadas pelo grupo de concurrency `apkbot` (sem cancelamento em
+andamento).
+
+**Como desativar:** remover (ou desabilitar) o workflow
+`.github/workflows/apkbot.yml` — não há nenhum outro gatilho do bot; as issues
+que ele abriu permanecem como histórico auditável.
+
 ## Processo de decisão — ADR-first
 
 Decisões de arquitetura e de escopo são registradas em **ADRs**

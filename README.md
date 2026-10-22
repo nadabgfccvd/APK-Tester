@@ -8,6 +8,7 @@
   <a href=".github/workflows/ci.yml"><img alt="CI" src="https://github.com/nadabgfccvd/APK-Tester/actions/workflows/ci.yml/badge.svg"></a>
   <a href=".github/workflows/size-gate.yml"><img alt="Size Gate" src="https://github.com/nadabgfccvd/APK-Tester/actions/workflows/size-gate.yml/badge.svg"></a>
   <a href=".github/workflows/engines-nightly.yml"><img alt="Engines Nightly" src="https://github.com/nadabgfccvd/APK-Tester/actions/workflows/engines-nightly.yml/badge.svg"></a>
+  <a href=".github/workflows/apkbot.yml"><img alt="APKBot" src="https://github.com/nadabgfccvd/APK-Tester/actions/workflows/apkbot.yml/badge.svg"></a>
   <a href="LICENSE-MIT"><img alt="Licenca: MIT OR Apache-2.0" src="https://img.shields.io/badge/licen%C3%A7a-MIT%20OR%20Apache--2.0-blue"></a>
   <a href="GOVERNANCE.md"><img alt="SemVer 0.x para 1.0" src="https://img.shields.io/badge/semver-0.x%20%E2%86%92%201.0-orange"></a>
 </p>
@@ -159,6 +160,17 @@ Cada fase termina compilando verde. Critérios de saída detalhados em
 | A6 | Engenharia de tamanho até o gate [850 MB, 1000 MB] + `size-report.csv` | planejado |
 | A7 | Jobs nightly Tier B + `compat-nightly` + site de docs (mdBook) | planejado |
 | A8 | Gate v1.0: matriz completa verde, build determinístico provado, release v1.0.0 | planejado |
+
+## APKBot — bot anti-regressão
+
+O [APKBot](.github/workflows/apkbot.yml) é o bot autônomo anti-regressão do
+repositório: a cada 6 horas (ou sob demanda) executa 8 verificações —
+determinismo entre execuções, flakiness, staleness, consistência da matriz de
+engines, drift do registro do RustyDroid, drift do AOSP, previsão de breach do
+gate de tamanho e auditoria de governança — com memória persistente em
+`bot/state/` e issues deduplicadas por fingerprint sob as labels `apkbot:*`.
+Escopo, limites e como desativar: [GOVERNANCE.md](GOVERNANCE.md); operação:
+[bot/README.md](bot/README.md).
 
 ## Hard-truths
 

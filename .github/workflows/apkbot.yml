@@ -1,0 +1,57 @@
+# APKBot — automação anti-regressão autônoma do APK Tester (bot/apkbot.py).
+# Executa 8 verificações (determinismo, flakiness, staleness, matriz de engines,
+# drift do registro do RustyDroid, drift do AOSP, previsão de breach do size
+# gate e auditoria de governança), mantém memória em bot/state/ e abre issues
+# deduplicadas com labels apkbot:*. Escopo e limites em GOVERNANCE.md.
+name: APKBot
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"   # a cada 6h (distinto do Engines Nightly 03:00)
+  workflow_dispatch:
+
+permissions:
+  # contents: write — necessário porque o apkbot commita apenas bot/state/bot-state.json
+  # (memória persistente do bot), sempre com [skip ci] na mensagem.
+  contents: write
+  # issues: write — o apkbot abre, comenta e fecha SOMENTE as issues que ele
+  # mesmo criou (deduplicadas por fingerprint), sempre com labels apkbot:*.
+  issues: write
+
+# Serializa todas as execuções do bot em um único grupo: sem isso, uma rodada
+# cron poderia sobrepor uma rodada workflow_dispatch e ambas commitariam
+# bot-state.json ao mesmo tempo (corrida) e abririam issues duplicadas.
+# cancel-in-progress: false — uma auditoria em andamento nunca é abortada no
+# meio; rodadas atrasadas apenas entram em fila.
+concurrency:
+  group: apkbot
+  cancel-in-progress: false
+
+jobs:
+  apkbot:
+    name: APKBot (anti-regressão autônoma)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # fetch-depth: 0 — a auditoria de commits do bot compara o estado do
+          # repositório entre execuções e precisa do histórico completo.
+          fetch-depth: 0
+
+      - name: Configurar identidade do bot
+        run: |
+          git config user.name "apkbot[bot]"
+          git config user.email "apkbot@users.noreply.github.com"
+
+      - name: Executar APKBot
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 bot/apkbot.py --check all
+
+      # Loop-safe: pushes feitos com GITHUB_TOKEN NÃO disparam novos workflows.
+      # O commit de bot-state.json ([skip ci]) portanto nunca re-triggera o CI
+      # nem o próprio APKBot — não há risco de loop infinito de execuções.
+      - name: Resumo no job
+        if: always()
+        run: echo "APKBot concluído (ver log acima e issues apkbot:*)"

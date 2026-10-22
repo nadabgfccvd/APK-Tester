@@ -118,5 +118,25 @@
     "name": "help wanted",
     "color": "008672",
     "description": "Ajuda da comunidade é bem-vinda"
+  },
+  {
+    "name": "apkbot",
+    "color": "6f42c1",
+    "description": "Automações do APKBot (bot anti-regressão)"
+  },
+  {
+    "name": "apkbot:regression",
+    "color": "b60205",
+    "description": "Regressão detectada pelo APKBot"
+  },
+  {
+    "name": "apkbot:drift",
+    "color": "d4c5f9",
+    "description": "Deriva (drift) detectada pelo APKBot"
+  },
+  {
+    "name": "apkbot:flaky",
+    "color": "fbca04",
+    "description": "Instabilidade (flakiness) detectada pelo APKBot"
   }
 ]

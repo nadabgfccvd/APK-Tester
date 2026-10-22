@@ -8,6 +8,7 @@
   <a href=".github/workflows/ci.yml"><img alt="CI" src="https://github.com/nadabgfccvd/APK-Tester/actions/workflows/ci.yml/badge.svg"></a>
   <a href=".github/workflows/size-gate.yml"><img alt="Size Gate" src="https://github.com/nadabgfccvd/APK-Tester/actions/workflows/size-gate.yml/badge.svg"></a>
   <a href=".github/workflows/engines-nightly.yml"><img alt="Engines Nightly" src="https://github.com/nadabgfccvd/APK-Tester/actions/workflows/engines-nightly.yml/badge.svg"></a>
+  <a href=".github/workflows/apkbot.yml"><img alt="APKBot" src="https://github.com/nadabgfccvd/APK-Tester/actions/workflows/apkbot.yml/badge.svg"></a>
   <a href="LICENSE-MIT"><img alt="License: MIT OR Apache-2.0" src="https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue"></a>
   <a href="GOVERNANCE.md"><img alt="SemVer 0.x to 1.0" src="https://img.shields.io/badge/semver-0.x%20%E2%86%92%201.0-orange"></a>
 </p>
@@ -155,6 +156,17 @@ Every phase ends compiling green. Detailed exit criteria in
 | A6 | Size engineering to the [850 MB, 1000 MB] gate + `size-report.csv` | planned |
 | A7 | Tier B nightly jobs + `compat-nightly` + docs site (mdBook) | planned |
 | A8 | v1.0 gate: full matrix green, deterministic build proven, v1.0.0 release | planned |
+
+## APKBot — anti-regression bot
+
+[APKBot](.github/workflows/apkbot.yml) is the repository's autonomous
+anti-regression bot: every 6 hours (or on demand) it runs 8 checks —
+determinism across runs, flakiness, staleness, engine-matrix consistency,
+RustyDroid registry drift, AOSP drift, size-gate breach forecast, and
+governance audit — with persistent memory in `bot/state/` and issues
+deduplicated by fingerprint under the `apkbot:*` labels. Scope, limits, and
+how to disable it: [GOVERNANCE.md](GOVERNANCE.md); operation:
+[bot/README.md](bot/README.md).
 
 ## Hard-truths
 

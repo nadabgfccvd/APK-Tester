@@ -10,6 +10,14 @@ de compatibilidade verde).
 
 ## [Unreleased]
 
+### Adicionado
+
+- APKBot: bot autônomo anti-regressão (8 verificações: determinismo entre
+  execuções, flakiness, staleness, consistência da matriz de engines, drift do
+  registro do RustyDroid, drift do AOSP, previsão de breach do gate de tamanho,
+  auditoria de governança), memória persistente em `bot/state/`, issues
+  deduplicadas por fingerprint.
+
 ### Planejado (fases A1–A8)
 
 - A1 — esqueleto do flagship "Behemoth" (probe harness, manifest completo com
