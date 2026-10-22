@@ -123,6 +123,8 @@ mkdir -p "$(dirname "$OUT_MD")"
 {
   echo '# Matriz de compatibilidade — APK Tester x RustyDroid'
   echo
+  # aspas simples INTENCIONAIS: backticks literais no markdown gerado
+  # shellcheck disable=SC2016
   echo 'Gerada por `scripts/compat-nightly.sh`; answer key: `contracts/engines/expected-engines.json`.'
   echo
   echo '| Engine | Diretório | Tier | Resultado | Detalhes |'
