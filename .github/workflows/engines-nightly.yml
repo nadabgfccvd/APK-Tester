@@ -6,8 +6,6 @@ on:
   schedule:
     - cron: "0 3 * * *"
   workflow_dispatch:
-  push: # TEMPORÁRIO (A0): valida o deploy do GH Pages; remover após a verificação.
-    branches: [main]
 
 permissions:
   contents: read
