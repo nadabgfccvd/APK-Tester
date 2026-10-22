@@ -92,7 +92,7 @@ permissões no APK binário com `aapt2`.
 | `app/src/main/java/.../providers/` | 2 providers: `BehemothProvider` (SQLite CRUD) e `GuardedProvider` (read/writePermission por permissão custom signature) |
 | `app/src/main/java/.../widgets/` | 2 app widgets (`BehemothAppWidget`, `SecondAppWidget`) |
 | `app/src/main/res/` | res "de mão" commitado (XML de appwidget, regras de backup/rede, locales) |
-| `app/src/classic/` + `app/src/modern/` | overlays de manifesto por flavor (minSdk 9 vs 26; `sharedUserId` e `extractNativeLibs=true` só no classic) |
+| `app/src/classic/` + `app/src/modern/` | overlays de manifesto por flavor (minSdk 9 vs 26; `sharedUserId` só no classic; `extractNativeLibs`/`useLegacyPackaging` fica no build a partir de A4) |
 | `app/build/generated/` + `app/src/main/assets/` | res e assets gerados em tempo de build pelos Exec tasks (`gen-strings` / `gen-icons` / `gen-assets`, seed 20261022) e pelo gerador de manifesto (assets `permissions/registry.json` + `permissions.tsv`) |
 
 ## Status
