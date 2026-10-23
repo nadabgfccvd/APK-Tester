@@ -375,7 +375,9 @@ jobs:
           wavs = [a for a in audio if a.endswith(".wav")]
           # gen-audio tambem escreve audio/index.json + audio/manifest.json (contrato)
           assert len(wavs) == 2, audio
-          assert len(textures) == 48, len(textures)  # 4 materiais x 4 mapas x 3 formatos
+          ktx2 = [t for t in textures if t.endswith(".ktx2")]
+          # gen-textures tambem escreve textures/index.json + manifest.json (contrato)
+          assert len(ktx2) == 48, len(ktx2)  # 4 materiais x 4 mapas x 3 formatos
           print(f"[A5] APK ok: {shaders} arquivos de shader, {len(meshes)} malhas,"
                 f" {len(audio)} audio, {len(textures)} texturas")
           PY
