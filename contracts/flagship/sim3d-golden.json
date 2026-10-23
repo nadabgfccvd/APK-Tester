@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "generator": "dev.apktester.behemoth.sim3d (modulo :sim3d do flagship Behemoth)",
+  "seed": 20261022,
+  "math": "Q16.16 ponto fixo somente-inteiro; trigonometria BAM24 via CORDIC (24 iteracoes); checksums FNV-1a 64 (dobrado little-endian byte a byte)",
+  "mesh_1m": {
+    "grid": 1024,
+    "vertices": 1048576,
+    "triangles": 2093058,
+    "positions_fnv1a64": "e96a5a92ea41dd56",
+    "uv_fnv1a64": "a21b29840bc214c5",
+    "height_min_q16": 5687,
+    "height_max_q16": 192558
+  },
+  "rasterizer": {
+    "width": 320,
+    "height": 240,
+    "frames": 4,
+    "triangles_per_frame": 1536,
+    "texture": "checker_noise_64x64_rgb565",
+    "triangles_submitted": 6144,
+    "triangles_near_rejected": 83,
+    "triangles_backface_culled": 4170,
+    "triangles_drawn": 1891,
+    "pixels_drawn": 132003,
+    "frame_fnv1a64": ["5742ec8fadf59f0f", "cfd172d433990428", "b1c30713b8f01364", "12bd03404ab378f7"],
+    "final_fnv1a64": "d7ebd231cb1be760"
+  },
+  "physics": {
+    "bodies": 10000,
+    "steps": 120,
+    "dt": "1/60",
+    "gravity_q16": -642770,
+    "restitution_ground_q16": 24576,
+    "restitution_body_q16": 13107,
+    "cell_q16": 16384,
+    "init_fnv1a64": "783106b2165b8772",
+    "step_fnv1a64": {
+      "1": "3d3c0b18e575e32b",
+      "60": "1923a21b96746640",
+      "120": "f1680204ee464478"
+    },
+    "asleep_final": 0,
+    "ground_contacts_final": 4223,
+    "max_height_q16": 57252
+  },
+  "particles": {
+    "count": 100000,
+    "steps": 120,
+    "emitter_q16": [0, 196608, 0],
+    "respawns": 111058,
+    "step_fnv1a64": {
+      "1": "93e2ff497d76b294",
+      "60": "ee25054c1a8c9587",
+      "120": "8fb529f482b10b02"
+    },
+    "bbox_q16": [-170992, 1024, -171328, 171152, 275600, 171267]
+  },
+  "marching_cubes": {
+    "grid": 48,
+    "samples": 49,
+    "spacing_q16": 9830,
+    "iso_q16": 6553,
+    "method": "marching cubes com decomposicao canonica em 6 tetraedros por cubo (resolve ambiguidades da tabela 256 por construcao)",
+    "triangles": 137292,
+    "vertices": 411876,
+    "positions_fnv1a64": "3c5b239ce1e37875",
+    "bbox_q16": [-235920, -235920, -235920, 235920, 235920, 235920]
+  },
+  "skeleton": {
+    "joints": 16,
+    "frames": 30,
+    "key_poses": 2,
+    "skin_vertices": 64,
+    "frame_fnv1a64": ["dafd8edabee6f33e", "50564db54821646f", "2e51ef99ce86e7f1"],
+    "skin_fnv1a64": "c75b2172aa0148fb",
+    "max_reach_q16": 31510
+  }
+}
