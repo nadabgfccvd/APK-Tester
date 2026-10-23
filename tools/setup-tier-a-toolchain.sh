@@ -212,8 +212,9 @@ case "$ENGINE" in
       sudo apt-get install -y -qq ant neko >/dev/null
     fi
     "$HAXE" --version
-    mkdir -p "$HOME/.haxelib"
-    "$HAXE_DIR/haxelib" setup "$HOME/.haxelib"
+    # o repositório de libs NÃO pode ser $HOME/.haxelib (reservado ao
+    # arquivo de config do haxelib)
+    "$HAXE_DIR/haxelib" setup "$CACHE/haxelib-repo"
     "$HAXE_DIR/haxelib" install hxjava --always >/dev/null
     ;;
 
