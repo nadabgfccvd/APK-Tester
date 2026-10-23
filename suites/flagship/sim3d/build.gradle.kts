@@ -24,8 +24,8 @@ tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
 }
 
-// Contrato golden: suites/flagship -> raiz do repositorio.
-val goldenContract = rootDir.parentFile
+// Contrato golden: suites/flagship/sim3d -> suites/flagship -> suites -> raiz.
+val goldenContract = rootDir.parentFile.parentFile
     .resolve("contracts/flagship/sim3d-golden.json")
 
 tasks.register<JavaExec>("goldenWrite") {
