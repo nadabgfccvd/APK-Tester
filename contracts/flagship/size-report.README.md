@@ -14,9 +14,13 @@ release `modern` (`:app:assembleModernRelease`).
      commitado — falha se qualquer categoria variar mais de **±2%**.
      Categorias com baseline `0` são SKIP (bootstrap do relatório A0);
      categoria que só existe de um lado → FAIL.
-- **Bootstrap A6**: o primeiro CSV medido entra no repo logo após a
-  primeira execução verde do Size Gate (o baseline anterior era o
-  relatório zerado do A0 — todos SKIP por design).
+- **Bootstrap A6**: este baseline foi MEDIDO no CI (run
+  `39990968533` do Size Gate, commit `306a05f`): total
+  **960.783.552 bytes = 916,27 MiB em 1.435 entradas**, gate [850, 1000]
+  MiB PASS. A primeira execução falhou apenas no drift contra o
+  placeholder não-zero do A0 (a regra de SKIP cobre baselines zerados;
+  o placeholder A0 tinha valores mínimos não-zero) — resolvido pelo
+  commit deste CSV medido.
 - **`sha256_of_apk`**: informativo (checksum do APK de origem da medição).
   É deliberadamente IGNORADO no drift: metadados de assinatura/zip podem
   variar entre ambientes; apenas `bytes` e `files` são contratuais.
