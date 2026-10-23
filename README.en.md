@@ -107,22 +107,22 @@ Details in [`suites/engines/README.md`](suites/engines/README.md).
 
 | Directory | Language / stack | Tier | Status |
 |---|---|---|---|
-| `engine-01-java` | Java (DEX, multi-dex, invoke-custom) | A | planned (A4) |
-| `engine-02-kotlin` | Kotlin | A | planned (A4) |
-| `engine-03-kmp` | Kotlin Multiplatform / Compose MP | A | planned (A4) |
+| `engine-01-java` | Java (DEX, multi-dex, invoke-custom) | A | **delivered (A4)** |
+| `engine-02-kotlin` | Kotlin | A | **delivered (A4)** |
+| `engine-03-kmp` | Kotlin Multiplatform / Compose MP | A | **delivered (A4)** |
 | `engine-04-scala` | Scala | B | planned (A7) |
 | `engine-05-clojure` | Clojure | C | planned (A3) |
-| `engine-06-groovy` | Groovy | A | planned (A4) |
-| `engine-07-c-ndk` | C (NDK) | A | planned (A4) |
-| `engine-08-cpp-ndk` | C++ (NDK + STL) | A | planned (A4) |
-| `engine-09-rust` | Rust (cargo-ndk, JNI crate) | A | planned (A4) |
-| `engine-10-go` | Go (gomobile bind) | A | planned (A4) |
+| `engine-06-groovy` | Groovy | A | **delivered (A4)** |
+| `engine-07-c-ndk` | C (NDK) | A | **delivered (A4)** |
+| `engine-08-cpp-ndk` | C++ (NDK + STL) | A | **delivered (A4)** |
+| `engine-09-rust` | Rust (cargo-ndk, JNI crate) | A | **delivered (A4)** |
+| `engine-10-go` | Go (gomobile bind) | A | **delivered (A4)** |
 | `engine-11-objc` | Objective-C | C | planned (A3) |
-| `engine-12-zig` | Zig (`zig cc` .so) | A | planned (A4) |
+| `engine-12-zig` | Zig (`zig cc` .so) | A | **delivered (A4)** |
 | `engine-13-flutter` | Flutter (Dart) | B | planned (A7) |
 | `engine-14-react-native` | React Native (Hermes) | B | planned (A7) |
 | `engine-15-cordova` | Cordova (assets/www) | B | planned (A7) |
-| `engine-16-tauri` | Tauri v2 | A | planned (A4) |
+| `engine-16-tauri` | Tauri v2 | A | **delivered (A4)** |
 | `engine-17-nativescript` | NativeScript | B | planned (A7) |
 | `engine-18-maui-xamarin` | .NET MAUI / Xamarin | C | planned (A3) |
 | `engine-19-unity-mono` | Unity (Mono) | C | planned (A3) |
@@ -130,14 +130,14 @@ Details in [`suites/engines/README.md`](suites/engines/README.md).
 | `engine-21-unreal` | Unreal | C | planned (A3) |
 | `engine-22-lua-defold` | Lua (Defold) | B | planned (A7) |
 | `engine-23-godot` | Godot | B | planned (A7) |
-| `engine-24-haxe` | Haxe | A | planned (A4) |
-| `engine-25-python-chaquopy` | Python (Chaquopy) | A | planned (A4) |
+| `engine-24-haxe` | Haxe | A | **delivered (A4)** |
+| `engine-25-python-chaquopy` | Python (Chaquopy) | A | **delivered (A4)** |
 | `engine-26-qt-qml` | Qt / QML | B | planned (A7) |
 | `engine-27-b4x-appinventor` | B4X / App Inventor | C | planned (A3) |
 | `engine-28-avalonia-dotnet` | Avalonia (.NET) | B | planned (A7) |
 | `engine-29-python-kivy-beeware` | Python (Kivy/BeeWare) | C | planned (A3) |
-| `engine-30-wasm-in-app` | WASM in-app (module + JS/JNI host) | A | planned (A4) |
-| `engine-31-hybrid` | Hybrid Kotlin+Rust+Hermes+WASM (TST-14) | A | planned (A4) |
+| `engine-30-wasm-in-app` | WASM in-app (module + JS/JNI host) | A | **delivered (A4)** |
+| `engine-31-hybrid` | Hybrid Kotlin+Rust+Hermes+WASM (TST-14) | A | **delivered (A4)** |
 | `engine-32-twa-pwa` | TWA / PWA | C | planned (A3) |
 
 ## Delivery phases (A0–A8)
@@ -151,7 +151,7 @@ Every phase ends compiling green. Detailed exit criteria in
 | A1 | Flagship skeleton (probe harness, manifest-complete with EVERY permission, PermissionsHub, ButtonGrid, IconGrid) | planned |
 | A2 | `sdk-ladder` (minSdk 9 first!) + `parser-torture` pack | planned |
 | A3 | Tier C engine fixtures + `expected-engines.json` | planned |
-| A4 | Tier A real builds (Java, Kotlin, C/C++, Rust, Go, Zig, WASM, …) | planned |
+| **A4** | Tier A real builds (Java, Kotlin, C/C++, Rust, Go, Zig, WASM, …) | **delivered (A4)** — 14 engines with REAL builds: orchestrator `tools/build-tier-a.py` + pinned toolchains (`tools/setup-tier-a-toolchain.sh`), packaging through the same fixture-pack path and `--verify-apk` contract check (CI `tier-a-engines`, 14-job matrix) |
 | A5 | 3D/shader pillar (`:sim3d` golden + shader-library + textures/meshes/audio) | planned |
 | A6 | Size engineering to the [850 MB, 1000 MB] gate + `size-report.csv` | planned |
 | A7 | Tier B nightly jobs + `compat-nightly` + docs site (mdBook) | planned |

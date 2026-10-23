@@ -10,6 +10,40 @@ de compatibilidade verde).
 
 ## [Unreleased]
 
+### Adicionado (A4 — Builds reais Tier A)
+
+- 14 engines Tier A com build REAL (payload executável — sem stubs, ADR
+  0002/0003): `engine-01-java` (multi-dex >64k refs + invoke-custom),
+  `engine-02-kotlin`, `engine-03-kmp` (expect/actual + runtime Compose-MP
+  1.6.11 no mesmo DEX), `engine-06-groovy` (runtime 3.0.21 dexado),
+  `engine-07-c-ndk`/`engine-08-cpp-ndk` (clang do NDK r27 +
+  libc++_shared.so), `engine-09-rust` (cargo-ndk, panic=unwind,
+  rust_begin_unwind no ELF), `engine-10-go` (gomobile bind pinado),
+  `engine-12-zig` (zig cc 0.13 freestanding), `engine-16-tauri` (cdylibs
+  reais da stack tauri 2.12 + wry 0.57), `engine-24-haxe` (target -java
+  via hxjava+ant), `engine-25-python-chaquopy` (Gradle 8.10.2 + AGP 8.7.3
+  + Chaquopy 16.1.0), `engine-30-wasm-in-app` (wat2wasm + host wasmer 7)
+  e `engine-31-hybrid` (TST-14: Kotlin+Rust+Hermes+WASM em UM APK);
+- `tools/build-tier-a.py`: orquestrador com planos JSON auditáveis,
+  pack pelo mesmo caminho do fixture-pack (aapt2 → javac → d8
+  `--min-api 26` → zip → zipalign → apksigner v1+v2), `--verify-apk`
+  (detector_artifacts: caminhos/globs/dex-strings/elf-strings + magic
+  ELF), `--sync-contracts` (14 contratos por diretório, zero drift) e
+  `--selftest`;
+- `tools/setup-tier-a-toolchain.sh`: instalação pinada das toolchains por
+  engine (Kotlin 2.0.20, Compose-MP 1.6.11, Groovy 3.0.21, Go 1.23.4 +
+  x/mobile pinado, Zig 0.13.0, Haxe 4.3.6, wabt 1.0.36, Gradle 8.10.2,
+  hermes-engine 0.11.0, cargo-ndk 3.5.0) com persistência em GITHUB_ENV;
+- `Cargo.lock` commitado para os crates nativos (tauri/wry workspace e
+  host wasmer) — grafo de dependências pinado;
+- `ci.yml`: job `tier-a-engines` (matriz de 14 jobs: selftest → sync de
+  contratos + `git diff --exit-code` → build real → `--verify-apk` →
+  determinismo do pack no zig → upload `tier-a-<engine>`); lint passou a
+  cobrir os `build.sh` dos engines;
+- `build.sh` + README + fontes commitadas em cada diretório Tier A
+  (`src/`, `native/`, `gobind/`, `gradle-proj/`, `module.wat`,
+  `assets-src/`).
+
 ### Adicionado (A3 — Engines Tier C)
 
 - 9 fixtures de detecção Tier C (payload NÃO executável, ADR 0003):

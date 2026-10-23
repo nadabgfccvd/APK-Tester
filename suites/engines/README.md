@@ -22,47 +22,73 @@ explicitamente **"fixture de detecção; payload não executável"** — alinhad
 lei do RustyDroid ("detecção não valida payload nem autoriza execução", ADR
 003).
 
+## Builds Tier A (fase A4 — entregue)
+
+Cada diretório Tier A tem **fontes commitadas** (`src/`, `native/`,
+`gobind/`, `gradle-proj/`, `module.wat`, …), um `build.sh` que delega ao
+orquestrador [`tools/build-tier-a.py`](../../tools/build-tier-a.py) e a
+toolchain real instalada por
+[`tools/setup-tier-a-toolchain.sh`](../../tools/setup-tier-a-toolchain.sh)
+(pinos: Kotlin 2.0.20, Compose-MP 1.6.11, Groovy 3.0.21, Go 1.23.4 +
+gomobile pinado, NDK r27, Zig 0.13.0, Haxe 4.3.6, wabt 1.0.36, Gradle
+8.10.2 + AGP 8.7.3 + Chaquopy 16.1.0, hermes-engine 0.11.0, crates
+tauri 2.12 / wry 0.57 / wasmer 7 com Cargo.lock commitado).
+
+O pack usa o MESMO caminho do fixture-pack (aapt2 → javac → d8
+`--min-api 26` → zip → zipalign → apksigner v1+v2) e o APK final é
+verificado com `build-tier-a.py --verify-apk` contra o contrato
+(`detector_artifacts`: caminhos exatos, globs, `dex-strings:*` e
+`elf-strings:*`, magic ELF). Os binários NÃO são commitados — o sha256 de
+cada build vai para o artefato de CI (`tier-a-<engine>`).
+
+Regra de honestidade: os payloads Tier A são EXECUTÁVEIS (compilados por
+javac/kotlinc/groovyc/clang/cargo-ndk/zig/haxe/hermesc/wat2wasm/gradle) —
+diferença fundamental vs. Tier C (ADR 0003).
+
 ## Diretórios da matriz
 
-| Diretório | Linguagem / stack | Tier | Fase |
-|---|---|---|---|
-| `engine-01-java` | Java (DEX, multi-dex, invoke-custom) | A | A4 |
-| `engine-02-kotlin` | Kotlin | A | A4 |
-| `engine-03-kmp` | Kotlin Multiplatform / Compose MP | A | A4 |
-| `engine-04-scala` | Scala | B | A7 |
-| `engine-05-clojure` | Clojure | C | A3 |
-| `engine-06-groovy` | Groovy | A | A4 |
-| `engine-07-c-ndk` | C (NDK) | A | A4 |
-| `engine-08-cpp-ndk` | C++ (NDK + STL) | A | A4 |
-| `engine-09-rust` | Rust (cargo-ndk, crate JNI) | A | A4 |
-| `engine-10-go` | Go (gomobile bind) | A | A4 |
-| `engine-11-objc` | Objective-C | C | A3 |
-| `engine-12-zig` | Zig (`zig cc` .so) | A | A4 |
-| `engine-13-flutter` | Flutter (libapp.so + flutter_assets) | B | A7 |
-| `engine-14-react-native` | React Native (bundle Hermes) | B | A7 |
-| `engine-15-cordova` | Cordova (assets/www) | B | A7 |
-| `engine-16-tauri` | Tauri v2 | A | A4 |
-| `engine-17-nativescript` | NativeScript | B | A7 |
-| `engine-18-maui-xamarin` | .NET MAUI / Xamarin (assemblies stub) | C | A3 |
-| `engine-19-unity-mono` | Unity Mono (Assembly-CSharp.dll stub) | C | A3 |
-| `engine-20-unity-il2cpp` | Unity IL2CPP (libil2cpp.so + global-metadata stubs) | C | A3 |
-| `engine-21-unreal` | Unreal (libUE4.so stub + pak) | C | A3 |
-| `engine-22-lua-defold` | Lua (Defold) | B | A7 |
-| `engine-23-godot` | Godot (export headless .pck + libgodot) | B | A7 |
-| `engine-24-haxe` | Haxe | A | A4 |
-| `engine-25-python-chaquopy` | Python (Chaquopy) | A | A4 |
-| `engine-26-qt-qml` | Qt / QML | B | A7 |
-| `engine-27-b4x-appinventor` | B4X / App Inventor | C | A3 |
-| `engine-28-avalonia-dotnet` | Avalonia (.NET) | B | A7 |
-| `engine-29-python-kivy-beeware` | Python (Kivy/BeeWare) | C | A3 |
-| `engine-30-wasm-in-app` | WASM in-app (módulo em assets + host JS/JNI) | A | A4 |
-| `engine-31-hybrid` | Híbrido Kotlin+Rust+Hermes+WASM em UM APK (TST-14) | A | A4 |
-| `engine-32-twa-pwa` | TWA / PWA (assetlinks + manifest markers) | C | A3 |
+| Diretório | Linguagem / stack | Tier | Fase | Status |
+|---|---|---|---|---|
+| `engine-01-java` | Java (DEX, multi-dex, invoke-custom) | A | A4 | **entregue** |
+| `engine-02-kotlin` | Kotlin | A | A4 | **entregue** |
+| `engine-03-kmp` | Kotlin Multiplatform / Compose MP | A | A4 | **entregue** |
+| `engine-04-scala` | Scala | B | A7 | pendente |
+| `engine-05-clojure` | Clojure | C | A3 | **entregue** |
+| `engine-06-groovy` | Groovy | A | A4 | **entregue** |
+| `engine-07-c-ndk` | C (NDK) | A | A4 | **entregue** |
+| `engine-08-cpp-ndk` | C++ (NDK + STL) | A | A4 | **entregue** |
+| `engine-09-rust` | Rust (cargo-ndk, crate JNI) | A | A4 | **entregue** |
+| `engine-10-go` | Go (gomobile bind) | A | A4 | **entregue** |
+| `engine-11-objc` | Objective-C | C | A3 | **entregue** |
+| `engine-12-zig` | Zig (`zig cc` .so) | A | A4 | **entregue** |
+| `engine-13-flutter` | Flutter (libapp.so + flutter_assets) | B | A7 | pendente |
+| `engine-14-react-native` | React Native (bundle Hermes) | B | A7 | pendente |
+| `engine-15-cordova` | Cordova (assets/www) | B | A7 | pendente |
+| `engine-16-tauri` | Tauri v2 | A | A4 | **entregue** |
+| `engine-17-nativescript` | NativeScript | B | A7 | pendente |
+| `engine-18-maui-xamarin` | .NET MAUI / Xamarin (assemblies stub) | C | A3 | **entregue** |
+| `engine-19-unity-mono` | Unity Mono (Assembly-CSharp.dll stub) | C | A3 | **entregue** |
+| `engine-20-unity-il2cpp` | Unity IL2CPP (libil2cpp.so + global-metadata stubs) | C | A3 | **entregue** |
+| `engine-21-unreal` | Unreal (libUE4.so stub + pak) | C | A3 | **entregue** |
+| `engine-22-lua-defold` | Lua (Defold) | B | A7 | pendente |
+| `engine-23-godot` | Godot (export headless .pck + libgodot) | B | A7 | pendente |
+| `engine-24-haxe` | Haxe | A | A4 | **entregue** |
+| `engine-25-python-chaquopy` | Python (Chaquopy) | A | A4 | **entregue** |
+| `engine-26-qt-qml` | Qt / QML | B | A7 | pendente |
+| `engine-27-b4x-appinventor` | B4X / App Inventor | C | A3 | **entregue** |
+| `engine-28-avalonia-dotnet` | Avalonia (.NET) | B | A7 | pendente |
+| `engine-29-python-kivy-beeware` | Python (Kivy/BeeWare) | C | A3 | **entregue** |
+| `engine-30-wasm-in-app` | WASM in-app (módulo em assets + host JS/JNI) | A | A4 | **entregue** |
+| `engine-31-hybrid` | Híbrido Kotlin+Rust+Hermes+WASM em UM APK (TST-14) | A | A4 | **entregue** |
+| `engine-32-twa-pwa` | TWA / PWA (assetlinks + manifest markers) | C | A3 | **entregue** |
 
 ## Status
 
-- **Tier C:** diretórios populados na fase **A3** (fixtures + contratos).
-- **Tier A (inclui `engine-31-hybrid`):** builds reais na fase **A4**.
+- **Tier C:** entregue na fase **A3** (9 fixtures + contratos por
+  diretório, zero drift).
+- **Tier A (inclui `engine-31-hybrid`):** ENTREGUE na fase **A4** — os 14
+  diretórios populados com fontes + `build.sh` + builds reais no CI
+  (`tier-a-engines`, matriz de 14 jobs) e verificação por contrato.
 - **Tier B:** builds nightly na fase **A7** (`engines-nightly.yml` +
   `scripts/compat-nightly.sh`).
 

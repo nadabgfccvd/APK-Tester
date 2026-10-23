@@ -112,22 +112,22 @@ executável"). Detalhes em [`suites/engines/README.md`](suites/engines/README.md
 
 | Diretório | Linguagem / stack | Tier | Status |
 |---|---|---|---|
-| `engine-01-java` | Java (DEX, multi-dex, invoke-custom) | A | planejado (A4) |
-| `engine-02-kotlin` | Kotlin | A | planejado (A4) |
-| `engine-03-kmp` | Kotlin Multiplatform / Compose MP | A | planejado (A4) |
+| `engine-01-java` | Java (DEX, multi-dex, invoke-custom) | A | **entregue (A4)** |
+| `engine-02-kotlin` | Kotlin | A | **entregue (A4)** |
+| `engine-03-kmp` | Kotlin Multiplatform / Compose MP | A | **entregue (A4)** |
 | `engine-04-scala` | Scala | B | planejado (A7) |
 | `engine-05-clojure` | Clojure | C | **entregue (A3)** |
-| `engine-06-groovy` | Groovy | A | planejado (A4) |
-| `engine-07-c-ndk` | C (NDK) | A | planejado (A4) |
-| `engine-08-cpp-ndk` | C++ (NDK + STL) | A | planejado (A4) |
-| `engine-09-rust` | Rust (cargo-ndk, crate JNI) | A | planejado (A4) |
-| `engine-10-go` | Go (gomobile bind) | A | planejado (A4) |
+| `engine-06-groovy` | Groovy | A | **entregue (A4)** |
+| `engine-07-c-ndk` | C (NDK) | A | **entregue (A4)** |
+| `engine-08-cpp-ndk` | C++ (NDK + STL) | A | **entregue (A4)** |
+| `engine-09-rust` | Rust (cargo-ndk, crate JNI) | A | **entregue (A4)** |
+| `engine-10-go` | Go (gomobile bind) | A | **entregue (A4)** |
 | `engine-11-objc` | Objective-C | C | **entregue (A3)** |
-| `engine-12-zig` | Zig (`zig cc` .so) | A | planejado (A4) |
+| `engine-12-zig` | Zig (`zig cc` .so) | A | **entregue (A4)** |
 | `engine-13-flutter` | Flutter (Dart) | B | planejado (A7) |
 | `engine-14-react-native` | React Native (Hermes) | B | planejado (A7) |
 | `engine-15-cordova` | Cordova (assets/www) | B | planejado (A7) |
-| `engine-16-tauri` | Tauri v2 | A | planejado (A4) |
+| `engine-16-tauri` | Tauri v2 | A | **entregue (A4)** |
 | `engine-17-nativescript` | NativeScript | B | planejado (A7) |
 | `engine-18-maui-xamarin` | .NET MAUI / Xamarin | C | **entregue (A3)** |
 | `engine-19-unity-mono` | Unity (Mono) | C | **entregue (A3)** |
@@ -135,14 +135,14 @@ executável"). Detalhes em [`suites/engines/README.md`](suites/engines/README.md
 | `engine-21-unreal` | Unreal | C | **entregue (A3)** |
 | `engine-22-lua-defold` | Lua (Defold) | B | planejado (A7) |
 | `engine-23-godot` | Godot | B | planejado (A7) |
-| `engine-24-haxe` | Haxe | A | planejado (A4) |
-| `engine-25-python-chaquopy` | Python (Chaquopy) | A | planejado (A4) |
+| `engine-24-haxe` | Haxe | A | **entregue (A4)** |
+| `engine-25-python-chaquopy` | Python (Chaquopy) | A | **entregue (A4)** |
 | `engine-26-qt-qml` | Qt / QML | B | planejado (A7) |
 | `engine-27-b4x-appinventor` | B4X / App Inventor | C | **entregue (A3)** |
 | `engine-28-avalonia-dotnet` | Avalonia (.NET) | B | planejado (A7) |
 | `engine-29-python-kivy-beeware` | Python (Kivy/BeeWare) | C | **entregue (A3)** |
-| `engine-30-wasm-in-app` | WASM in-app (módulo + host JS/JNI) | A | planejado (A4) |
-| `engine-31-hybrid` | Híbrido Kotlin+Rust+Hermes+WASM (TST-14) | A | planejado (A4) |
+| `engine-30-wasm-in-app` | WASM in-app (módulo + host JS/JNI) | A | **entregue (A4)** |
+| `engine-31-hybrid` | Híbrido Kotlin+Rust+Hermes+WASM (TST-14) | A | **entregue (A4)** |
 | `engine-32-twa-pwa` | TWA / PWA | C | **entregue (A3)** |
 
 ## Fases de entrega (A0–A8)
@@ -156,7 +156,7 @@ Cada fase termina compilando verde. Critérios de saída detalhados em
 | **A1** | Esqueleto do flagship (probe harness, manifest completo com TODAS as permissões, PermissionsHub, ButtonGrid, IconGrid) | **entregue (A1)** — módulo `:app` Gradle (classic minSdk 9 / modern minSdk 26), 1004 permissões com registry verbatim do AOSP master e build real no CI |
 | **A2** | `sdk-ladder` (minSdk 9 primeiro!) + pacote `parser-torture` | **entregue (A2)** — 12 flavors a partir de `rungs.properties` gerado (minSdk 9 primeiro, 0 permissões, CI `sdk-ladder`) + 10 fixtures de tortura empacotadas pela toolchain real (CI `parser-torture`) |
 | **A3** | Fixtures Tier C da matriz de engines + `expected-engines.json` | **entregue (A3)** — 9 fixtures de detecção (payload não executável, ADR 0003) empacotadas por `tools/fixture-pack.py` com payloads de `tools/gen-engine-fixtures.py`, contratos por diretório com zero drift e verificação `--verify-apk` no CI (`tier-c-engines`) |
-| A4 | Builds reais Tier A (Java, Kotlin, C/C++, Rust, Go, Zig, WASM, …) | planejado |
+| **A4** | Builds reais Tier A (Java, Kotlin, C/C++, Rust, Go, Zig, WASM, …) | **entregue (A4)** — 14 engines com build REAL: orquestrador `tools/build-tier-a.py` + toolchains pinadas (`tools/setup-tier-a-toolchain.sh`), pack pelo mesmo caminho do fixture-pack e verificação `--verify-apk` contra o contrato (CI `tier-a-engines`, matriz de 14 jobs) |
 | A5 | Pilar 3D/shaders (`:sim3d` golden + shader-library + texturas/meshes/áudio) | planejado |
 | A6 | Engenharia de tamanho até o gate [850 MB, 1000 MB] + `size-report.csv` | planejado |
 | A7 | Jobs nightly Tier B + `compat-nightly` + site de docs (mdBook) | planejado |
