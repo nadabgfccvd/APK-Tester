@@ -631,15 +631,29 @@ def selftest() -> int:
         out_b = os.path.join(tmp, "b")
         rep_a = payload_report(DEFAULT_SEED, {})
         for engine in ENGINE_IDS:
-            generate_payloads(engine, os.path.join(out_a, engine),
+            generate_payloads(engine,
+                              os.path.join(out_a, engine, "payload"),
                               DEFAULT_SEED)
-            generate_payloads(engine, os.path.join(out_b, engine),
+            generate_payloads(engine,
+                              os.path.join(out_b, engine, "payload"),
                               DEFAULT_SEED)
+            # classes marcador Java: mesma árvore que o CLI escreve em src/
+            for rel_src, content in java_sources(engine):
+                write_file(os.path.join(out_a, engine, rel_src),
+                           content.encode("utf-8"))
+        n_java = sum(len(java_sources(e)) for e in ENGINE_IDS)
+        assert n_java == 7, f"esperava 7 classes marcador, achei {n_java}"
+        assert java_sources("engine-05-clojure") == [
+            ("src/clojure/lang/RT.java", java_sources("engine-05-clojure")[0][1]),
+            ("src/clojure/lang/Var.java", java_sources("engine-05-clojure")[1][1]),
+            ("src/clojure/core/Core.java", java_sources("engine-05-clojure")[2][1]),
+        ], "ordem/caminhos das classes marcador mudaram"
         rep_b = payload_report(DEFAULT_SEED, {})
         assert rep_a == rep_b, "payload_report diverge entre execuções"
         for engine in ENGINE_IDS:
             for rel, meta in rep_a["engines"][engine]["files"].items():
-                with open(os.path.join(out_a, engine, rel), "rb") as fh:
+                with open(os.path.join(out_a, engine, "payload", rel),
+                          "rb") as fh:
                     data = fh.read()
                 assert hashlib.sha256(data).hexdigest() == meta["sha256"], \
                     f"{engine}/{rel}: sha256 diverge do report"
@@ -647,7 +661,8 @@ def selftest() -> int:
             TOOL))
         for engine in ENGINE_IDS:
             for rel, meta in rep_a["engines"][engine]["files"].items():
-                data = open(os.path.join(out_a, engine, rel), "rb").read()
+                data = open(os.path.join(out_a, engine, "payload", rel),
+                            "rb").read()
                 if rel.endswith(".so"):
                     assert data[:4] == b"\x7fELF", f"{rel}: sem magic ELF"
                 elif rel.endswith(".dll"):
@@ -672,7 +687,8 @@ def selftest() -> int:
                             for m in ENGINES[round_engine]
                             ["dex_string_markers"]) + b"]")
             for rel in payload_paths(ENGINES[round_engine]):
-                zf.write(os.path.join(out_a, round_engine, rel), rel)
+                zf.write(os.path.join(out_a, round_engine, "payload", rel),
+                         rel)
         assert verify_apk(fake_apk, round_engine, report=rep_a) == 0, \
             "verify-apk reprovou o APK sintético de round-trip"
         bad_apk = os.path.join(tmp, "bad.apk")
@@ -709,8 +725,9 @@ def parse_args(argv=None):
     ap = argparse.ArgumentParser(
         description="Payloads, contratos e verificação das fixtures Tier C.")
     ap.add_argument("--out", default=None,
-                    help="dir de saída dos payloads (com --engine: direto; "
-                         "sem: um subdiretório por engine)")
+                    help="raiz de saída: <out>/payload (stubs/assets) + "
+                         "<out>/src (classes marcador Java); sem --engine "
+                         "usa um subdiretório por engine")
     ap.add_argument("--engine", default=None, choices=ENGINE_IDS,
                     help="gera só um engine (padrão: todos)")
     ap.add_argument("--report", default=None,
@@ -748,10 +765,15 @@ def main(argv=None) -> int:
     files_total = 0
     for engine in engines:
         root = out if args.engine else os.path.join(out, engine)
-        written = generate_payloads(engine, root, args.seed)
+        paydir = os.path.join(root, "payload")
+        written = generate_payloads(engine, paydir, args.seed)
+        # classes marcador Java: compiladas pelo javac do fixture-pack (NUNCA
+        # entram no zip do payload); ancoram os dex-strings do contrato.
+        for rel_src, content in java_sources(engine):
+            write_file(os.path.join(root, rel_src), content.encode("utf-8"))
         files_total += len(written)
         for rel, sha in sorted(written.items()):
-            print(f"[{TOOL}] {engine}: {rel} (sha256 {sha[:12]}...)")
+            print(f"[{TOOL}] {engine}: payload/{rel} (sha256 {sha[:12]}...)")
     report = payload_report(args.seed, {})
     report["engines"] = {e: report["engines"][e] for e in engines}
     report_path = os.path.abspath(args.report) if args.report else \

@@ -437,7 +437,7 @@ def build_plan(args, cfg: dict, work: str, out_apk: str, tools: dict,
             "command": [sys.executable,
                         os.path.join(TOOLS_DIR, "gen-engine-fixtures.py"),
                         "--engine", mode, "--out",
-                        os.path.join(work, "engroot", "payload"), "--report",
+                        os.path.join(work, "engroot"), "--report",
                         os.path.join(work, "engine-payload-report.json"),
                         "--seed", str(args.seed)], "cwd": None})
     if mode == "multidex-8":
@@ -811,13 +811,13 @@ def collect_dex(work: str, outdir: str) -> None:
           f"em {outdir}", file=sys.stderr)
 
 
-def ensure_engine_root(seed: int, work: str) -> str:
-    """Gera engroot (payloads + classes marcador) com gen-engine-fixtures
+def ensure_engine_root(seed: int, work: str, engine: str) -> str:
+    """Gera engroot (payload/ + src/) do engine com gen-engine-fixtures
     (mesmos args do passo do plano); precisa existir no make_plan para o
     plano listar os .java marcador no javac."""
     out = os.path.join(work, "engroot")
     cmd = [sys.executable, os.path.join(TOOLS_DIR, "gen-engine-fixtures.py"),
-           "--out", os.path.join(out, "payload"), "--report",
+           "--engine", engine, "--out", out, "--report",
            os.path.join(work, "engine-payload-report.json"), "--seed",
            str(seed)]
     proc = subprocess.run(cmd, stdout=subprocess.PIPE,
@@ -956,7 +956,7 @@ def make_plan(args) -> dict:
     os.makedirs(work, exist_ok=True)
     java_files = generate_tree(cfg, args.fixture, args.seed, work)
     if cfg["engine"]:
-        ensure_engine_root(args.seed, work)
+        ensure_engine_root(args.seed, work, args.fixture)
         java_files += sorted(glob.glob(
             os.path.join(work, "engroot", "src", "**", "*.java"),
             recursive=True))
