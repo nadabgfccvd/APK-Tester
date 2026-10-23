@@ -167,7 +167,9 @@ jobs:
 
       - name: Copiar Tier C para os diretórios dos contratos
         run: |
-          for apk in tier-c-staging/*.apk; do
+          # o upload preserva a estrutura a partir de suites/engines/;
+          # localizamos os .apk recursivamente
+          find tier-c-staging -type f -name '*.apk' | while read -r apk; do
             base="$(basename "$apk" .apk)"
             mkdir -p "suites/engines/$base/dist"
             cp "$apk" "suites/engines/$base/dist/$base.apk"
