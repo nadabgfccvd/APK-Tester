@@ -236,7 +236,8 @@ def generate(out_dir: Path) -> dict:
 
 
 def selftest() -> int:
-    """Renderiza em tmp 2x, valida JSONs, ledger e a tabela MODES (11 modos)."""
+    """Renderiza em tmp 2x, valida JSONs, ledger e a tabela MODES (20 modos
+    desde a A3: 11 parser-torture + 9 engines tier C)."""
     try:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -303,8 +304,14 @@ def selftest() -> int:
                 assert hashlib.sha256(disk).hexdigest() == entry["sha256"], \
                     f"sha256 diverge em {entry['path']}"
 
-        assert len(fixture_pack.MODES) == 11, \
-            f"MODES deveria ter 11 modos, tem {len(fixture_pack.MODES)}"
+        # A3: fixture-pack ganhou os 9 modos engine-* (Tier C); o fragmento
+        # parser-torture continua amarrado aos 11 modos de TORTURE_ORDER.
+        assert len(fixture_pack.MODES) == 11 + 9, \
+            f"MODES deveria ter 20 modos (11 parser-torture + 9 engines " \
+            f"tier C), tem {len(fixture_pack.MODES)}"
+        assert "engine-05-clojure" in fixture_pack.MODES and \
+            fixture_pack.MODES["engine-05-clojure"]["engine"], \
+            "modos engine-* ausentes/sem flag engine no fixture-pack"
         audit = a["contracts/parser-torture/fixtures-audit.md"]
         for mode in TORTURE_ORDER:
             assert apk_name(mode) in audit and f"`{mode}`" in audit
