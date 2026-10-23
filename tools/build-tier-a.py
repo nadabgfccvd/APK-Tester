@@ -147,8 +147,9 @@ SPECS = {
     "engine-10-go": {
         "kind": "gomobile",
         "language": "Go",
-        "description": "gomobile bind (x/mobile pinado): libgojni.so + "
-                       "classes.jar do bridge (go.Seq) dexado.",
+        "description": "gomobile bind (x/mobile pinado): libgojni.so "
+                       "(jni/ do AAR -> lib/ do APK) + bridge dexado com "
+                       "marcador literal go.Seq.",
     },
     "engine-12-zig": {
         "kind": "zig",
@@ -386,7 +387,7 @@ SOURCE_GLOBS = {
     "ndk-c": ("native/*.c",),
     "ndk-cpp": ("native/*.cpp",),
     "rust": ("native/Cargo.toml", "native/src/*.rs"),
-    "gomobile": ("gobind/*.go", "gobind/go.mod"),
+    "gomobile": ("gobind/*.go", "gobind/go.mod", "src/**/*.java"),
     "zig": ("native/*.zig",),
     "rust-workspace": ("native/Cargo.toml", "native/*/Cargo.toml",
                        "native/*/src/*.rs"),
@@ -614,13 +615,17 @@ def plan_for_engine(engine: str, args, work: str, stage: str,
                             "--copy-sysroot-libcxx", ndk, stage],
                 "cwd": None})
     elif kind == "rust":
+        # --no-strip: o contrato pede elf-strings:rust_begin_unwind (o
+        # cargo-ndk stripa o .so por padrão, removendo o .symtab).
         steps.append({
             "id": "cargo-ndk",
-            "description": "cargo-ndk build --release (cdylib rust_native, "
-                           "panic=unwind, strip=false) para os 2 ABIs",
+            "description": "cargo-ndk build --release --no-strip (cdylib "
+                           "rust_native, panic=unwind; symtab preservada "
+                           "p/ o marcador ELF do contrato) para os 2 ABIs",
             "command": ["cargo", "ndk",
                         "-t", "arm64-v8a", "-t", "x86_64",
                         "--platform", str(MIN_SDK),
+                        "--no-strip",
                         "-o", os.path.join(stage, "lib"),
                         "build", "--release"],
             "cwd": os.path.join(SUITES_ROOT, engine, "native")})
@@ -859,6 +864,9 @@ def build_plan(args) -> dict:
                                                        "*.java"),
                                           recursive=True))
             javac_cmd += engine_sources(engine)
+        elif kind == "gomobile":
+            javac_cmd += [f for f in engine_sources(engine)
+                          if f.endswith(".java")]
         steps.append({
             "id": "javac-common",
             "description": "javac dos POJOs + R.java"
@@ -1066,12 +1074,17 @@ def helper_aar_stage(aar: str, outdir: str, stage: str) -> None:
     """Desembrulha o AAR: tudo em outdir; lib/** vai também para o STAGE."""
     with zipfile.ZipFile(aar) as zf:
         zf.extractall(outdir)
-    libdir = os.path.join(outdir, "lib")
-    if os.path.isdir(libdir):
+    for libname in ("jni", "lib"):
+        libdir = os.path.join(outdir, libname)
+        if not os.path.isdir(libdir):
+            continue
         for dirpath, _dirs, files in os.walk(libdir):
             for fn in files:
                 rel = os.path.relpath(os.path.join(dirpath, fn),
                                       outdir).replace(os.sep, "/")
+                if libname == "jni":
+                    # AAR: jni/<abi>/*.so -> lib/<abi>/*.so no APK
+                    rel = rel.replace("jni/", "lib/", 1)
                 dst = os.path.join(stage, rel)
                 os.makedirs(os.path.dirname(dst), exist_ok=True)
                 shutil.copyfile(os.path.join(dirpath, fn), dst)
