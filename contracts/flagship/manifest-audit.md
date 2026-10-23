@@ -42,8 +42,10 @@ Answer key detalhado: contracts/flagship/permissions-audit.md.
 | .PermissionsHubActivity | @string/permission_hub_title | true | 0 filter(s): — | A1 |
 | .ButtonGridActivity | @string/button_grid_title | true | 0 filter(s): — | A1 |
 | .IconGridActivity | @string/icon_grid_title | true | 0 filter(s): — | A1 |
+| .Sim3dActivity | Sim3D Headless (pilar 3D) | true | 0 filter(s): — | A1 |
+| .GlesProbeActivity | GLES 3.1 Probes (shader-library) | true | 0 filter(s): — | A1 |
 | .ProbeReportActivity | @string/probe_report_title | true | 6 filter(s): android.intent.action.VIEW; android.intent.action.VIEW; android.intent.action.VIEW; android.intent.action.VIEW; android.intent.action.VIEW; android.intent.action.VIEW | A1 |
-**atual: 5 — alvo: >= 30 (uma por dominio, incl. telas 3D/Shaders/GLES em A5/A6)**
+**atual: 7 — alvo: >= 30 (uma por dominio, incl. telas 3D/Shaders/GLES em A5/A6)**
 
 ### Activity-aliases (2)
 

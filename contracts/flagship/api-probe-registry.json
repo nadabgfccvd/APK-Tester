@@ -1,126 +1,142 @@
 {
-  "schema_version": 1,
-  "description": "Registry de probes de API do flagship Behemoth (dev.apktester.behemoth). Cada probe é executada pelo probe harness (tag de logcat MAXPROBE/<MODULE_ID> + maxprobe-report.json). expect = resultado obrigatório sob o RustyDroid: OK (rota CPU deve rodar de verdade) ou NOT_IMPLEMENTED (erro estruturado obrigatório — a suíte prova a lei de erro do runtime: erro estruturado, nunca crash; ADR 0003).",
-  "probes": [
-    {
-      "id": "CORE-LC-001",
-      "module_id": "CORE",
-      "domain": "lifecycle",
-      "api": "Activity lifecycle completo (onCreate..onDestroy, recreate, config change)",
-      "expect": "OK",
-      "notes": "Ciclo determinístico com checksum por passo; alimentado pelo probe harness."
-    },
-    {
-      "id": "CORE-PM-001",
-      "module_id": "CORE",
-      "domain": "pm",
-      "api": "PackageManager: getPackageInfo, queryIntentActivities, getInstalledPackages",
-      "expect": "OK",
-      "notes": "Manifest-as-truth (CORE-12): contagens devem bater com contracts/flagship/manifest-audit.md."
-    },
-    {
-      "id": "UI-WD-001",
-      "module_id": "UI",
-      "domain": "widget",
-      "api": "Zoo android.widget + ButtonGrid (btn_0001..btn_1200) + IconGrid (600)",
-      "expect": "OK",
-      "notes": "Ids estáveis com content-desc determinístico (stress AG-01/AG-02)."
-    },
-    {
-      "id": "UI-GX-001",
-      "module_id": "UI",
-      "domain": "graphics",
-      "api": "Canvas/Bitmap software rendering (rotas CPU, sem GLES)",
-      "expect": "OK",
-      "notes": "Rasterização CPU determinística; GLES fica no probe de shaders."
-    },
-    {
-      "id": "UI-TX-001",
-      "module_id": "UI",
-      "domain": "text",
-      "api": "TextView/TextPaint/StaticLayout com pseudolocale, RTL e fontScale",
-      "expect": "OK",
-      "notes": "Fontes OFL empacotadas; layout determinístico."
-    },
-    {
-      "id": "ST-OS-001",
-      "module_id": "ST",
-      "domain": "os",
-      "api": "Handler/Looper/MessageQueue (postDelayed determinístico)",
-      "expect": "OK",
-      "notes": "Fila de mensagens com relógio controlado pelo harness."
-    },
-    {
-      "id": "ST-DB-001",
-      "module_id": "ST",
-      "domain": "sqlite",
-      "api": "SQLiteDatabase CRUD (+ Room no flavor modern)",
-      "expect": "OK",
-      "notes": "Banco em memória/privado; sem rede em runtime."
-    },
-    {
-      "id": "CORE-PV-001",
-      "module_id": "CORE",
-      "domain": "provider",
-      "api": "ContentProvider CRUD próprio + FileProvider",
-      "expect": "OK",
-      "notes": "Provider com readPermission guardado (ver manifest-audit.md)."
-    },
-    {
-      "id": "NET-RP-001",
-      "module_id": "NET",
-      "domain": "net",
-      "api": "HttpURLConnection record/replay com fixtures locais",
-      "expect": "OK",
-      "notes": "Replay servido de fixture embutida; zero rede em runtime."
-    },
-    {
-      "id": "MEDIA-PL-001",
-      "module_id": "MEDIA",
-      "domain": "media",
-      "api": "MediaPlayer/AudioTrack playback do corpus WAV gerado",
-      "expect": "NOT_IMPLEMENTED",
-      "notes": "RustyDroid deve responder erro estruturado (sem crash) — prova da lei (ADR 0003)."
-    },
-    {
-      "id": "MEDIA-CM-001",
-      "module_id": "MEDIA",
-      "domain": "camera2",
-      "api": "Camera2: open/preview stub",
-      "expect": "NOT_IMPLEMENTED",
-      "notes": "Sem HAL de câmera no runtime headless Linux x86_64."
-    },
-    {
-      "id": "SYS-SN-001",
-      "module_id": "SYS",
-      "domain": "sensors",
-      "api": "SensorManager: TODOS os tipos declarados (register/unregister)",
-      "expect": "NOT_IMPLEMENTED",
-      "notes": "Sem sensores no host; erro estruturado por tipo, um registro por sensor."
-    },
-    {
-      "id": "SYS-LC-001",
-      "module_id": "SYS",
-      "domain": "location",
-      "api": "LocationManager: lastKnownLocation + requestLocationUpdates",
-      "expect": "NOT_IMPLEMENTED",
-      "notes": "Sem provedores de localização no runtime."
-    },
-    {
-      "id": "SYS-TP-001",
-      "module_id": "SYS",
-      "domain": "telephony",
-      "api": "TelephonyManager: probes básicos (state, network type)",
-      "expect": "NOT_IMPLEMENTED",
-      "notes": "Sem rádio/telefonia no runtime headless."
-    },
-    {
-      "id": "LANG-JN-001",
-      "module_id": "LANG",
-      "domain": "jni",
-      "api": "Matriz JNI: strings, arrays, direct ByteBuffer, exceptions, AttachCurrentThread (:native + :rust)",
-      "expect": "OK",
-      "notes": "Executa de verdade via ELF x86_64 (libs nativas do flagship)."
-    }
-  ]
+ "schema_version": 1,
+ "description": "Registry de probes de API do flagship Behemoth (dev.apktester.behemoth). Cada probe é executada pelo probe harness (tag de logcat MAXPROBE/<MODULE_ID> + maxprobe-report.json). expect = resultado obrigatório sob o RustyDroid: OK (rota CPU deve rodar de verdade) ou NOT_IMPLEMENTED (erro estruturado obrigatório — a suíte prova a lei de erro do runtime: erro estruturado, nunca crash; ADR 0003).",
+ "probes": [
+  {
+   "id": "CORE-LC-001",
+   "module_id": "CORE",
+   "domain": "lifecycle",
+   "api": "Activity lifecycle completo (onCreate..onDestroy, recreate, config change)",
+   "expect": "OK",
+   "notes": "Ciclo determinístico com checksum por passo; alimentado pelo probe harness."
+  },
+  {
+   "id": "CORE-PM-001",
+   "module_id": "CORE",
+   "domain": "pm",
+   "api": "PackageManager: getPackageInfo, queryIntentActivities, getInstalledPackages",
+   "expect": "OK",
+   "notes": "Manifest-as-truth (CORE-12): contagens devem bater com contracts/flagship/manifest-audit.md."
+  },
+  {
+   "id": "UI-WD-001",
+   "module_id": "UI",
+   "domain": "widget",
+   "api": "Zoo android.widget + ButtonGrid (btn_0001..btn_1200) + IconGrid (600)",
+   "expect": "OK",
+   "notes": "Ids estáveis com content-desc determinístico (stress AG-01/AG-02)."
+  },
+  {
+   "id": "UI-GX-001",
+   "module_id": "UI",
+   "domain": "graphics",
+   "api": "Canvas/Bitmap software rendering (rotas CPU, sem GLES)",
+   "expect": "OK",
+   "notes": "Rasterização CPU determinística; GLES fica no probe de shaders."
+  },
+  {
+   "id": "UI-TX-001",
+   "module_id": "UI",
+   "domain": "text",
+   "api": "TextView/TextPaint/StaticLayout com pseudolocale, RTL e fontScale",
+   "expect": "OK",
+   "notes": "Fontes OFL empacotadas; layout determinístico."
+  },
+  {
+   "id": "ST-OS-001",
+   "module_id": "ST",
+   "domain": "os",
+   "api": "Handler/Looper/MessageQueue (postDelayed determinístico)",
+   "expect": "OK",
+   "notes": "Fila de mensagens com relógio controlado pelo harness."
+  },
+  {
+   "id": "ST-DB-001",
+   "module_id": "ST",
+   "domain": "sqlite",
+   "api": "SQLiteDatabase CRUD (+ Room no flavor modern)",
+   "expect": "OK",
+   "notes": "Banco em memória/privado; sem rede em runtime."
+  },
+  {
+   "id": "CORE-PV-001",
+   "module_id": "CORE",
+   "domain": "provider",
+   "api": "ContentProvider CRUD próprio + FileProvider",
+   "expect": "OK",
+   "notes": "Provider com readPermission guardado (ver manifest-audit.md)."
+  },
+  {
+   "id": "NET-RP-001",
+   "module_id": "NET",
+   "domain": "net",
+   "api": "HttpURLConnection record/replay com fixtures locais",
+   "expect": "OK",
+   "notes": "Replay servido de fixture embutida; zero rede em runtime."
+  },
+  {
+   "id": "MEDIA-PL-001",
+   "module_id": "MEDIA",
+   "domain": "media",
+   "api": "MediaPlayer/AudioTrack playback do corpus WAV gerado",
+   "expect": "NOT_IMPLEMENTED",
+   "notes": "RustyDroid deve responder erro estruturado (sem crash) — prova da lei (ADR 0003)."
+  },
+  {
+   "id": "MEDIA-CM-001",
+   "module_id": "MEDIA",
+   "domain": "camera2",
+   "api": "Camera2: open/preview stub",
+   "expect": "NOT_IMPLEMENTED",
+   "notes": "Sem HAL de câmera no runtime headless Linux x86_64."
+  },
+  {
+   "id": "SYS-SN-001",
+   "module_id": "SYS",
+   "domain": "sensors",
+   "api": "SensorManager: TODOS os tipos declarados (register/unregister)",
+   "expect": "NOT_IMPLEMENTED",
+   "notes": "Sem sensores no host; erro estruturado por tipo, um registro por sensor."
+  },
+  {
+   "id": "SYS-LC-001",
+   "module_id": "SYS",
+   "domain": "location",
+   "api": "LocationManager: lastKnownLocation + requestLocationUpdates",
+   "expect": "NOT_IMPLEMENTED",
+   "notes": "Sem provedores de localização no runtime."
+  },
+  {
+   "id": "SYS-TP-001",
+   "module_id": "SYS",
+   "domain": "telephony",
+   "api": "TelephonyManager: probes básicos (state, network type)",
+   "expect": "NOT_IMPLEMENTED",
+   "notes": "Sem rádio/telefonia no runtime headless."
+  },
+  {
+   "id": "LANG-JN-001",
+   "module_id": "LANG",
+   "domain": "jni",
+   "api": "Matriz JNI: strings, arrays, direct ByteBuffer, exceptions, AttachCurrentThread (:native + :rust)",
+   "expect": "OK",
+   "notes": "Executa de verdade via ELF x86_64 (libs nativas do flagship)."
+  },
+  {
+   "id": "MEDIA-SM-001",
+   "module_id": "MEDIA",
+   "domain": "sim3d",
+   "api": "Sim3D headless: rasterizador+fisica 10k+particulas 100k+marching cubes+esqueleto (golden Q16)",
+   "expect": "OK",
+   "notes": "Executa de verdade (Q16.16 somente-inteiro); checksums byte a byte contra contracts/flagship/sim3d-golden.json (CI, zero drift)."
+  },
+  {
+   "id": "MEDIA-GX-001",
+   "module_id": "MEDIA",
+   "domain": "gles",
+   "api": "GLES 3.1: compilacao/link de todos os programas da shader-library com resultado estruturado",
+   "expect": "NOT_IMPLEMENTED",
+   "notes": "Lei do pilar 3D: sob RustyDroid (sem GLES) retorna erro estruturado por programa — nunca crash; em dispositivo real compila/linka os 239 programas."
+  }
+ ]
 }

@@ -46,6 +46,16 @@ public final class ProbeCatalog {
             "ST-OS-001", "ST", "os",
             "Handler/Looper/MessageQueue (postDelayed deterministico)");
 
+    /** Pilar 3D headless: motor :sim3d completo com golden checksums Q16. */
+    public static final ProbeSpec MEDIA_SM_001 = new ProbeSpec(
+            "MEDIA-SM-001", "MEDIA", "sim3d",
+            "Sim3D headless: rasterizador+fisica 10k+particulas 100k+marching cubes+esqueleto (golden Q16)");
+
+    /** Pilar 3D GPU: compilacao/link GLES 3.1 de toda a shader-library. */
+    public static final ProbeSpec MEDIA_GX_001 = new ProbeSpec(
+            "MEDIA-GX-001", "MEDIA", "gles",
+            "GLES 3.1: compilacao/link de todos os programas da shader-library com resultado estruturado");
+
     private ProbeCatalog() {
     }
 }

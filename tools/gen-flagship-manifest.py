@@ -122,6 +122,10 @@ ACTIVITIES = [
      "exported": True, "filters": []},
     {"class": ".IconGridActivity", "label": "@string/icon_grid_title",
      "exported": True, "filters": []},
+    {"class": ".Sim3dActivity", "label": "Sim3D Headless (pilar 3D)",
+     "exported": True, "filters": []},
+    {"class": ".GlesProbeActivity", "label": "GLES 3.1 Probes (shader-library)",
+     "exported": True, "filters": []},
     {"class": ".ProbeReportActivity", "label": "@string/probe_report_title",
      "exported": True,
      "filters": [

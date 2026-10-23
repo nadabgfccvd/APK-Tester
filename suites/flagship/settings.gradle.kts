@@ -22,3 +22,4 @@ dependencyResolutionManagement {
 rootProject.name = "Behemoth"
 
 include(":app")
+include(":sim3d")

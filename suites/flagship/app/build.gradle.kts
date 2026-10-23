@@ -13,6 +13,8 @@ plugins {
 val genStringsDir = layout.buildDirectory.dir("gen/strings")
 val genIconsDir = layout.buildDirectory.dir("gen/icons")
 val genAssetsDir = layout.buildDirectory.dir("gen/assets")
+// A5 — ativos do pilar 3D (shader-library, texturas, malhas, audio).
+val genSim3dDir = layout.buildDirectory.dir("gen/sim3d")
 
 android {
     namespace = "dev.apktester.behemoth"
@@ -70,6 +72,7 @@ android {
             )
             assets.srcDirs(
                 genAssetsDir.map { it.dir("assets") },
+                genSim3dDir,
                 "src/main/assets",
             )
         }
@@ -106,8 +109,53 @@ tasks.register<Exec>("genAssets") {
     )
 }
 
+// ===== A5 — ativos do pilar 3D (escala de amostra; 4K/longos sao A6) =====
+tasks.register<Exec>("genShaders") {
+    commandLine(
+        "python3",
+        repoRoot.resolve("tools/gen-shaders.py").absolutePath,
+        "--out", genSim3dDir.get().asFile.absolutePath,
+        "--seed", "20261022",
+    )
+}
+
+tasks.register<Exec>("genTextures") {
+    commandLine(
+        "python3",
+        repoRoot.resolve("tools/gen-textures.py").absolutePath,
+        "--out", genSim3dDir.get().asFile.absolutePath,
+        "--size", "256",
+        "--seed", "20261022",
+    )
+}
+
+tasks.register<Exec>("genMeshes") {
+    commandLine(
+        "python3",
+        repoRoot.resolve("tools/gen-meshes.py").absolutePath,
+        "--out", genSim3dDir.get().asFile.absolutePath,
+        "--seed", "20261022",
+    )
+}
+
+tasks.register<Exec>("genAudio") {
+    commandLine(
+        "python3",
+        repoRoot.resolve("tools/gen-audio.py").absolutePath,
+        "--out", genSim3dDir.get().asFile.absolutePath,
+        "--loops", "2",
+        "--loop-seconds", "15",
+        "--seed", "20261022",
+    )
+}
+
+// Dependencia do modulo do pilar 3D (biblioteca Java pura).
+dependencies {
+    implementation(project(":sim3d"))
+}
+
 // preBuild e criada pelo AGP depois do evaluate; matching.configureEach
 // conecta os geradores de forma lazy, sem depender do momento do registro.
 tasks.matching { it.name == "preBuild" }.configureEach {
-    dependsOn("genStrings", "genIcons", "genAssets")
+    dependsOn("genStrings", "genIcons", "genAssets", "genShaders", "genTextures", "genMeshes", "genAudio")
 }

@@ -1,15 +1,29 @@
 #!/usr/bin/env python3
 """Gerador da shader-library GLSL ES 3.1 do APK Tester ("Behemoth").
 
-Fase: A0/A5 — geradores core. Produz 200+ programas (par .vert + .frag) a
-partir de templates paramétricos com variação determinística por --seed
-(contagens de loop, constantes float): PBR cook-torrance, raymarching por
-sphere tracing, fluido (jacobi), SSAO, biblioteca de ruído (value + simplex),
-stress de 512 uniforms (u_stress[512] lido em loop) e long-loop fragment.
-O vertex padrão é o fullscreen triangle (gl_VertexID, sem atributos).
+Fase: A0/A5 — geradores core. Produz 239 programas a partir de templates
+paramétricos com variação determinística por --seed (contagens de loop,
+constantes float, local sizes):
+  - 215 programas gráficos (par .vert + .frag): PBR cook-torrance, raymarching
+    por sphere tracing, fluido (jacobi), SSAO, biblioteca de ruído (value +
+    simplex), stress de 512 uniforms (u_stress[512] lido em loop) e long-loop
+    fragment. O vertex padrão é o fullscreen triangle (gl_VertexID).
+  - 24 compute shaders GLSL ES 3.1 (arquivo único .comp, sem .vert) em 3
+    templates rotativos determinísticos: jacobi de pressão (buffers
+    readonly/writeonly), reduce por workgroup com memória compartilhada
+    (shared + memoryBarrierShared() + barrier()) e integração de partículas
+    (gravidade + drag, uniforms dt/seed).
+
+Cada programa (gráfico OU compute) ganha também um blob binário .spv
+"estilo SPIR-V": asset opaco SINTÉTICO com header válido de 20 bytes
+(magic 0x07230203, versão 1.0, generator 0, bound = 1000 + ordinal, schema 0)
+e payload derivado de keystream SHA-256 determinístico por programa —
+NÃO é um módulo SPIR-V real; a fonte GLSL é o contrato compilável
+(validação real acontece no CI via glslangValidator).
 
 Cada programa vira uma entrada em shader-library/index.json com
-{id, files, sha256, uniforms}. Apenas stdlib python3; nenhum binário.
+{id, files, sha256, uniforms, stage: graphics|compute, spirv: {file, bytes,
+magic, synthetic}}. Apenas stdlib python3; nenhum binário externo.
 
 Uso:
     python3 tools/gen-shaders.py --out /tmp/out [--seed 20261022]
@@ -21,6 +35,7 @@ import hashlib
 import json
 import random
 import re
+import struct
 import sys
 import tempfile
 from pathlib import Path
@@ -29,7 +44,8 @@ DEFAULT_SEED = 20261022
 GLSL_VERSION = "#version 310 es"
 UNIFORM_RE = re.compile(r"^\s*uniform\s+\w+\s+(\w+)\s*(\[\d+\])?\s*;", re.M)
 
-# (categoria, quantidade) — soma >= 200 programas.
+# (categoria, quantidade) — 8 categorias, soma = 239 programas (215 graphics
+# + 24 compute; compute usa .comp único, as demais usam par .vert/.frag).
 PLAN = [
     ("pbr", 40),
     ("raymarch", 40),
@@ -38,7 +54,21 @@ PLAN = [
     ("noise", 30),
     ("stress", 25),
     ("longloop", 26),
+    ("compute", 24),
 ]
+
+# Blobs .spv "estilo SPIR-V": header válido, conteúdo sintético opaco.
+SPIRV_MAGIC = 0x07230203
+SPIRV_VERSION = 0x00010300  # SPIR-V 1.0
+SPIRV_MAGIC_TEXT = "0x07230203"
+SPIRV_HEADER_WORDS = 5  # magic, version, generator, bound, schema = 20 bytes
+SPIRV_NOTE = (
+    "Os blobs .spv são assets opacos SINTÉTICOS gerados por esta tool: magic "
+    "SPIR-V válido (0x07230203, versão 1.0) e conteúdo sintético "
+    "determinístico (keystream sha256 por programa) — não são módulos SPIR-V "
+    "reais. A fonte GLSL é o contrato compilável; validação real acontece no "
+    "CI via glslangValidator."
+)
 
 VERT_TEMPLATE = """#version 310 es
 // apk-tester shader-library | @ID@ | fullscreen triangle vertex | seed @SEED@
@@ -310,9 +340,119 @@ void main() {
 }
 """
 
+COMPUTE_JACOBI = """#version 310 es
+// apk-tester shader-library | @ID@ | compute jacobi pressure | seed @SEED@
+precision highp float;
+layout(local_size_x = @LSX@, local_size_y = @LSY@) in;
+
+uniform float u_relax;
+uniform float u_bias;
+#define JACOBI_ITERS @JACOBI_ITERS@
+#define GRID @GRID@
+
+layout(std430, binding = 0) readonly buffer PressureIn { float p_in[]; };
+layout(std430, binding = 1) writeonly buffer PressureOut { float p_out[]; };
+
+float sampleP(ivec2 c) {
+    ivec2 cc = clamp(c, ivec2(0), ivec2(GRID - 1, GRID - 1));
+    return p_in[cc.y * GRID + cc.x];
+}
+
+void main() {
+    ivec2 gid = ivec2(gl_GlobalInvocationID.xy);
+    if (gid.x >= GRID || gid.y >= GRID) { return; }
+    float acc = 0.0;
+    for (int i = 0; i < JACOBI_ITERS; i++) {
+        int s = i + 1;
+        acc += sampleP(gid + ivec2(s, 0));
+        acc += sampleP(gid - ivec2(s, 0));
+        acc += sampleP(gid + ivec2(0, s));
+        acc += sampleP(gid - ivec2(0, s));
+    }
+    float neighbors = acc / float(JACOBI_ITERS);
+    float center = sampleP(gid);
+    float pressure = mix(center, (neighbors - u_bias) * 0.25, u_relax);
+    p_out[gid.y * GRID + gid.x] = pressure;
+}
+"""
+
+COMPUTE_REDUCE = """#version 310 es
+// apk-tester shader-library | @ID@ | compute workgroup reduce (shared) | seed @SEED@
+precision highp float;
+layout(local_size_x = @LSX@) in;
+
+uniform float u_gain;
+uniform float u_offset;
+#define LSX @LSX@
+
+shared float s_data[@LSX@];
+
+layout(std430, binding = 0) readonly buffer DataIn { float data_in[]; };
+layout(std430, binding = 1) writeonly buffer DataOut { float data_out[]; };
+
+void main() {
+    uint lid = gl_LocalInvocationID.x;
+    s_data[lid] = data_in[gl_GlobalInvocationID.x] * u_gain + u_offset;
+    barrier();
+    memoryBarrierShared();
+    for (uint stride = uint(LSX) / 2u; stride > 0u; stride >>= 1u) {
+        if (lid < stride) {
+            s_data[lid] += s_data[lid + stride];
+        }
+        barrier();
+        memoryBarrierShared();
+    }
+    if (lid == 0u) {
+        data_out[gl_WorkGroupID.x] = s_data[0];
+    }
+}
+"""
+
+COMPUTE_PARTICLES = """#version 310 es
+// apk-tester shader-library | @ID@ | compute particle integration | seed @SEED@
+precision highp float;
+layout(local_size_x = @LSX@) in;
+
+uniform float u_dt;
+uniform float u_seed;
+#define PARTICLES @PARTICLES@
+const float GRAVITY = @GRAVITY@;
+const float DRAG = @DRAG@;
+const float GAIN = @GAIN@;
+
+layout(std430, binding = 0) readonly buffer PosIn { vec4 pos_in[]; };
+layout(std430, binding = 1) writeonly buffer PosOut { vec4 pos_out[]; };
+
+void main() {
+    uint gid = gl_GlobalInvocationID.x;
+    if (gid >= uint(PARTICLES)) { return; }
+    vec4 state = pos_in[gid];
+    vec3 p = state.xyz;
+    float mass = max(state.w, 0.1);
+    vec3 swirl = vec3(sin(p.y * GAIN + u_seed),
+                      cos(p.x * GAIN - u_seed),
+                      sin((p.x + p.z) * GAIN));
+    vec3 vel = swirl + vec3(0.0, -GRAVITY * mass, 0.0);
+    vel *= exp(-DRAG * u_dt);
+    pos_out[gid] = vec4(p + vel * u_dt, state.w);
+}
+"""
+
 TEMPLATES = {"pbr": PBR_FRAG, "raymarch": RAYMARCH_FRAG, "fluid": FLUID_FRAG,
              "ssao": SSAO_FRAG, "noise": NOISE_FRAG, "stress": STRESS_FRAG,
              "longloop": LONGLOOP_FRAG}
+
+COMPUTE_TEMPLATES = {"jacobi": COMPUTE_JACOBI, "reduce": COMPUTE_REDUCE,
+                     "particles": COMPUTE_PARTICLES}
+
+
+def compute_template_key(n: int) -> str:
+    """Rotação determinística dos 3 templates compute (n é o índice 1-based)."""
+    if n % 3 == 1:
+        return "jacobi"
+    if n % 3 == 2:
+        return "reduce"
+    return "particles"
 
 # Parâmetros sorteados por categoria (variação determinística por --seed).
 PARAMS = {
@@ -345,6 +485,17 @@ PARAMS = {
         "FREQ": f"{rng.uniform(1.0, 16.0):.3f}",
         "PHASE": f"{rng.uniform(0.0, 6.283):.4f}",
     },
+    # Tokens dos 3 templates compute (render ignora os não usados por template).
+    "compute": lambda rng: {
+        "LSX": rng.choice((8, 16, 32)),
+        "LSY": rng.choice((2, 4)),  # LSX*LSY <= 128 (MAX_COMPUTE_WORK_GROUP_INVOCATIONS)
+        "JACOBI_ITERS": rng.randint(6, 18),
+        "GRID": rng.randrange(64, 257, 64),
+        "PARTICLES": rng.randrange(256, 1025, 64),
+        "GRAVITY": f"{rng.uniform(4.0, 12.0):.3f}",
+        "DRAG": f"{rng.uniform(0.1, 0.9):.3f}",
+        "GAIN": f"{rng.uniform(0.5, 2.0):.3f}",
+    },
 }
 
 
@@ -353,6 +504,30 @@ def render(template: str, mapping: dict) -> str:
     for key, value in mapping.items():
         template = template.replace(f"@{key}@", str(value))
     return template
+
+
+def spirv_keystream(program_id: str, word_count: int) -> bytes:
+    """Payload sintético: word_count uint32 LE de digests sha256(id:bloco)."""
+    words = []
+    block = 0
+    while len(words) < word_count:
+        digest = hashlib.sha256(
+            f"{program_id}:{block}".encode("utf-8")).digest()
+        words.extend(struct.unpack("<8I", digest))
+        block += 1
+    return struct.pack(f"<{word_count}I", *words[:word_count])
+
+
+def make_spirv(program_id: str, ordinal: int, word_count: int) -> bytes:
+    """Blob .spv estilo SPIR-V: header de 20 bytes + keystream sha256.
+
+    Header (little-endian): magic 0x07230203, versão 0x00010300 (SPIR-V 1.0),
+    generator 0, bound = 1000 + ordinal do programa, schema 0. O payload é
+    sintético (asset opaco) — a fonte GLSL é o contrato compilável.
+    """
+    header = struct.pack("<5I", SPIRV_MAGIC, SPIRV_VERSION, 0,
+                         1000 + ordinal, 0)
+    return header + spirv_keystream(program_id, word_count)
 
 
 def extract_uniforms(vert_src: str, frag_src: str) -> list:
@@ -381,7 +556,7 @@ def write_manifest(out_dir: Path, tool: str, seed: int, rel_paths: list) -> None
 
 
 def generate(out_dir: Path, seed: int) -> list:
-    """Gera shader-library/ (pares .vert/.frag + index.json + manifest)."""
+    """Gera shader-library/ (pares .vert/.frag, .comp, blobs .spv + índices)."""
     rng = random.Random(seed)
     artifacts = []
     programs = []
@@ -392,28 +567,60 @@ def generate(out_dir: Path, seed: int) -> list:
         path.write_text(text, encoding="utf-8")
         artifacts.append(rel)
 
+    def write_bytes(rel: str, data: bytes) -> None:
+        path = out_dir / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+        artifacts.append(rel)
+
     for category, count in PLAN:
         for n in range(1, count + 1):
             program_id = f"{category}_{n:04d}"
-            vert_src = render(VERT_TEMPLATE, {"ID": program_id, "SEED": seed})
-            frag_src = render(TEMPLATES[category],
-                              {"ID": program_id, "SEED": seed,
-                               **PARAMS[category](rng)})
-            vert_rel = f"shader-library/shaders/{category}/{program_id}.vert"
-            frag_rel = f"shader-library/shaders/{category}/{program_id}.frag"
-            write(vert_rel, vert_src)
-            write(frag_rel, frag_src)
-            combined = hashlib.sha256(
-                vert_src.encode("utf-8") + frag_src.encode("utf-8")).hexdigest()
+            ordinal = len(programs) + 1
+            params = PARAMS[category](rng)
+            if category == "compute":
+                # Compute: arquivo único .comp (sem .vert), template rotativo.
+                comp_src = render(COMPUTE_TEMPLATES[compute_template_key(n)],
+                                  {"ID": program_id, "SEED": seed, **params})
+                comp_rel = f"shader-library/shaders/{category}/{program_id}.comp"
+                write(comp_rel, comp_src)
+                source = comp_src.encode("utf-8")
+                files = [comp_rel]
+                stage = "compute"
+                uniforms = extract_uniforms(comp_src, "")
+            else:
+                vert_src = render(VERT_TEMPLATE,
+                                  {"ID": program_id, "SEED": seed})
+                frag_src = render(TEMPLATES[category],
+                                  {"ID": program_id, "SEED": seed, **params})
+                vert_rel = f"shader-library/shaders/{category}/{program_id}.vert"
+                frag_rel = f"shader-library/shaders/{category}/{program_id}.frag"
+                write(vert_rel, vert_src)
+                write(frag_rel, frag_src)
+                source = vert_src.encode("utf-8") + frag_src.encode("utf-8")
+                files = [vert_rel, frag_rel]
+                stage = "graphics"
+                uniforms = extract_uniforms(vert_src, frag_src)
+            word_count = rng.randrange(512, 4097, 64)
+            spv_rel = f"shader-library/shaders/{category}/{program_id}.spv"
+            spv_data = make_spirv(program_id, ordinal, word_count)
+            write_bytes(spv_rel, spv_data)
             programs.append({
                 "id": program_id,
-                "files": [vert_rel, frag_rel],
-                "sha256": combined,
-                "uniforms": extract_uniforms(vert_src, frag_src),
+                "files": files,
+                "sha256": hashlib.sha256(source).hexdigest(),
+                "uniforms": uniforms,
+                "stage": stage,
+                "spirv": {
+                    "file": spv_rel,
+                    "bytes": len(spv_data),
+                    "magic": SPIRV_MAGIC_TEXT,
+                    "synthetic": True,
+                },
             })
 
     index = {"tool": "gen-shaders.py", "seed": seed, "count": len(programs),
-             "programs": programs}
+             "spirv_note": SPIRV_NOTE, "programs": programs}
     write("shader-library/index.json",
           json.dumps(index, indent=2, ensure_ascii=False) + "\n")
     write_manifest(out_dir, "gen-shaders.py", seed, artifacts)
@@ -421,28 +628,79 @@ def generate(out_dir: Path, seed: int) -> list:
 
 
 def run_selftest() -> int:
-    """Gera em tempdir e valida versão GLSL, contagem e index.json."""
+    """Gera em tempdir e valida versão GLSL, contagens, compute e blobs .spv."""
     try:
         with tempfile.TemporaryDirectory(prefix="apktester-gen-shaders-") as tmp:
             root = Path(tmp)
             generate(root, DEFAULT_SEED)
             index = json.loads(
                 (root / "shader-library/index.json").read_text("utf-8"))
-            assert index["count"] >= 200, f"programas={index['count']}"
+            total = sum(c for _, c in PLAN)
+            assert index["count"] == total == 239, \
+                f"programas={index['count']} (esperado {total})"
             assert len(index["programs"]) == index["count"]
-            for program in index["programs"]:
-                vert = (root / program["files"][0]).read_text("utf-8")
-                frag = (root / program["files"][1]).read_text("utf-8")
-                assert vert.splitlines()[0] == GLSL_VERSION, program["id"]
-                assert frag.splitlines()[0] == GLSL_VERSION, program["id"]
+            assert "spirv_note" in index, "spirv_note ausente"
+            assert "glslangValidator" in index["spirv_note"], "nota honesta?"
+            for ordinal, program in enumerate(index["programs"], start=1):
+                stage = program["stage"]
+                assert stage in ("graphics", "compute"), program["id"]
+                if stage == "graphics":
+                    assert len(program["files"]) == 2, program["id"]
+                    vert = (root / program["files"][0]).read_text("utf-8")
+                    frag = (root / program["files"][1]).read_text("utf-8")
+                    assert vert.splitlines()[0] == GLSL_VERSION, program["id"]
+                    assert frag.splitlines()[0] == GLSL_VERSION, program["id"]
+                    source = vert.encode("utf-8") + frag.encode("utf-8")
+                else:
+                    assert len(program["files"]) == 1, program["id"]
+                    comp = (root / program["files"][0]).read_text("utf-8")
+                    assert comp.splitlines()[0] == GLSL_VERSION, program["id"]
+                    assert "buffer" in comp, f"buffer ausente: {program['id']}"
+                    assert "layout(local_size_x" in comp, program["id"]
+                    source = comp.encode("utf-8")
                 assert program["uniforms"], f"uniforms vazios: {program['id']}"
-                digest = hashlib.sha256(
-                    vert.encode("utf-8") + frag.encode("utf-8")).hexdigest()
+                digest = hashlib.sha256(source).hexdigest()
                 assert digest == program["sha256"], f"sha divergiu: {program['id']}"
+                meta = program["spirv"]
+                words = (meta["bytes"] - SPIRV_HEADER_WORDS * 4) // 4
+                assert meta["bytes"] == SPIRV_HEADER_WORDS * 4 + words * 4, \
+                    program["id"]
+                assert 512 <= words <= 4096 and words % 64 == 0, program["id"]
+                spv = (root / meta["file"]).read_bytes()
+                assert len(spv) == meta["bytes"], program["id"]
+                assert spv[:4] == b"\x03\x02\x23\x07", program["id"]
+                magic, version, generator, bound, schema = struct.unpack(
+                    "<5I", spv[:20])
+                assert magic == SPIRV_MAGIC, program["id"]
+                assert version == SPIRV_VERSION, program["id"]
+                assert generator == 0 and schema == 0, program["id"]
+                assert bound == 1000 + ordinal, program["id"]
+                assert meta["magic"] == SPIRV_MAGIC_TEXT, program["id"]
+                assert meta["synthetic"] is True, program["id"]
+                assert spv == make_spirv(program["id"], ordinal, words), \
+                    f"spv divergiu: {program['id']}"
             by_cat = {}
             for p in index["programs"]:
                 by_cat.setdefault(p["id"].rsplit("_", 1)[0], []).append(p)
             assert {k: len(v) for k, v in by_cat.items()} == dict(PLAN)
+            assert len(by_cat) == len(PLAN), "categorias faltando"
+            keys = [compute_template_key(int(p["id"].rsplit("_", 1)[1]))
+                    for p in by_cat["compute"]]
+            assert set(keys) == {"jacobi", "reduce", "particles"}, \
+                "rotação compute incompleta"
+            for p in by_cat["compute"]:
+                n = int(p["id"].rsplit("_", 1)[1])
+                comp = (root / p["files"][0]).read_text("utf-8")
+                if n % 3 == 1:  # compute_jacobi
+                    assert "PressureIn" in comp and "PressureOut" in comp
+                    assert re.search(r"JACOBI_ITERS", comp)
+                elif n % 3 == 2:  # compute_reduce
+                    assert "shared float s_data[" in comp, p["id"]
+                    assert "barrier()" in comp, f"barrier ausente: {p['id']}"
+                    assert "memoryBarrierShared()" in comp, p["id"]
+                else:  # compute_particles
+                    assert "GRAVITY" in comp and "DRAG" in comp, p["id"]
+                    assert "u_dt" in comp and "u_seed" in comp, p["id"]
             stress_frag = (root / by_cat["stress"][0]["files"][1]).read_text("utf-8")
             assert "u_stress[512]" in stress_frag, "u_stress[512] ausente"
             loop_frag = (root / by_cat["longloop"][0]["files"][1]).read_text("utf-8")
@@ -450,10 +708,12 @@ def run_selftest() -> int:
 
             second = root / "second-run"
             generate(second, DEFAULT_SEED)
-            rel = "shader-library/shaders/raymarch/raymarch_0007.frag"
-            a = hashlib.sha256((root / rel).read_bytes()).hexdigest()
-            b = hashlib.sha256((second / rel).read_bytes()).hexdigest()
-            assert a == b, "saída não determinística"
+            for rel in ("shader-library/shaders/raymarch/raymarch_0007.frag",
+                        "shader-library/shaders/compute/compute_0002.comp",
+                        "shader-library/shaders/pbr/pbr_0001.spv"):
+                a = hashlib.sha256((root / rel).read_bytes()).hexdigest()
+                b = hashlib.sha256((second / rel).read_bytes()).hexdigest()
+                assert a == b, f"saída não determinística: {rel}"
     except AssertionError as exc:
         print(f"gen-shaders selftest: FAIL ({exc})")
         return 1
@@ -463,7 +723,8 @@ def run_selftest() -> int:
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(
-        description="Gera a shader-library GLSL ES 3.1 (200+ programas).")
+        description="Gera a shader-library GLSL ES 3.1 "
+                    "(239 programas: graphics + compute + blobs .spv).")
     parser.add_argument("--out", help="diretório de saída (obrigatório)")
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     parser.add_argument("--selftest", action="store_true",

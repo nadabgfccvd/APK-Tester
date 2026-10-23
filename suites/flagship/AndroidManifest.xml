@@ -1116,6 +1116,10 @@
         </activity>
         <activity android:name=".IconGridActivity" android:label="@string/icon_grid_title" android:exported="true">
         </activity>
+        <activity android:name=".Sim3dActivity" android:label="Sim3D Headless (pilar 3D)" android:exported="true">
+        </activity>
+        <activity android:name=".GlesProbeActivity" android:label="GLES 3.1 Probes (shader-library)" android:exported="true">
+        </activity>
         <activity android:name=".ProbeReportActivity" android:label="@string/probe_report_title" android:exported="true">
                                                 <intent-filter>
                                                     <action android:name="android.intent.action.VIEW"/>
