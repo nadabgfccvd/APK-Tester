@@ -31,6 +31,16 @@ Modos (--fixture):
   exported-audit .. armadilhas de manifesto intencionais (exported/permissões
                     mal declaradas) — auditoria documenta cada erro
                     (gen-trap-manifest fornece manifesto + Java)
+  engine-XX-* ..... fixtures Tier C da matriz de engines (A3): 9 fixtures de
+                    detecção sintética e honesta (engine-05-clojure,
+                    engine-11-objc, engine-18-maui-xamarin,
+                    engine-19-unity-mono, engine-20-unity-il2cpp,
+                    engine-21-unreal, engine-27-b4x-appinventor,
+                    engine-29-python-kivy-beeware, engine-32-twa-pwa); os
+                    payloads (stubs ELF/PE/metadata/assets) vêm de
+                    gen-engine-fixtures e as classes marcador Java ancoram
+                    os dex-strings do contrato — payload NÃO executável
+                    (ADR 0003)
 
 Nome do APK final: APK_NAMES.get(modo, f"{modo}.apk") — zip64 vira
 zip64-65k.apk e obfuscated vira obfuscated-r8.apk.
@@ -88,12 +98,12 @@ FAKE_PERMS = (
 # do parser-torture (zip64/fake_perms/obfuscated/huge-arsc/multidex/traps).
 def _mode(min_sdk, target_sdk, v1=True, v2=True, v3=False, zipalign=True,
           zip64=False, entries=0, fake_perms=False, obfuscated=False,
-          external_manifest=False, desc=""):
+          external_manifest=False, engine=False, desc=""):
     return {"min_sdk": min_sdk, "target_sdk": target_sdk, "v1": v1, "v2": v2,
             "v3": v3, "zipalign": zipalign, "zip64": zip64,
             "zip64_entries": entries, "fake_perms": fake_perms,
             "obfuscated": obfuscated, "external_manifest": external_manifest,
-            "description": desc}
+            "engine": engine, "description": desc}
 
 
 MODES = {
@@ -123,6 +133,57 @@ MODES = {
     "exported-audit": _mode(26, 36, external_manifest=True,
         desc="armadilhas de manifesto intencionais (exported/permissoes mal "
              "declaradas) — auditoria documenta cada erro"),
+    # --- Tier C (A3): fixtures de detecção, payload NÃO executável (ADR 0003).
+    # Specced em tools/gen-engine-fixtures.py (fonte única); o selftest dele
+    # cruza estas chaves com o contrato canônico expected-engines.json.
+    "engine-05-clojure": _mode(26, 36, engine=True,
+        desc="Tier C: Clojure — strings clojure.lang no dex + marcador de "
+             "fixture (payload não executável)"),
+    "engine-11-objc": _mode(26, 36, engine=True,
+        desc="Tier C: Objective-C — stub ELF libobjc-fixture.so com "
+             "marcadores objc_* (payload não executável)"),
+    "engine-18-maui-xamarin": _mode(26, 36, engine=True,
+        desc="Tier C: MAUI/Xamarin — assemblies/*.dll stubs (BSJB) + "
+             "libmonodroid.so (payload não executável)"),
+    "engine-19-unity-mono": _mode(26, 36, engine=True,
+        desc="Tier C: Unity Mono — Assembly-CSharp.dll stub + libunity.so + "
+             "libmonobdwgc-2.0.so (payload não executável)"),
+    "engine-20-unity-il2cpp": _mode(26, 36, engine=True,
+        desc="Tier C: Unity IL2CPP — libil2cpp.so + global-metadata.dat "
+             "stubs (payload não executável)"),
+    "engine-21-unreal": _mode(26, 36, engine=True,
+        desc="Tier C: Unreal — libUE4.so stub + assets/main.pak placeholder "
+             "(payload não executável)"),
+    "engine-27-b4x-appinventor": _mode(26, 36, engine=True,
+        desc="Tier C: B4X/App Inventor — strings anywheresoftware.b4a / "
+             "com.google.appinventor no dex (payload não executável)"),
+    "engine-29-python-kivy-beeware": _mode(26, 36, engine=True,
+        desc="Tier C: Python/Kivy/BeeWare — stub libpython3.11.so + "
+             "assets/python/main.py (payload não executável)"),
+    "engine-32-twa-pwa": _mode(26, 36, engine=True,
+        desc="Tier C: TWA/PWA — meta-data asset_statements + strings "
+             "androidx.browser.trusted no dex (payload não executável)"),
+}
+
+# Extras de manifesto por modo engine (anexados dentro de <application>):
+# TWA declara os digital asset links como o template real do Trusted Web
+# Activity faz (meta-data -> resource string).
+ENGINE_MANIFEST_EXTRAS = {
+    "engine-32-twa-pwa": [
+        '        <meta-data android:name="asset_statements"',
+        '                  android:resource="@string/asset_statements"/>',
+    ],
+}
+
+# Extra de res por modo engine (strings_xml): TWA carrega a sentença de
+# asset links (JSON em uma linha, aspas duplas são válidas em XML texto).
+ENGINE_STRINGS_EXTRAS = {
+    "engine-32-twa-pwa": [
+        '    <string name="asset_statements">[{"relation": '
+        '["delegate_permission/common.handle_all_urls"], "target": '
+        '{"namespace": "web", "site": '
+        '"https://dev.apktester.example"}}]</string>',
+    ],
 }
 
 # Nome do APK final por modo (demais modos usam f"{modo}.apk").
@@ -174,6 +235,7 @@ def manifest_xml(cfg: dict, mode: str, pkg: str) -> str:
         '',
         '    <application android:label="@string/app_name" android:hasCode="true">',
     ]
+    lines += ENGINE_MANIFEST_EXTRAS.get(mode, [])
     for cls, kind in component_classes(cfg):
         ref = cls if cfg["obfuscated"] else f".{cls}"
         if kind == "activity":
@@ -227,14 +289,15 @@ public final class {cls} {{
 
 
 def strings_xml(mode: str) -> str:
-    return ("\n".join([
+    lines = [
         '<?xml version="1.0" encoding="utf-8"?>',
         '<resources>',
         f'    <string name="app_name">APK Tester fixture {mode}</string>',
         f'    <string name="seed">{DEFAULT_SEED}</string>',
-        '</resources>',
-        '',
-    ]))
+    ]
+    lines += ENGINE_STRINGS_EXTRAS.get(mode, [])
+    lines += ['</resources>', '']
+    return "\n".join(lines)
 
 
 def generate_tree(cfg: dict, mode: str, seed: int, work: str) -> list:
@@ -366,6 +429,17 @@ def build_plan(args, cfg: dict, work: str, out_apk: str, tools: dict,
                         os.path.join(TOOLS_DIR, "gen-trap-manifest.py"),
                         "--out", os.path.join(work, "traproot"), "--seed",
                         str(args.seed)], "cwd": None})
+    if cfg["engine"]:
+        steps.insert(0, {
+            "id": "gen-engine-payload",
+            "description": "payloads Tier C (stubs ELF/PE/metadata/assets + "
+                           "classes marcador java) do gen-engine-fixtures",
+            "command": [sys.executable,
+                        os.path.join(TOOLS_DIR, "gen-engine-fixtures.py"),
+                        "--engine", mode, "--out",
+                        os.path.join(work, "engroot", "payload"), "--report",
+                        os.path.join(work, "engine-payload-report.json"),
+                        "--seed", str(args.seed)], "cwd": None})
     if mode == "multidex-8":
         steps.insert(0, {
             "id": "gen-dex-corpus",
@@ -433,6 +507,13 @@ def build_plan(args, cfg: dict, work: str, out_apk: str, tools: dict,
              "command": ["zip", "-j", "-X", unsigned, "classes.dex"],
              "cwd": os.path.join(work, "dex")},
         ]
+    if cfg["engine"]:
+        steps.append({
+            "id": "zip-engine-payload",
+            "description": "anexa lib/, assets/ e assemblies/ dos payloads "
+                           "Tier C (sem entradas de diretório)",
+            "command": ["zip", "-q", "-r", "-X", "-D", unsigned, "."],
+            "cwd": os.path.join(work, "engroot", "payload")})
     if mode == "unaligned":
         steps.append({
             "id": "dealign",
@@ -548,6 +629,16 @@ def build_plan(args, cfg: dict, work: str, out_apk: str, tools: dict,
                      "(fonte única da tabela TRAPS); 9 componentes (7 "
                      "armadilhas + 2 baselines) documentados em "
                      "contracts/parser-torture/exported-audit-traps.md")
+    if cfg["engine"]:
+        notes += [
+            "fixture Tier C (A3): payloads por tools/gen-engine-fixtures.py "
+            "(stubs ELF/PE/metadata/assets e classes marcador Java); report "
+            "de sha256 em work/engine-payload-report.json e âncora canônica "
+            "em contracts/engines/tier-c-payload-report.json",
+            "payload NÃO executável (ADR 0003): detecção não valida payload "
+            "nem autoriza execução; verificação via gen-engine-fixtures.py "
+            "--verify-apk (artefatos do contrato expected-engines.json)",
+        ]
     return {
         "tool": TOOL, "fixture": mode, "seed": args.seed,
         "description": cfg["description"],
@@ -720,6 +811,24 @@ def collect_dex(work: str, outdir: str) -> None:
           f"em {outdir}", file=sys.stderr)
 
 
+def ensure_engine_root(seed: int, work: str) -> str:
+    """Gera engroot (payloads + classes marcador) com gen-engine-fixtures
+    (mesmos args do passo do plano); precisa existir no make_plan para o
+    plano listar os .java marcador no javac."""
+    out = os.path.join(work, "engroot")
+    cmd = [sys.executable, os.path.join(TOOLS_DIR, "gen-engine-fixtures.py"),
+           "--out", os.path.join(out, "payload"), "--report",
+           os.path.join(work, "engine-payload-report.json"), "--seed",
+           str(seed)]
+    proc = subprocess.run(cmd, stdout=subprocess.PIPE,
+                          stderr=subprocess.STDOUT)
+    if proc.returncode != 0:
+        print("[fixture-pack] ERRO: gen-engine-fixtures falhou:\n"
+              + proc.stdout.decode("utf-8", "replace"), file=sys.stderr)
+        raise SystemExit(1)
+    return out
+
+
 def ensure_trap_root(seed: int, work: str) -> str:
     """Gera traproot com gen-trap-manifest (mesmos args do passo do plano);
     precisa existir no make_plan para o plano listar os .java do traproot."""
@@ -771,7 +880,7 @@ def execute(plan: dict) -> int:
 
 
 def selftest() -> int:
-    """--dry-run dos 11 modos parseia (com apk_name); --fixture nope sai 2."""
+    """--dry-run dos 20 modos parseia (com apk_name); --fixture nope sai 2."""
     tmp = tempfile.mkdtemp(prefix="apktester-fixturepack-selftest-")
     try:
         for mode in MODES:
@@ -792,8 +901,9 @@ def selftest() -> int:
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         assert proc.returncode == 2, \
             f"--fixture nope deveria sair 2, veio {proc.returncode}"
-        print("[fixture-pack] selftest OK: 11 modos com plano parseável e "
-              "apk_name; --fixture nope => exit 2")
+        print("[fixture-pack] selftest OK: 20 modos (11 parser-torture + "
+              "9 engines tier C) com plano parseável e apk_name; "
+              "--fixture nope => exit 2")
         return 0
     except AssertionError as exc:
         print(f"[fixture-pack] selftest FALHOU: {exc}", file=sys.stderr)
@@ -819,7 +929,7 @@ def parse_args(argv=None):
         ap.add_argument(f"--{name}", default=None,
                         help=f"caminho do {name} (padrão: shutil.which)")
     ap.add_argument("--selftest", action="store_true",
-                     help="valida planos dos 11 modos em tmp e sai")
+                     help="valida planos dos 20 modos em tmp e sai")
     ap.add_argument("--zip64-augment", action="store_true",
                     help=argparse.SUPPRESS)
     ap.add_argument("--into", default=None, help=argparse.SUPPRESS)
@@ -845,6 +955,11 @@ def make_plan(args) -> dict:
     work = args.work or tempfile.mkdtemp(prefix="apktester-fixturepack-")
     os.makedirs(work, exist_ok=True)
     java_files = generate_tree(cfg, args.fixture, args.seed, work)
+    if cfg["engine"]:
+        ensure_engine_root(args.seed, work)
+        java_files += sorted(glob.glob(
+            os.path.join(work, "engroot", "src", "**", "*.java"),
+            recursive=True))
     if cfg["external_manifest"]:
         ensure_trap_root(args.seed, work)
         java_files += sorted(glob.glob(
