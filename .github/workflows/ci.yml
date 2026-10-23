@@ -1,8 +1,8 @@
-# CI do APK Tester — A0 entregue (esqueleto) e A1 entregue (flagship).
-# O job flagship-skeleton faz o build real do Behemoth (Gradle, flavors
-# classic/modern) com zero-drift do manifesto e cross-check de contagens.
-# A4 substitui o placeholder do job tier-a-skeleton por builds reais
-# (tools/build-variants.sh --engine <dir>); contracts-check e lint já são finais.
+# CI do APK Tester — A0 (esqueleto), A1 (flagship), A2 (escada+torture),
+# A3 (Tier C) e A4 (builds REAIS Tier A) entregues.
+# O job tier-a-engines compila os 14 engines "build: real" com toolchains
+# reais e pinadas (tools/setup-tier-a-toolchain.sh) via o orquestrador
+# tools/build-tier-a.py; contracts-check e lint já são finais.
 name: CI
 
 on:
@@ -21,12 +21,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: shellcheck (tools/*.sh, scripts/*.sh)
+      - name: shellcheck (tools/*.sh, scripts/*.sh, engines build.sh)
         run: |
           shopt -s nullglob
-          files=(tools/*.sh scripts/*.sh)
+          files=(tools/*.sh scripts/*.sh suites/engines/*/build.sh)
           if [ "${#files[@]}" -eq 0 ]; then
-            echo "[esqueleto A0] nenhum script .sh ainda; nada a checar"
+            echo "[lint] nenhum script .sh ainda; nada a checar"
             exit 0
           fi
           shellcheck "${files[@]}"
@@ -37,7 +37,7 @@ jobs:
           [ -d tools ] && args+=(tools)
           [ -d scripts ] && args+=(scripts)
           if [ "${#args[@]}" -eq 0 ]; then
-            echo "[esqueleto A0] nenhum diretorio tools/ ou scripts/ ainda"
+            echo "[lint] nenhum diretorio tools/ ou scripts/ ainda"
             exit 0
           fi
           python3 -m compileall "${args[@]}"
@@ -46,14 +46,18 @@ jobs:
         run: |
           shopt -s nullglob
           status=0
-          for f in tools/*.sh scripts/*.sh; do
+          for f in tools/*.sh scripts/*.sh suites/engines/*/build.sh; do
             bash -n "$f" || status=1
           done
           exit "$status"
 
-  # esqueleto A0: matriz Tier A (builds reais chegam em A4).
-  tier-a-skeleton:
-    name: "Tier A build (esqueleto A0): ${{ matrix.engine }}"
+  # Tier A real (A4): 14 engines com build REAL — toolchains pinadas por
+  # engine (javac/kotlinc/groovyc/NDK clang/cargo-ndk/gomobile/zig cc/
+  # haxe/wat2wasm/hermesc/gradle+chaquopy), pack pelo mesmo caminho do
+  # fixture-pack (aapt2+d8+zipalign+apksigner) e verificação contra o
+  # contrato canônico expected-engines.json (artefatos + dex/elf-strings).
+  tier-a-engines:
+    name: "Tier A (A4): ${{ matrix.engine }}"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -72,17 +76,86 @@ jobs:
           - engine-24-haxe
           - engine-25-python-chaquopy
           - engine-30-wasm-in-app
+          - engine-31-hybrid
+        include:
+          - { engine: engine-09-rust, need_rust: true }
+          - { engine: engine-16-tauri, need_rust: true }
+          - { engine: engine-30-wasm-in-app, need_rust: true }
+          - { engine: engine-31-hybrid, need_rust: true }
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Placeholder de build Tier A (real chega em A4)
+      - name: Setup JDK 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Componentes Android SDK (platform 36 + build-tools 35.0.0)
         run: |
-          # A4: build real via tools/build-variants.sh --engine ${{ matrix.engine }}
-          if [ -f "suites/engines/${{ matrix.engine }}/build.sh" ]; then
-            bash -n "suites/engines/${{ matrix.engine }}/build.sh"
+          yes | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" \
+            "platforms;android-36" "build-tools;35.0.0" > /dev/null
+          echo "ANDROID_HOME=${ANDROID_HOME}" >> "${GITHUB_ENV}"
+
+      - name: Rust stable (para engines com crate nativo)
+        if: matrix.need_rust
+        run: |
+          if ! command -v cargo >/dev/null 2>&1; then
+            curl -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
+            export PATH="${HOME}/.cargo/bin:${PATH}"
+            echo "${HOME}/.cargo/bin" >> "${GITHUB_PATH}"
           fi
-          echo "[esqueleto A0] engine ${{ matrix.engine }}: placeholder — build real chega em A4"
+          rustup update stable
+          rustc --version
+
+      - name: Selftest do orquestrador Tier A
+        run: python3 tools/build-tier-a.py --selftest
+
+      - name: Zero drift dos contratos Tier A (sync + diff)
+        run: |
+          python3 tools/build-tier-a.py --sync-contracts
+          git diff --exit-code -- \
+            "suites/engines/${{ matrix.engine }}/expected-engines.json"
+          echo "[A4] zero drift: contrato por diretório == contrato canônico"
+
+      - name: Toolchain real + build do engine
+        run: |
+          source tools/setup-tier-a-toolchain.sh "${{ matrix.engine }}"
+          BT="${ANDROID_HOME}/build-tools/35.0.0"
+          mkdir -p dist reports
+          python3 tools/build-tier-a.py \
+            --engine "${{ matrix.engine }}" \
+            --out dist --report "reports/${{ matrix.engine }}.json" \
+            --aapt2 "${BT}/aapt2" --d8 "${BT}/d8" \
+            --apksigner "${BT}/apksigner" --zipalign "${BT}/zipalign"
+
+      - name: Verificar o APK contra o contrato (artefatos do detector)
+        run: |
+          python3 tools/build-tier-a.py \
+            --verify-apk "dist/${{ matrix.engine }}.apk" \
+            --engine "${{ matrix.engine }}"
+
+      - name: Determinismo do pack (zig, duas passadas + apk-mode)
+        if: matrix.engine == 'engine-12-zig'
+        run: |
+          source tools/setup-tier-a-toolchain.sh "engine-12-zig"
+          BT="${ANDROID_HOME}/build-tools/35.0.0"
+          python3 tools/build-tier-a.py --engine engine-12-zig \
+            --out dist2 \
+            --aapt2 "${BT}/aapt2" --d8 "${BT}/d8" \
+            --apksigner "${BT}/apksigner" --zipalign "${BT}/zipalign"
+          bash tools/verify-deterministic.sh --mode apk \
+            --apk1 dist/engine-12-zig.apk --apk2 dist2/engine-12-zig.apk
+
+      - name: Upload do APK + report (artefato de CI)
+        uses: actions/upload-artifact@v4
+        with:
+          name: tier-a-${{ matrix.engine }}
+          path: |
+            dist/${{ matrix.engine }}.apk
+            reports/${{ matrix.engine }}.json
+          if-no-files-found: error
 
   # contracts-check: valida JSON dos answer keys e o schema de suites.json.
   contracts-check:
