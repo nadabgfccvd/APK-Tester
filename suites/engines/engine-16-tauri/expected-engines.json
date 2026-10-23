@@ -1,0 +1,22 @@
+{
+  "build": "real",
+  "built_by": "build-tier-a.py",
+  "detector_artifacts": [
+    "lib/x86_64/libtauri_android.so",
+    "lib/x86_64/libwry.so"
+  ],
+  "dir": "engine-16-tauri",
+  "id": "engine-16",
+  "language": "Rust/Tauri v2",
+  "notes": "Tauri v2 mobile: libs tauri/wry (Rust) + WebView system.",
+  "pins": {
+    "cargo-ndk": "3.5.0",
+    "rust": "1.83.0",
+    "tauri": "2.12",
+    "wry": "0.57"
+  },
+  "rustydroid_engines": [
+    "tauri"
+  ],
+  "tier": "A"
+}

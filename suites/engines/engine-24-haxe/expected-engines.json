@@ -1,0 +1,19 @@
+{
+  "build": "real",
+  "built_by": "build-tier-a.py",
+  "detector_artifacts": [
+    "classes.dex",
+    "dex-strings:haxe.root"
+  ],
+  "dir": "engine-24-haxe",
+  "id": "engine-24",
+  "language": "Haxe",
+  "notes": "Target hxjava: classes haxe.root no DEX.",
+  "pins": {
+    "haxe": "4.3.6"
+  },
+  "rustydroid_engines": [
+    "haxe"
+  ],
+  "tier": "A"
+}

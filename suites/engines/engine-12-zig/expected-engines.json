@@ -1,0 +1,19 @@
+{
+  "build": "real",
+  "built_by": "build-tier-a.py",
+  "detector_artifacts": [
+    "lib/x86_64/libzig_native.so",
+    "elf-strings:zig"
+  ],
+  "dir": "engine-12-zig",
+  "id": "engine-12",
+  "language": "Zig",
+  "notes": "zig cc produzindo .so; seção .comment/características zig.",
+  "pins": {
+    "zig": "0.13.0"
+  },
+  "rustydroid_engines": [
+    "zig"
+  ],
+  "tier": "A"
+}

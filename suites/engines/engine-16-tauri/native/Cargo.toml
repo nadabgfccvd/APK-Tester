@@ -1,0 +1,12 @@
+[workspace]
+resolver = "2"
+members = ["tauri-android", "wry-host"]
+
+[workspace.package]
+version = "1.0.0"
+edition = "2021"
+publish = false
+
+[profile.release]
+opt-level = 2
+strip = false

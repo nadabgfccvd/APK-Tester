@@ -1,0 +1,21 @@
+{
+  "build": "real",
+  "built_by": "build-tier-a.py",
+  "detector_artifacts": [
+    "classes.dex",
+    "META-INF/*.kotlin_module",
+    "dex-strings:kotlin.multiplatform"
+  ],
+  "dir": "engine-03-kmp",
+  "id": "engine-03",
+  "language": "Kotlin Multiplatform",
+  "notes": "Shared module KMP/Compose-MP no mesmo DEX do app Android.",
+  "pins": {
+    "compose-mp": "1.6.11",
+    "kotlin": "2.0.20"
+  },
+  "rustydroid_engines": [
+    "kmp"
+  ],
+  "tier": "A"
+}

@@ -1,0 +1,21 @@
+{
+  "build": "real",
+  "built_by": "build-tier-a.py",
+  "detector_artifacts": [
+    "lib/x86_64/libgojni.so",
+    "dex-strings:go.Seq"
+  ],
+  "dir": "engine-10-go",
+  "id": "engine-10",
+  "language": "Go",
+  "notes": "gomobile bind: libgojni.so + bridge golang.org/x/mobile no DEX.",
+  "pins": {
+    "go": "1.23.4",
+    "gomobile": "v0.0.0-20261011034528-197770444867",
+    "ndk": "r27 (ANDROID_NDK_LATEST_HOME do runner)"
+  },
+  "rustydroid_engines": [
+    "go"
+  ],
+  "tier": "A"
+}

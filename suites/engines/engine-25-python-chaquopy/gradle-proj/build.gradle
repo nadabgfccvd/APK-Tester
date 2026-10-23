@@ -1,0 +1,6 @@
+// engine-25 (Tier A, A4): build gradle REAL com Chaquopy.
+// Pinos: AGP 8.7.3 + Chaquopy 16.1.0 (Maven Central) + Gradle 8.10.2.
+plugins {
+    id 'com.android.application' version '8.7.3' apply false
+    id 'com.chaquo.python' version '16.1.0' apply false
+}

@@ -1,0 +1,18 @@
+{
+  "build": "real",
+  "built_by": "build-tier-a.py",
+  "detector_artifacts": [
+    "classes.dex",
+    "classes2.dex",
+    "dex-strings:invoke-custom"
+  ],
+  "dir": "engine-01-java",
+  "id": "engine-01",
+  "language": "Java",
+  "notes": "Multi-dex com invoke-custom; build real no CI (A4).",
+  "pins": {},
+  "rustydroid_engines": [
+    "java"
+  ],
+  "tier": "A"
+}

@@ -1,0 +1,21 @@
+{
+  "build": "real",
+  "built_by": "build-tier-a.py",
+  "detector_artifacts": [
+    "lib/arm64-v8a/librust_native.so",
+    "lib/x86_64/librust_native.so",
+    "elf-strings:rust_begin_unwind"
+  ],
+  "dir": "engine-09-rust",
+  "id": "engine-09",
+  "language": "Rust",
+  "notes": "cargo-ndk jni crate; marcador ELF do runtime Rust.",
+  "pins": {
+    "cargo-ndk": "3.5.0",
+    "rust": "1.83.0"
+  },
+  "rustydroid_engines": [
+    "rust"
+  ],
+  "tier": "A"
+}

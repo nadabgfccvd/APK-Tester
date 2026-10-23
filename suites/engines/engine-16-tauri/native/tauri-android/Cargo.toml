@@ -1,0 +1,15 @@
+[package]
+name = "tauri-android"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+description = "engine-16 (Tier A, A4): cdylib real da stack Tauri v2 (crate tauri) para o APK Tester"
+
+[lib]
+name = "tauri_android"
+crate-type = ["cdylib"]
+
+[dependencies]
+# Stack Tauri v2 real, sem features de desktop (wry incluído: é o runtime
+# oficial do tauri v2 mobile).
+tauri = { version = "2.12", default-features = false, features = ["wry"] }

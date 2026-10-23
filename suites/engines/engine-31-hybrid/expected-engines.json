@@ -1,0 +1,25 @@
+{
+  "build": "real",
+  "built_by": "build-tier-a.py",
+  "detector_artifacts": [
+    "classes.dex",
+    "lib/x86_64/librust_hybrid.so",
+    "assets/index.android.bundle",
+    "assets/module.wasm"
+  ],
+  "dir": "engine-31-hybrid",
+  "id": "engine-31",
+  "language": "Kotlin+Rust+Hermes+WASM",
+  "notes": "TST-14: os quatro marcadores (Kotlin DEX, ELF Rust, bundle Hermes, módulo WASM) num ÚNICO APK — teste de cobertura unificada.",
+  "pins": {
+    "cargo-ndk": "3.5.0",
+    "hermes-engine": "0.11.0",
+    "kotlin": "2.0.20",
+    "rust": "1.83.0",
+    "wabt": "1.0.36"
+  },
+  "rustydroid_engines": [
+    "tst-14-hybrid"
+  ],
+  "tier": "A"
+}

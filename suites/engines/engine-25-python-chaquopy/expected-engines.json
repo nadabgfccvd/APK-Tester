@@ -1,0 +1,22 @@
+{
+  "build": "real",
+  "built_by": "build-tier-a.py",
+  "detector_artifacts": [
+    "classes.dex",
+    "lib/x86_64/libpython3*.so",
+    "assets/chaquopy/"
+  ],
+  "dir": "engine-25-python-chaquopy",
+  "id": "engine-25",
+  "language": "Python/Chaquopy",
+  "notes": "Chaquopy: libpython3.x.so + assets/chaquopy (bootstrap e stdlib zip).",
+  "pins": {
+    "agp": "8.7.3",
+    "chaquopy": "16.1.0",
+    "gradle": "8.10.2"
+  },
+  "rustydroid_engines": [
+    "python-chaquopy"
+  ],
+  "tier": "A"
+}

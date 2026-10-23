@@ -1,0 +1,16 @@
+[package]
+name = "rust_native"
+version = "1.0.0"
+edition = "2021"
+publish = false
+description = "engine-09 (Tier A, A4): cdylib JNI real do APK Tester, sem dependências externas"
+
+[lib]
+name = "rust_native"
+crate-type = ["cdylib"]
+
+[profile.release]
+opt-level = 2
+panic = "unwind"   # mantém rust_begin_unwind / machinery de pânico no ELF
+strip = false      # mantém .symtab (marcador elf-strings do contrato)
+debug = false

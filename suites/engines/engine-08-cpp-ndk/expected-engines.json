@@ -1,0 +1,20 @@
+{
+  "build": "real",
+  "built_by": "build-tier-a.py",
+  "detector_artifacts": [
+    "lib/arm64-v8a/libnative-cpp.so",
+    "lib/x86_64/libnative-cpp.so",
+    "lib/x86_64/libc++_shared.so"
+  ],
+  "dir": "engine-08-cpp-ndk",
+  "id": "engine-08",
+  "language": "C++ (NDK)",
+  "notes": "ELF C++ com libc++_shared.so (marcador de STL).",
+  "pins": {
+    "ndk": "r27 (ANDROID_NDK_LATEST_HOME do runner)"
+  },
+  "rustydroid_engines": [
+    "cpp"
+  ],
+  "tier": "A"
+}

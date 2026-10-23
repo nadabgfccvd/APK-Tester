@@ -1,0 +1,16 @@
+[package]
+name = "rust_hybrid"
+version = "1.0.0"
+edition = "2021"
+publish = false
+description = "engine-31 (TST-14, Tier A, A4): cdylib Rust real do APK híbrido, sem dependências externas"
+
+[lib]
+name = "rust_hybrid"
+crate-type = ["cdylib"]
+
+[profile.release]
+opt-level = 2
+panic = "unwind"
+strip = false
+debug = false

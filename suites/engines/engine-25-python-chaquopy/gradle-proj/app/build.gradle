@@ -1,0 +1,27 @@
+// app do engine-25: APK gradle real com runtime Python (Chaquopy).
+// abiFilters x86_64 mantém o build rápido e cumpre o contrato
+// (lib/x86_64/libpython3*.so + assets/chaquopy/).
+plugins {
+    id 'com.android.application'
+    id 'com.chaquo.python'
+}
+
+android {
+    namespace 'dev.apktester.engine.chaquopy'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId 'dev.apktester.engine.chaquopy'
+        minSdk 26
+        targetSdk 36
+        versionCode 900036
+        versionName '1.0.0'
+        ndk { abiFilters 'x86_64' }
+    }
+
+    chaquopy {
+        defaultConfig {
+            buildPython 'python3'
+        }
+    }
+}
