@@ -493,3 +493,96 @@ jobs:
           name: parser-torture-fixtures
           path: dist/*.apk
           if-no-files-found: error
+
+  # A3: fixtures Tier C da matriz de engines — 9 fixtures de detecção
+  # sintética e honesta (payload NÃO executável, ADR 0003), empacotadas pela
+  # toolchain real e verificadas contra o contrato canônico
+  # (contracts/engines/expected-engines.json + tier-c-payload-report.json).
+  tier-c-engines:
+    name: "Tier C (A3): 9 fixtures de detecção + contratos"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Componentes Android SDK (platform 36 + build-tools 35.0.0)
+        run: |
+          yes | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" \
+            "platforms;android-36" "build-tools;35.0.0" > /dev/null
+          echo "ANDROID_HOME=${ANDROID_HOME}" >> "${GITHUB_ENV}"
+
+      - name: Selftests (empacotador 20 modos + gerador Tier C)
+        run: |
+          python3 tools/fixture-pack.py --selftest
+          python3 tools/gen-engine-fixtures.py --selftest
+
+      - name: Zero drift dos contratos Tier C (sync + diff)
+        run: |
+          python3 tools/gen-engine-fixtures.py --sync-contracts
+          git diff --exit-code -- \
+            suites/engines/engine-05-clojure/expected-engines.json \
+            suites/engines/engine-11-objc/expected-engines.json \
+            suites/engines/engine-18-maui-xamarin/expected-engines.json \
+            suites/engines/engine-19-unity-mono/expected-engines.json \
+            suites/engines/engine-20-unity-il2cpp/expected-engines.json \
+            suites/engines/engine-21-unreal/expected-engines.json \
+            suites/engines/engine-27-b4x-appinventor/expected-engines.json \
+            suites/engines/engine-29-python-kivy-beeware/expected-engines.json \
+            suites/engines/engine-32-twa-pwa/expected-engines.json
+          echo "[A3] zero drift: contratos por diretório == contrato canônico"
+
+      - name: Empacotar as 9 fixtures Tier C (toolchain real do SDK)
+        run: |
+          BT="${ANDROID_HOME}/build-tools/35.0.0"
+          mkdir -p dist
+          for e in engine-05-clojure engine-11-objc engine-18-maui-xamarin \
+                   engine-19-unity-mono engine-20-unity-il2cpp \
+                   engine-21-unreal engine-27-b4x-appinventor \
+                   engine-29-python-kivy-beeware engine-32-twa-pwa; do
+            python3 tools/fixture-pack.py --fixture "$e" --out dist \
+              --aapt2 "${BT}/aapt2" --d8 "${BT}/d8" \
+              --apksigner "${BT}/apksigner" --zipalign "${BT}/zipalign"
+          done
+          ls -l dist/
+
+      - name: Verificar cada APK contra o contrato (artefatos + sha256)
+        run: |
+          for e in engine-05-clojure engine-11-objc engine-18-maui-xamarin \
+                   engine-19-unity-mono engine-20-unity-il2cpp \
+                   engine-21-unreal engine-27-b4x-appinventor \
+                   engine-29-python-kivy-beeware engine-32-twa-pwa; do
+            python3 tools/gen-engine-fixtures.py \
+              --verify-apk "dist/${e}.apk" --engine "$e"
+          done
+
+      - name: Copiar APKs para os diretórios dos contratos (suite smoke)
+        run: |
+          for e in engine-05-clojure engine-11-objc engine-18-maui-xamarin \
+                   engine-19-unity-mono engine-20-unity-il2cpp \
+                   engine-21-unreal engine-27-b4x-appinventor \
+                   engine-29-python-kivy-beeware engine-32-twa-pwa; do
+            cp "dist/${e}.apk" "suites/engines/${e}/"
+          done
+
+      - name: Determinismo do empacotador (duas passadas + apk-mode)
+        run: |
+          BT="${ANDROID_HOME}/build-tools/35.0.0"
+          python3 tools/fixture-pack.py --fixture engine-18-maui-xamarin \
+            --out dist2 --aapt2 "${BT}/aapt2" --d8 "${BT}/d8" \
+            --apksigner "${BT}/apksigner" --zipalign "${BT}/zipalign"
+          bash tools/verify-deterministic.sh --mode apk \
+            --apk1 dist/engine-18-maui-xamarin.apk \
+            --apk2 dist2/engine-18-maui-xamarin.apk
+
+      - name: Upload dos APKs Tier C (artefato de CI)
+        uses: actions/upload-artifact@v4
+        with:
+          name: tier-c-apks
+          path: dist/*.apk
+          if-no-files-found: error

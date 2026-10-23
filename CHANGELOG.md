@@ -10,6 +10,38 @@ de compatibilidade verde).
 
 ## [Unreleased]
 
+### Adicionado (A3 — Engines Tier C)
+
+- 9 fixtures de detecção Tier C (payload NÃO executável, ADR 0003):
+  `engine-05-clojure`, `engine-11-objc`, `engine-18-maui-xamarin`,
+  `engine-19-unity-mono`, `engine-20-unity-il2cpp`, `engine-21-unreal`,
+  `engine-27-b4x-appinventor`, `engine-29-python-kivy-beeware`,
+  `engine-32-twa-pwa`;
+- Ferramenta `tools/gen-engine-fixtures.py` (fonte única das specs Tier C):
+  stubs ELF64 (`.rodata` com marcadores, tabela de seções válida), PE+BSJB
+  (assemblies Mono/Unity), `global-metadata.dat` (magic 0xFAB11BAF), `.pak`
+  (magic 0x5A6F12E1), `assets/fixture-marker.txt` e entrypoint Python — tudo
+  determinístico (seed 20261022) com filler derivado de sha256;
+- Classes marcador Java por engine (pacotes `clojure.lang`,
+  `anywheresoftware.b4a`, `com.google.appinventor.components.runtime`,
+  `androidx.browser.trusted`) ancorando os `dex-strings:*` do contrato;
+- `tools/fixture-pack.py`: 9 modos `engine-*` (pipeline aapt2+javac+d8+
+  zip+zipalign+apksigner com passos `gen-engine-payload` e
+  `zip-engine-payload`); TWA recebe `meta-data asset_statements` +
+  `@string/asset_statements`;
+- Contratos: `expected-engines.json` por diretório (gerados por
+  `--sync-contracts`, zero drift contra o contrato canônico) +
+  `contracts/engines/tier-c-payload-report.json` (sha256 canônico dos
+  payloads, âncora da verificação);
+- Verificação `--verify-apk`: cruza os artefatos do contrato (caminhos com
+  glob, `dex-strings:*`, conteúdo do marcador de honestidade) contra o APK
+  empacotado e os sha256 do report;
+- CI: job `tier-c-engines` (selftests, zero drift, empacotamento das 9,
+  verificação por contrato, determinismo de duas passadas, artefato
+  `tier-c-apks`);
+- READMEs por engine com a declaração de honestidade e tabelas de
+  artefatos/payloads.
+
 ### Adicionado
 
 - Flagship esqueleto: registry canônico de permissões

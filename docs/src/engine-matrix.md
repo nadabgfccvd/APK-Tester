@@ -18,43 +18,49 @@ os artefatos são stubs honestos com o layout/marcadores corretos.
 | engine-02-kotlin | Kotlin | A | build real no CI | `classes.dex` + `META-INF/*.kotlin_module` + strings `kotlin.jvm.internal` | planejado A4 |
 | engine-03-kmp | Kotlin Multiplatform | A | build real no CI | `classes.dex` + `META-INF/*.kotlin_module` (shared/compose) | planejado A4 |
 | engine-04-scala | Scala | B | nightly (toolchain pesada) | `classes.dex` + strings `scala.runtime` | planejado A7 |
-| engine-05-clojure | Clojure | C | fixture sintético honesto | `classes.dex` stub + strings `clojure.lang` + marcador de fixture | planejado A3 |
+| engine-05-clojure | Clojure | C | fixture sintético honesto | `classes.dex` stub + strings `clojure.lang` + marcador de fixture | **entregue A3** |
 | engine-06-groovy | Groovy | A | build real no CI | `classes.dex` + strings `org.codehaus.groovy` | planejado A4 |
 | engine-07-c-ndk | C (NDK) | A | build real no CI | `lib/*/libnative-c.so` (ELF com JNI `Java_*`) | planejado A4 |
 | engine-08-cpp-ndk | C++ (NDK) | A | build real no CI | `lib/*/libnative-cpp.so` + `libc++_shared.so` | planejado A4 |
 | engine-09-rust | Rust | A | build real no CI (cargo-ndk) | `lib/*/librust_*.so` + marcador ELF (`rust_begin_unwind`) | planejado A4 |
 | engine-10-go | Go | A | build real no CI (gomobile) | `lib/*/libgojni.so` + strings `go.Seq` | planejado A4 |
-| engine-11-objc | Objective-C | C | fixture sintético honesto | `lib/*/libobjc-fixture.so` stub + marcador de fixture | planejado A3 |
+| engine-11-objc | Objective-C | C | fixture sintético honesto | `lib/*/libobjc-fixture.so` stub + marcador de fixture | **entregue A3** |
 | engine-12-zig | Zig | A | build real no CI (zig cc) | `lib/*/libzig-*.so` (seção `.comment` zig) | planejado A4 |
 | engine-13-flutter | Dart/Flutter | B | nightly (toolchain pesada) | `libflutter.so` + `libapp.so` + `assets/flutter_assets/` | planejado A7 |
 | engine-14-react-native | JS/React Native | B | nightly (toolchain pesada) | `libhermes.so` + `assets/index.android.bundle` (bytecode Hermes) | planejado A7 |
 | engine-15-cordova | JS/Cordova | B | nightly (toolchain pesada) | `assets/www/index.html` + `cordova.js` + `cordova_plugins.js` | planejado A7 |
 | engine-16-tauri | Rust/Tauri v2 | A | build real no CI | `lib/*/libtauri*.so` + marcadores wry | planejado A4 |
 | engine-17-nativescript | JS/NativeScript | B | nightly (toolchain pesada) | `lib/*/libnativescript.so` + `assets/app/` | planejado A7 |
-| engine-18-maui-xamarin | C#/MAUI/Xamarin | C | fixture sintético honesto | `assemblies/*.dll` stubs + `libmonodroid.so` | planejado A3 |
-| engine-19-unity-mono | C#/Unity Mono | C | fixture sintético honesto | `Assembly-CSharp.dll` stub + `libunity.so` + `libmonobdwgc-2.0.so` | planejado A3 |
-| engine-20-unity-il2cpp | C#/Unity IL2CPP | C | fixture sintético honesto | `libil2cpp.so` + `assets/bin/Data/Managed/Metadata/global-metadata.dat` stubs | planejado A3 |
-| engine-21-unreal | C++/Unreal | C | fixture sintético honesto | `libUE4.so` stub + `assets/*.pak` | planejado A3 |
+| engine-18-maui-xamarin | C#/MAUI/Xamarin | C | fixture sintético honesto | `assemblies/*.dll` stubs + `libmonodroid.so` | **entregue A3** |
+| engine-19-unity-mono | C#/Unity Mono | C | fixture sintético honesto | `Assembly-CSharp.dll` stub + `libunity.so` + `libmonobdwgc-2.0.so` | **entregue A3** |
+| engine-20-unity-il2cpp | C#/Unity IL2CPP | C | fixture sintético honesto | `libil2cpp.so` + `assets/bin/Data/Managed/Metadata/global-metadata.dat` stubs | **entregue A3** |
+| engine-21-unreal | C++/Unreal | C | fixture sintético honesto | `libUE4.so` stub + `assets/*.pak` | **entregue A3** |
 | engine-22-lua-defold | Lua/Defold | B | nightly (toolchain pesada) | `libdmengine.so` + `game.arcd`/`game.arci` | planejado A7 |
 | engine-23-godot | GDScript/Godot | B | nightly (toolchain pesada) | `libgodot_android.so` + `assets/*.pck` | planejado A7 |
 | engine-24-haxe | Haxe | A | build real no CI | `classes.dex` + strings `haxe.root` | planejado A4 |
 | engine-25-python-chaquopy | Python/Chaquopy | A | build real no CI | `classes.dex` + `lib/*/libpython3*.so` + `assets/chaquopy/` | planejado A4 |
 | engine-26-qt-qml | QML/Qt | B | nightly (toolchain pesada) | `lib/*/libQt6Core*.so` + `assets/qml/` | planejado A7 |
-| engine-27-b4x-appinventor | B4X/App Inventor | C | fixture sintético honesto | `classes.dex` stub + strings `anywheresoftware.b4a` | planejado A3 |
+| engine-27-b4x-appinventor | B4X/App Inventor | C | fixture sintético honesto | `classes.dex` stub + strings `anywheresoftware.b4a` | **entregue A3** |
 | engine-28-avalonia-dotnet | C#/Avalonia | B | nightly (toolchain pesada) | `assemblies/Avalonia.*.dll` + `libmonodroid.so` + `libskiasharp.so` | planejado A7 |
-| engine-29-python-kivy-beeware | Python/Kivy/BeeWare | C | fixture sintético honesto | `lib/*/libpython3*.so` stub + `assets/python/main.py` | planejado A3 |
+| engine-29-python-kivy-beeware | Python/Kivy/BeeWare | C | fixture sintético honesto | `lib/*/libpython3*.so` stub + `assets/python/main.py` | **entregue A3** |
 | engine-30-wasm-in-app | Rust/WASM (host embutido) | A | build real no CI | `assets/module.wasm` + host `libwasmer*.so` + bridge JNI | planejado A4 |
 | engine-31-hybrid | Kotlin+Rust+Hermes+WASM | A | build real no CI (TST-14) | os quatro marcadores no MESMO APK: `classes.dex` + `librust_*.so` + `index.android.bundle` + `module.wasm` | planejado A4 |
-| engine-32-twa-pwa | TWA/PWA | C | fixture sintético honesto | strings `asset_statements` + `androidx.browser.trusted` + activity vazia + marcador | planejado A3 |
+| engine-32-twa-pwa | TWA/PWA | C | fixture sintético honesto | strings `asset_statements` + `androidx.browser.trusted` + activity vazia + marcador | **entregue A3** |
 
 Notas:
 
 - O **engine-31-hybrid** (TST-14) é o teste de cobertura unificada: Kotlin,
   Rust, Hermes e WASM num único APK. Se o detector casa os quatro marcadores,
   ele casa os sinais básicos das famílias nativas/JS/bytecode/WASM.
-- Fixtures Tier C são geradas por `tools/fixture-pack.py` com layout e
-  marcadores ELF/DEX corretos, e o README de cada diretório declara
-  explicitamente: *"detection fixture, payload not executable"*.
+- Fixtures Tier C são geradas por `tools/fixture-pack.py` (payloads por
+  `tools/gen-engine-fixtures.py` — stubs ELF64/PE+BSJB/metadata/pak e classes
+  marcador Java) com layout e marcadores ELF/DEX corretos, e o README de cada
+  diretório declara explicitamente: *"detection fixture, payload not
+  executable"*.
+- Entregue na fase A3: 9 APKs empacotados no CI (`tier-c-engines`) e
+  verificados contra o contrato (`--verify-apk` cruza os artefatos de
+  `expected-engines.json` e os sha256 de
+  `contracts/engines/tier-c-payload-report.json`).
 - O resultado da detecção é verificado a cada nightly por
   `scripts/compat-nightly.sh` contra `contracts/engines/expected-engines.json`;
   drift abre issue com label `fixture_gap`.
