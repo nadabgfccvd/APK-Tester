@@ -2098,7 +2098,7 @@
     "governance": {
       "bot_since_sha": "b212b248a04bbd36f949df34df411c12571c9180",
       "labels_count": 35,
-      "last_audited_sha": "c96c6248ea4748bd262ae993389bff3a5eae0e52",
+      "last_audited_sha": "7885cdb6ba08a347cd097f60c4caeba86ceffaa2",
       "milestones_ok": true
     },
     "permission_drift": {
@@ -3242,6 +3242,22 @@
           },
           "date": "2026-10-23T04:05:18Z",
           "total_bytes": 359
+        },
+        {
+          "categories": {
+            "arsc": 24,
+            "audio": 28,
+            "dex": 38,
+            "locales": 12,
+            "meshes": 42,
+            "other": 15,
+            "resources": 20,
+            "shaders": 96,
+            "so": 32,
+            "textures": 52
+          },
+          "date": "2026-10-23T04:41:18Z",
+          "total_bytes": 359
         }
       ]
     }
@@ -3253,9 +3269,23 @@
       "count": 1,
       "last_seen": "2026-10-22T13:14:58Z",
       "title": "Labels do GitHub divergem de labels.json"
+    },
+    "size_drift:total:previsao-breach": {
+      "count": 1,
+      "last_seen": "2026-10-23T04:41:18Z",
+      "title": "Previsão: total do flagship cruzará o size gate"
     }
   },
   "open_issues": {
+    "flakiness:gen-torture-contracts:selftest-instavel": {
+      "check": "flakiness",
+      "first_seen": "2026-10-23T04:41:18Z",
+      "number": 5,
+      "severity": "regression",
+      "target": "gen-torture-contracts",
+      "title": "selftest instável: gen-torture-contracts",
+      "url": "https://github.com/nadabgfccvd/APK-Tester/issues/5"
+    },
     "size_drift:total:previsao-breach": {
       "check": "size_drift",
       "first_seen": "2026-10-23T04:05:18Z",
@@ -3354,8 +3384,19 @@
         "new": 0,
         "regression": 0
       }
+    },
+    {
+      "checks_ran": 8,
+      "date": "2026-10-23T04:41:18Z",
+      "findings_count": {
+        "drift": 1,
+        "flaky": 0,
+        "info": 6,
+        "new": 0,
+        "regression": 1
+      }
     }
   ],
   "schema_version": 1,
-  "updated": "2026-10-23T04:06:14Z"
+  "updated": "2026-10-23T04:42:08Z"
 }
