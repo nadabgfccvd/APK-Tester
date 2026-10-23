@@ -10,6 +10,37 @@ de compatibilidade verde).
 
 ## [Unreleased]
 
+### Adicionado (A6 — Engenharia de tamanho)
+
+- Gate de tamanho REAL do flagship: `tools/size-budget.sh` mede o APK
+  (bytes descomprimidos por categoria: textures/meshes/shaders/audio/dex/
+  arsc/so/locales/resources/other), emite `contracts/flagship/size-report.csv`
+  e aplica o gate [850, 1000] MiB + drift por categoria de ±2% contra o CSV
+  commitado (`--baseline`; categorias zeradas são SKIP no bootstrap,
+  `--no-gate` para diagnósticos de debug). Workflow `size-gate.yml` compila
+  o release `modern` e executa o gate (novo job de autoridade de tamanho).
+- Gerador de carga determinística `tools/gen-bulk.py`: ~768 MiB em
+  `assets/bulk/{textures,meshes,audio,data}` (KTX2/PLY/WAV estruturalmente
+  válidos com payload keystream `shake_256(seed:kind:ordinal)` + blobs
+  `APKT-BULK1`), `manifest.json` dentro do APK com sha256/`synthetic: true`
+  por arquivo, `--verify` (round-trip contra o manifest) e `--selftest`
+  (9 provas de determinismo). Presets `full` (768 MiB, release) e `quick`
+  (15 MiB, debugs do CI via `-PbulkPreset=quick`) — total esperado do
+  release ≈ 916 MiB, dentro do gate.
+- Release "fully optimized": R8 full + resource shrinking (com
+  `res/raw/keep.xml` preservando as 1.800 famílias `btn_label_*`/`ic_vector_*`
+  resolvidas via `getIdentifier()`), dex resultante ~57 KB, `vcsInfo`
+  desligado, libs nativas descomprimidas (`useLegacyPackaging = false`).
+- Assinatura release determinística: keystore de fixture commitado como
+  texto base64 (`suites/flagship/keystore/behemoth-test.keystore.b64`,
+  PKCS12 RSA-2048, não-segredo documentado) + tarefa `decodeKeystore` —
+  builds release byte-reproduzíveis entre máquinas.
+- `tools/verify-deterministic.sh`: gen-bulk integrado ao modo turbo
+  (`--preset quick`).
+- Docs: `docs/src/size-engineering.md` (modelo de tamanho, honestidade da
+  carga, gate/drift, assinatura determinística); READMEs e CHANGELOG
+  atualizados; `size-report.README.md` reescrito para o estado A6.
+
 ### Adicionado (A5 — Pilar 3D/Shaders)
 
 - Módulo `:sim3d` (biblioteca Java pura, Q16.16 somente-inteiro): malha procedural de 1.048.576 vértices,

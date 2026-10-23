@@ -12,6 +12,8 @@
 
 [Pilar 3D/Shaders (:sim3d)](sim3d.md)
 
+[Engenharia de tamanho (gate 850–1000 MiB)](size-engineering.md)
+
 [Integração RustyDroid](rustydroid-integration.md)
 
 ---

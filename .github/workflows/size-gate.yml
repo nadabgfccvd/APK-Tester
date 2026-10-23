@@ -1,77 +1,93 @@
-# esqueleto A0 — Size Gate do flagship "Behemoth" (dev.apktester.behemoth).
-# A1 liga o build real; A6 fecha a engenharia de tamanho até o gate [850 MB, 1000 MB].
+# Size Gate do flagship "Behemoth" (A6 — engenharia de tamanho fechada).
+#
+# Build do release modern (R8 full + resource shrinking + zipalign + libs
+# nativas descomprimidas + carga deterministica tools/gen-bulk.py preset
+# "full" ~768 MiB) e gate REAL [850, 1000] MiB com relatorio por categoria
+# (contracts/flagship/size-report.csv) e drift check ±2% vs o CSV commitado.
+#
+# Primeira execucao (A6): baseline commitado ainda e o relatorio A0 zerado —
+# o drift check trata categorias com bytes 0 como SKIP por design; a partir
+# dai o CSV commitado e o baseline e qualquer crescimento/shrink > ±2% por
+# categoria falha o job (mudanca intencional de tamanho exige commit do CSV
+# atualizado no mesmo PR).
 name: Size Gate
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'suites/flagship/**'
+      - 'tools/gen-bulk.py'
+      - 'tools/size-budget.sh'
+      - 'contracts/flagship/size-report.csv'
+      - '.github/workflows/size-gate.yml'
   pull_request:
     paths:
       - 'suites/flagship/**'
+      - 'tools/gen-bulk.py'
       - 'tools/size-budget.sh'
+      - 'contracts/flagship/size-report.csv'
 
 permissions:
   contents: read
 
 jobs:
   size-gate:
-    name: "Flagship: gate [850 MB, 1000 MB] (esqueleto A0)"
+    name: "Flagship release: gate [850 MB, 1000 MB] + drift ±2% (A6)"
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # A1/A6: download/build real do flagship (release, R8 full, resource shrinking ON,
-      # zipalign, libs nativas descomprimidas) via tools/build-variants.sh --variant flagship.
-      - name: Build do flagship (placeholder A1/A6)
-        run: |
-          mkdir -p dist
-          if [ -f dist/flagship.apk ]; then
-            echo "dist/flagship.apk presente"
-          else
-            echo "[esqueleto A0] dist/flagship.apk ausente até A1; gate roda em modo placeholder"
-            cp contracts/flagship/size-report.csv dist/size-report.csv
-          fi
+      - name: Setup JDK 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
 
-      - name: Gate de tamanho (tools/size-budget.sh)
+      - name: Componentes Android SDK (platform 36 + build-tools 35.0.0)
         run: |
-          # A6: gate real — FAIL fora da faixa [850 MB, 1000 MB] e emite o size-report.csv
-          # (bytes por categoria: textures/meshes/shaders/audio/dex/arsc/so/locales/...).
-          if [ -x tools/size-budget.sh ] && [ -f dist/flagship.apk ]; then
-            tools/size-budget.sh --apk dist/flagship.apk --min-mb 850 --max-mb 1000
-            cp contracts/flagship/size-report.csv dist/size-report.csv
-          else
-            echo "[esqueleto A0] gate real ignorado: APK e/ou tools/size-budget.sh ainda não existem (A1/A6)"
-          fi
+          yes | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" \
+            "platforms;android-36" "build-tools;35.0.0" > /dev/null
+          echo "ANDROID_HOME=${ANDROID_HOME}" >> "${GITHUB_ENV}"
+
+      - name: Build do flagship modern release (R8 full + shrink + bulk full)
+        run: |
+          cd suites/flagship
+          # preset bulk "full" e o default do build (property bulkPreset).
+          ./gradlew --no-daemon :app:assembleModernRelease
+
+      - name: Gate de tamanho + drift check (tools/size-budget.sh)
+        run: |
+          APK="suites/flagship/app/build/outputs/apk/modern/release/app-modern-release.apk"
+          test -f "${APK}"
+          mkdir -p dist
+          # Escreve o relatorio fresco em dist/ (artefato), aplica o gate
+          # [850, 1000] MiB e o drift ±2% por categoria vs o CSV commitado.
+          tools/size-budget.sh --apk "${APK}" \
+            --baseline contracts/flagship/size-report.csv \
+            --report dist/size-report.csv \
+            --min-mb 850 --max-mb 1000
+          ls -la "${APK}"
+          sha256sum "${APK}" | tee dist/flagship-release.sha256
+
+      - name: Determinismo do gerador de carga (gen-bulk selftest)
+        run: |
+          python3 tools/gen-bulk.py --selftest
+          rm -rf /tmp/gb1 /tmp/gb2
+          python3 tools/gen-bulk.py --out /tmp/gb1 --preset quick
+          python3 tools/gen-bulk.py --out /tmp/gb2 --preset quick
+          diff -r /tmp/gb1 /tmp/gb2
+          python3 tools/gen-bulk.py --verify /tmp/gb1
+          echo "[A6] gen-bulk: determinismo byte a byte + verify OK"
 
       - name: Upload do size-report.csv (artefato)
         uses: actions/upload-artifact@v4
         with:
           name: size-report
-          path: contracts/flagship/size-report.csv
-          if-no-files-found: warn
-
-      - name: Drift check (FAIL acima de +2% vs último relatório)
-        run: |
-          # Script de diff inline (placeholder de A6): compara o total do size-report novo
-          # contra o último relatório publicado (baseline via env/artefato do release).
-          SIZE_REPORT_NOVO="contracts/flagship/size-report.csv" \
-          SIZE_REPORT_BASELINE="${{ env.SIZE_REPORT_BASELINE || '' }}" \
-          python3 - <<'PYEOF'
-          import csv, os, sys
-
-          novo = os.environ.get("SIZE_REPORT_NOVO", "")
-          antigo = os.environ.get("SIZE_REPORT_BASELINE", "")
-
-          if not antigo or not os.path.exists(antigo):
-              print("[esqueleto A0] sem baseline anterior; drift check pulado")
-              sys.exit(0)
-
-          def total(path):
-              with open(path, newline="", encoding="utf-8") as fh:
-                  return sum(int(row["bytes"]) for row in csv.DictReader(fh))
-
-          t_novo, t_antigo = total(novo), total(antigo)
-          if t_antigo and t_novo > t_antigo * 1.02:
-              sys.exit(f"FAIL: drift de tamanho > +2% ({t_antigo} -> {t_novo} bytes)")
-          print(f"drift ok: {t_antigo} -> {t_novo} bytes")
-          PYEOF
+          path: |
+            dist/size-report.csv
+            dist/flagship-release.sha256
+          if-no-files-found: error

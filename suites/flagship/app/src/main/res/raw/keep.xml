@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  A6 — familias de recursos resolvidas APENAS por getIdentifier() em runtime
+  (ButtonGridActivity: btn_label_%04d; IconGridActivity: ic_vector_%04d).
+  O resource shrinking nao enxerga referencias dinamicas: sem esta lista o
+  shrinker removeria ~1.800 recursos usados pelas grades.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@string/btn_label_*,@drawable/ic_vector_*" />

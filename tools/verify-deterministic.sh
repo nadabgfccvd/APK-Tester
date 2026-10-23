@@ -48,6 +48,7 @@ turbo_args() {
                            "--profile-samples" "3" "--radial" "8" ;;
     gen-buttons.py) printf '%s\n' "--buttons" "32" "--icons" "16" ;;
     gen-strings.py) printf '%s\n' "--buttons" "32" ;;
+    gen-bulk.py) printf '%s\n' "--preset" "quick" ;;
     *) : ;;
   esac
 }

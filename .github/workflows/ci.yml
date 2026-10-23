@@ -238,7 +238,7 @@ jobs:
       - name: Build (Gradle, classic+modern x debug)
         run: |
           cd suites/flagship
-          ./gradlew --no-daemon :app:assembleClassicDebug :app:assembleModernDebug
+          ./gradlew --no-daemon -PbulkPreset=quick :app:assembleClassicDebug :app:assembleModernDebug
 
       - name: Verificar permissoes no APK binario (aapt2)
         run: |
@@ -347,7 +347,7 @@ jobs:
       - name: Build do flagship com ativos 3D (classic + modern debug)
         run: |
           cd suites/flagship
-          ./gradlew --no-daemon :app:assembleClassicDebug :app:assembleModernDebug
+          ./gradlew --no-daemon -PbulkPreset=quick :app:assembleClassicDebug :app:assembleModernDebug
 
       - name: Assegurar ativos 3D dentro do APK binario
         run: |

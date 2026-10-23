@@ -1,16 +1,43 @@
 # size-report.csv — nota de uso
 
-Este CSV é o answer key de tamanho do flagship Behemoth
-(`dev.apktester.behemoth`), emitido por `tools/size-budget.sh`.
+Este CSV é a answer key de tamanho do flagship Behemoth
+(`dev.apktester.behemoth`), emitido por `tools/size-budget.sh` sobre o
+release `modern` (`:app:assembleModernRelease`).
 
-- **Hoje (A0)**: arquivo contém apenas o header + as 10 categorias com zeros —
-  valores preenchidos a partir de A1 e fechados no gate de A6.
-- **Gate (A6)**: tamanho de release do flagship dentro de **[850 MB, 1000 MB]**;
-  o workflow Size Gate falha fora da faixa e se o drift vs último relatório
-  passar de **+2%**.
-- Categorias: textures, meshes, shaders, audio, dex, arsc, so, locales,
-  resources, other (bytes descomprimidos por categoria + contagem de arquivos;
-  `sha256_of_apk` é o checksum do APK de origem da medição).
+- **Estado A6**: gate REAL ativo. O workflow Size Gate (`size-gate.yml`)
+  compila o release com a carga determinística completa
+  (`tools/gen-bulk.py --preset full`, ~768 MiB sob `assets/bulk/`), mede o
+  APK e aplica **duas checagens**:
+  1. **Gate**: total descomprimido dentro de **[850 MiB, 1000 MiB]**
+     (bytes / 1024², como imprime o script);
+  2. **Drift**: por categoria (10 categorias + `total`) contra ESTE arquivo
+     commitado — falha se qualquer categoria variar mais de **±2%**.
+     Categorias com baseline `0` são SKIP (bootstrap do relatório A0);
+     categoria que só existe de um lado → FAIL.
+- **Bootstrap A6**: o primeiro CSV medido entra no repo logo após a
+  primeira execução verde do Size Gate (o baseline anterior era o
+  relatório zerado do A0 — todos SKIP por design).
+- **`sha256_of_apk`**: informativo (checksum do APK de origem da medição).
+  É deliberadamente IGNORADO no drift: metadados de assinatura/zip podem
+  variar entre ambientes; apenas `bytes` e `files` são contratuais.
+- **Categorias** (bytes descomprimidos por categoria + contagem de
+  arquivos; regras por extensão/magic — ver `tools/size-budget.sh`):
+  - `textures` — `.ktx2/.ktx/.pkm/.astc/...` (gen-textures + `assets/bulk/textures/`)
+  - `meshes` — `.obj/.glb/.gltf/.ply` (gen-meshes + `assets/bulk/meshes/`)
+  - `shaders` — `.glsl/.vert/.frag/.comp/.spv` (shader-library)
+  - `audio` — `.wav/.ogg/...` (gen-audio + `assets/bulk/audio/`)
+  - `dex` — `classes*.dex`; `arsc` — `resources.arsc`; `so` — `lib/**/*.so`
+  - `locales` — `res/values-*` e `assets/locales/`
+  - `resources` — `res/**` e `AndroidManifest.xml`
+  - `other` — o restante (inclui `assets/bulk/data/*.bulk` e manifestos JSON)
+- **Presets**: os debugs do `ci.yml` usam `-PbulkPreset=quick` (~15 MiB de
+  carga, para custo de CI); o Size Gate usa o `full` (~768 MiB). A
+  diferença entre presets afeta APENAS `assets/bulk/**` — as demais
+  categorias são idênticas. O CSV contratual é sempre medido no release
+  com preset `full`.
+- **Mudança intencional de tamanho**: atualize este CSV no MESMO PR que
+  altera geradores/carga; o drift check tolera ±2% por categoria — acima
+  disso o Size Gate falha.
 - **Nota**: CSV não suporta linhas de comentário — por isso esta nota vive
   neste README e o CSV se mantém puro (parseável por
   `python3 -c "import csv; ..."` e pelo workflow).
