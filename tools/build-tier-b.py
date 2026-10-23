@@ -233,7 +233,11 @@ SPECS = {
 ENGINE_IDS = tuple(sorted(SPECS))
 
 # Kinds em que a própria toolchain produz o APK final (sem pack comum).
-TOOL_APK_KINDS = ("flutter-full", "godot-export")
+# (godot sai daqui em A7: o export-release 4.3 embute assets soltos, sem
+# .pck; a lei do repo exige assets/*.pck -> usamos --export-pack para o
+# pck REAL + libgodot_android.so do template e empacotamos pelo caminho
+# comum.)
+TOOL_APK_KINDS = ("flutter-full",)
 
 # Padrões de fonte commitada por kind (o selftest exige pelo menos 1).
 SOURCE_GLOBS = {
@@ -467,6 +471,16 @@ def helper_write_godot_editor_settings(dest: str, java_home: str,
     with open(dest, "w", encoding="utf-8", newline="\n") as fh:
         fh.write(content)
     print(f"[{TOOL}] editor settings godot -> {dest}", file=sys.stderr)
+
+
+def helper_stage_godot_libs(apk: str, stage: str) -> None:
+    """Extrai os libgodot_android.so REAIS do APK exportado pelo godot
+    (template oficial) para o STAGE."""
+    for abi in ("arm64-v8a", "x86_64"):
+        member = f"lib/{abi}/libgodot_android.so"
+        helper_extract_zip_entry(apk, member,
+                                 os.path.join(stage, "lib", abi,
+                                              "libgodot_android.so"))
 
 
 def helper_collect_flutter_apk(proj: str, dest: str) -> None:
@@ -754,7 +768,8 @@ def plan_for_engine(engine: str, args, work: str, stage: str,
              "description": f"Godot {PINS['godot']} editor linux x86_64 "
                             "(GitHub Releases godotengine/godot)",
              "command": [py, me, "--download", url_godot("editor"),
-                         editor_zip], "cwd": None},
+                         editor_zip], "cwd": None,
+             "skip_if": "download_cached", "skip_path": editor_zip},
             {"id": "extract-godot-editor",
              "description": "binário headless do editor",
              "command": [py, me, "--extract-zip-entry", editor_zip,
@@ -767,7 +782,7 @@ def plan_for_engine(engine: str, args, work: str, stage: str,
              "description": "export templates Android do Godot "
                             f"{PINS['godot']} (tpz ~1.1 GB)",
              "command": [py, me, "--download", url_godot("templates"), tpz],
-             "cwd": None},
+             "cwd": None, "skip_if": "download_cached", "skip_path": tpz},
             {"id": "install-godot-templates",
              "description": "templates -> ~/.local/share/godot/"
                             "export_templates/4.3.stable",
@@ -801,15 +816,30 @@ def plan_for_engine(engine: str, args, work: str, stage: str,
              "cwd": None},
             {"id": "godot-export-release",
              "description": "godot --headless --export-release Android "
-                            "(APK real assinado com o keystore do pack)",
+                            "(APK do template oficial; fonte dos "
+                            "libgodot_android.so reais)",
              "command": [godot, "--headless", "--path", proj,
                          "--export-release", "Android",
                          os.path.join(proj, "engine23godot.apk")],
              "cwd": None},
-            {"id": "collect-godot-apk",
-             "description": "copia o APK exportado para a árvore de trabalho",
-             "command": [py, me, "--collect-godot-apk", proj,
-                         os.path.join(work, "tool-apk")],
+            {"id": "godot-export-pack",
+             "description": "godot --headless --export-pack Android: "
+                            "game.pck REAL (pipeline de export oficial)",
+             "command": [godot, "--headless", "--path", proj,
+                         "--export-pack", "Android",
+                         os.path.join(proj, "game.pck")],
+             "cwd": None},
+            {"id": "stage-libgodot",
+             "description": "libgodot_android.so (arm64-v8a + x86_64) do "
+                            "APK do template -> lib/",
+             "command": [py, me, "--stage-godot-libs",
+                         os.path.join(proj, "engine23godot.apk"), stage],
+             "cwd": None},
+            {"id": "stage-godot-pck",
+             "description": "game.pck -> assets/game.pck",
+             "command": [py, me, "--stage-file",
+                         os.path.join(proj, "game.pck"),
+                         os.path.join(stage, "assets", "game.pck")],
              "cwd": None},
         ]
 
@@ -915,6 +945,33 @@ def plan_for_engine(engine: str, args, work: str, stage: str,
 # ---------------------------------------------------------------------------
 # Plano completo (mesma forma do Tier A; ta.execute roda)
 # ---------------------------------------------------------------------------
+def execute(plan: dict) -> int:
+    """Mesmo contrato de ta.execute, mas com skip_if=download_cached
+    (refetch evitado quando o artefato pinado já está na árvore — usado
+    pelo CI e por re-execuções locais)."""
+    for step in plan["steps"]:
+        if (step.get("skip_if") == "keystore_existe"
+                and os.path.isfile(plan["keystore"])):
+            print(f"[{TOOL}] {step['id']}: keystore já existe, pulando",
+                  file=sys.stderr)
+            continue
+        if (step.get("skip_if") == "download_cached"
+                and os.path.isfile(step.get("skip_path", ""))
+                and os.path.getsize(step["skip_path"]) > 0):
+            print(f"[{TOOL}] {step['id']}: artefato já em cache "
+                  f"({step['skip_path']}), pulando", file=sys.stderr)
+            continue
+        print(f"[{TOOL}] {step['id']}: {step['description']}",
+              file=sys.stderr)
+        proc = subprocess.run(step["command"], cwd=step.get("cwd"))
+        if proc.returncode != 0:
+            print(f"[{TOOL}] ERRO: passo {step['id']} saiu com "
+                  f"{proc.returncode}", file=sys.stderr)
+            return 1
+    print(f"[{TOOL}] OK: APK Tier B em {plan['out_apk']}", file=sys.stderr)
+    return 0
+
+
 def build_plan(args) -> dict:
     engine = args.engine
     spec = SPECS[engine]
@@ -1042,18 +1099,13 @@ def build_plan(args) -> dict:
         ]
     else:
         tool_apk_path = os.path.join(work, "tool-apk")
-        if kind == "godot-export":
-            steps.append({
-                "id": "verify-tool-apk-signed",
-                "description": "godot já assinou (keystore do preset); nada "
-                               "a re-assinar",
-                "command": [py, me, "--no-op", tool_apk_path], "cwd": None})
-        else:  # flutter-full
-            steps.append({
-                "id": "verify-tool-apk-signed",
-                "description": "APK do gradle/flutter (debug keystore do "
-                               "runner); nada a re-assinar",
-                "command": [py, me, "--no-op", tool_apk_path], "cwd": None})
+        # flutter-full: gradle/flutter assina com o debug keystore do runner
+        # (v1+v2 default); nada a re-assinar.
+        steps.append({
+            "id": "verify-tool-apk-signed",
+            "description": "APK do gradle/flutter (debug keystore do "
+                           "runner); nada a re-assinar",
+            "command": [py, me, "--no-op", tool_apk_path], "cwd": None})
         steps.append({
             "id": "publish-tool-apk",
             "description": "publica o APK da toolchain em --out",
@@ -1291,6 +1343,8 @@ def parse_args(argv=None):
                     help=argparse.SUPPRESS)
     ap.add_argument("--stage-defold-archive", nargs=2,
                     metavar=("BUILD_DIR", "STAGE"), help=argparse.SUPPRESS)
+    ap.add_argument("--stage-godot-libs", nargs=2,
+                    metavar=("APK", "STAGE"), help=argparse.SUPPRESS)
     ap.add_argument("--stage-nuget-assemblies", nargs=2,
                     metavar=("NUPKG", "DEST_DIR"), help=argparse.SUPPRESS)
     ap.add_argument("--write-cordova-plugins", metavar="DEST",
@@ -1369,6 +1423,9 @@ def main(argv=None) -> int:
     if args.stage_defold_archive:
         helper_stage_defold_archive(*args.stage_defold_archive)
         return 0
+    if args.stage_godot_libs:
+        helper_stage_godot_libs(*args.stage_godot_libs)
+        return 0
     if args.stage_nuget_assemblies:
         helper_stage_nuget_assemblies(*args.stage_nuget_assemblies)
         return 0
@@ -1443,7 +1500,7 @@ def main(argv=None) -> int:
         print(f"[{TOOL}] plan-only: plano JSON emitido (exit 0)",
               file=sys.stderr)
         return 0
-    rc = ta.execute(plan)
+    rc = execute(plan)
     if rc == 0 and args.report:
         write_report(plan, args.report)
     return rc

@@ -36,7 +36,7 @@ os artefatos são stubs honestos com o layout/marcadores corretos.
 | engine-20-unity-il2cpp | C#/Unity IL2CPP | C | fixture sintético honesto | `libil2cpp.so` + `assets/bin/Data/Managed/Metadata/global-metadata.dat` stubs | **entregue A3** |
 | engine-21-unreal | C++/Unreal | C | fixture sintético honesto | `libUE4.so` stub + `assets/*.pak` | **entregue A3** |
 | engine-22-lua-defold | Lua/Defold | B | nightly — bob.jar 1.9.8 (pipeline de conteúdo) + libdmengine release embutido | `libdmengine.so` + `game.arcd`/`game.arci` | **entregue (A7)** |
-| engine-23-godot | GDScript/Godot | B | nightly — Godot 4.3-stable headless + export templates (`--export-release` Android) | `libgodot_android.so` + `assets/*.pck` | **entregue (A7)** |
+| engine-23-godot | GDScript/Godot | B | nightly — Godot 4.3-stable headless: `--export-release` (libs do template) + `--export-pack` (pck real) | `libgodot_android.so` + `assets/*.pck` | **entregue (A7)** |
 | engine-24-haxe | Haxe | A | build real no CI | `classes.dex` + strings `haxe.root` | entregue (A4, build real) |
 | engine-25-python-chaquopy | Python/Chaquopy | A | build real no CI | `classes.dex` + `lib/*/libpython3*.so` + `assets/chaquopy/` | entregue (A4, build real) |
 | engine-26-qt-qml | QML/Qt | B | nightly — kit Qt 6.6.3 android_x86_64 via aqtinstall 3.3.0 | `lib/*/libQt6Core*.so` + `assets/qml/` | **entregue (A7)** |
