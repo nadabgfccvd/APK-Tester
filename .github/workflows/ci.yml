@@ -365,7 +365,8 @@ jobs:
               index = json.loads(z.read("assets/shader-library/index.json"))
           shaders = sum(1 for n in names if n.startswith("assets/shader-library/shaders/"))
           assert index["count"] == 239, index["count"]
-          assert shaders >= 239 * 3, f"arquivos de shader no APK: {shaders}"
+          # 215 graficos x (vert+frag+spv) + 24 compute x (comp+spv) = 693
+          assert shaders == 693, f"arquivos de shader no APK: {shaders}"
           meshes = [n for n in names if n.startswith("assets/mesh/")]
           audio = [n for n in names if n.startswith("assets/audio/")]
           textures = [n for n in names if n.startswith("assets/textures/")]
