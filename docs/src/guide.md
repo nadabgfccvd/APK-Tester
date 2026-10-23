@@ -116,7 +116,7 @@ fica commitado; o manifesto e as auditorias são regenerados por
 | A4 | engines Tier A (builds reais: Java, Kotlin, KMP, Groovy, C, C++, Rust, Go, Zig, Tauri, Haxe, Chaquopy, WASM) | matriz Tier A verde no CI | planejado |
 | A5 | 3D/shaders (:sim3d golden sim + shader-library) | checksums golden reprodutíveis; GLES = erro estruturado | planejado |
 | A6 | engenharia de tamanho até o gate [850, 1000] MB | size-report.csv reconcilia bytes; gate passa | planejado |
-| A7 | Tier B nightly + compat-nightly + docs site | matriz publicada no Pages; issues fixture_gap automáticas | planejado |
+| A7 | Tier B nightly + compat-nightly + docs site | matriz publicada no Pages; issues fixture_gap automáticas | **entregue (A7)** |
 | A8 | gate v1.0 | matriz completa verde, determinismo provado, release v1.0.0 | planejado |
 
 ## Hard-truths (leia antes de contribuir)

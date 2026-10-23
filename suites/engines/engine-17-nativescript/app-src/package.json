@@ -1,0 +1,6 @@
+{
+  "name": "engine-17-nativescript",
+  "version": "1.0.0",
+  "main": "app.js",
+  "private": true
+}

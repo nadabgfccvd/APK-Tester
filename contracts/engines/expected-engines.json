@@ -169,8 +169,8 @@
       "tier": "B",
       "build": "nightly",
       "rustydroid_engines": ["nativescript"],
-      "detector_artifacts": ["lib/x86_64/libnativescript.so", "assets/app/"],
-      "notes": "Runtime NativeScript + app JS em assets/app; build nightly (A7)."
+      "detector_artifacts": ["lib/x86_64/libNativeScript.so", "assets/app/"],
+      "notes": "Runtime NativeScript (@nativescript/android@8.8.2) + app JS em assets/app; nome real do runtime tem S maiúsculo (refinado em A7); build nightly (A7)."
     },
     {
       "id": "engine-18",
@@ -219,8 +219,8 @@
       "tier": "B",
       "build": "nightly",
       "rustydroid_engines": ["lua-defold"],
-      "detector_artifacts": ["lib/x86_64/libdmengine.so", "assets/game.arcd", "assets/game.arci"],
-      "notes": "Engine Defold (dmengine) + archive game.arcd/arci; build nightly (A7)."
+      "detector_artifacts": ["lib/arm64-v8a/libdmengine.so", "assets/game.arcd", "assets/game.arci"],
+      "notes": "Engine Defold (dmengine release, embutido no bob.jar 1.9.8) + archive game.arcd/arci do pipeline de conteúdo; ABI real do engine Android é arm64-v8a (refinado em A7); build nightly (A7)."
     },
     {
       "id": "engine-23",
@@ -279,8 +279,8 @@
       "tier": "B",
       "build": "nightly",
       "rustydroid_engines": ["avalonia-dotnet"],
-      "detector_artifacts": ["assemblies/Avalonia.Controls.dll", "lib/x86_64/libmonodroid.so", "lib/x86_64/libskiasharp.so"],
-      "notes": ".NET Android com assemblies Avalonia.* + SkiaSharp; build nightly (A7)."
+      "detector_artifacts": ["assemblies/Avalonia.Controls.dll", "lib/x86_64/libSkiaSharp.so", "lib/x86_64/libmono-android.release.so"],
+      "notes": ".NET Android com assemblies Avalonia.* + SkiaSharp; nomes reais dos nativos: libSkiaSharp.so (S maiúsculo) e libmono-android.release.so (.NET 8, antigo libmonodroid.so) — refinado em A7; build nightly (A7)."
     },
     {
       "id": "engine-29",

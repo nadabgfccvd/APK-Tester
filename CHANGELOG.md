@@ -10,6 +10,59 @@ de compatibilidade verde).
 
 ## [Unreleased]
 
+### Adicionado (A7 — Tier B nightly + compat-nightly + docs site)
+
+- Orquestrador `tools/build-tier-b.py`: builds REAIS dos 9 engines Tier B
+  com toolchains pesadas **pinadas e baixadas da fonte oficial** para a
+  árvore de trabalho (Maven Central, npm registry, NuGet, GitHub Releases,
+  aqtinstall/Qt, Flutter SDK) — nada de binário commitado. Empacota pelo
+  mesmo caminho do Tier A/fixture-pack (aapt2 → d8 → zipalign → apksigner
+  v1+v2); para Flutter e Godot a própria toolchain produz o APK final.
+  Mesmo contrato CLI do `build-tier-a.py` (`--engine/--out/--plan-only/
+  --verify-apk/--sync-contracts/--selftest/--report`), com selftest de
+  zero drift contra o contrato canônico.
+- Estratégias por engine (detalhes nos READMEs dos diretórios):
+  engine-04-scala (scalac 2.13.15 real + scala-library no DEX),
+  engine-13-flutter (SDK 3.24.5 estável + `flutter build apk --release
+  --target-platform android-x64`), engine-14-react-native (hermesc 0.76.9
+  do npm → bytecode Hermes real + libhermes.so do AAR hermes-android +
+  classes.dex do react-android), engine-15-cordova (cordova.js real do
+  template cordova-android@14.0.1 + www do fixture + cordova_plugins.js
+  canônico), engine-17-nativescript (libNativeScript.so real do AAR
+  @nativescript/android@8.8.2), engine-22-lua-defold (bob.jar 1.9.8:
+  game.arcd/game.arci do pipeline de conteúdo + libdmengine release
+  embutido no bob.jar), engine-23-godot (Godot 4.3-stable headless +
+  export templates: `--export-release` Android com preset commitado),
+  engine-26-qt-qml (kit Qt 6.6.3 android_x86_64 via aqtinstall 3.3.0),
+  engine-28-avalonia-dotnet (assemblies Avalonia 11.2.2 + libSkiaSharp +
+  runtime .NET android, NuGet pinado).
+- `engines-nightly.yml` reescrito (A7): matriz `tier-b-matrix` de 9 jobs
+  reais (JDK 21 para defold; `fail-fast: false`, timeout 100 min), job
+  `tier-c-fixtures` re-empacotando as 9 fixtures Tier C, job
+  `compat-nightly` rodando `scripts/compat-nightly.sh` contra TODOS os
+  fixtures com APK (artifact wiring dos dois jobs) e abrindo issue
+  `fixture_gap` em regressão, e job `docs-pages` publicando o site mdBook
+  COMPLETO + `docs/compat-matrix.md` fresca no GH Pages (mdbook 0.4.40
+  pinado).
+- CI de PR ganha o job `tier-b-contracts` (selftest do orquestrador +
+  sync de contratos com `git diff --exit-code` + plan-only smoke via
+  `build.sh` de cada engine) — builds pesadas continuam fora do PR
+  (ADR 0002).
+- `scripts/compat-nightly.sh` ganha o candidato
+  `suites/engines/<engine>/<engine>.apk` (layout usado pelo job Tier C
+  do ci.yml desde A3).
+- Docs: capítulo novo `docs/src/compat-nightly.md` (lei do nightly, como
+  rodar localmente, refinamentos do answer key), página stub
+  `docs/src/compat-matrix.md` substituída pela matriz fresca a cada
+  deploy do site, Matriz de Engines atualizada (status/estratégia dos 9
+  Tier B) e READMEs PT/EN com A7 entregue.
+- Answer key refinado contra os artefatos REAIS descobertos nas sondas da
+  fase (honestidade do contrato > previsão A3):
+  engine-17 `lib/x86_64/libNativeScript.so` (S maiúsculo), engine-22
+  `lib/arm64-v8a/libdmengine.so` (ABI real embutida no bob.jar), engine-28
+  `lib/x86_64/libSkiaSharp.so` + `lib/x86_64/libmono-android.release.so`
+  (.NET 8 renomeou o antigo libmonodroid.so).
+
 ### Adicionado (A6 — Engenharia de tamanho)
 
 - Gate de tamanho REAL do flagship: `tools/size-budget.sh` mede o APK

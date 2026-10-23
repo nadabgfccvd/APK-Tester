@@ -1,0 +1,20 @@
+{
+  "build": "nightly",
+  "built_by": "build-tier-b.py",
+  "detector_artifacts": [
+    "lib/x86_64/libQt6Core*.so",
+    "assets/qml/"
+  ],
+  "dir": "engine-26-qt-qml",
+  "id": "engine-26",
+  "language": "QML/Qt",
+  "notes": "Qt libs (QtCore etc.) + assets QML; build nightly (A7).",
+  "pins": {
+    "aqtinstall": "3.3.0",
+    "qt": "6.6.3"
+  },
+  "rustydroid_engines": [
+    "qt-qml"
+  ],
+  "tier": "B"
+}

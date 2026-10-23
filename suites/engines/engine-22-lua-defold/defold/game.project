@@ -1,0 +1,15 @@
+[project]
+title = apktester
+version = 1.0.0
+publisher = apktester
+developer = apktester
+
+[bootstrap]
+main_collection = /main/main.collectionc
+
+[display]
+width = 320
+height = 240
+
+[script]
+shared_state = 0

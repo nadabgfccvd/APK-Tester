@@ -1,0 +1,21 @@
+{
+  "build": "nightly",
+  "built_by": "build-tier-b.py",
+  "detector_artifacts": [
+    "lib/x86_64/libhermes.so",
+    "assets/index.android.bundle",
+    "dex-strings:com.facebook.react"
+  ],
+  "dir": "engine-14-react-native",
+  "id": "engine-14",
+  "language": "JS/React Native",
+  "notes": "Bundle Hermes (magic bytecode) + classes com.facebook.react; build nightly (A7).",
+  "pins": {
+    "hermes-android": "0.76.9",
+    "react-native": "0.76.9"
+  },
+  "rustydroid_engines": [
+    "react-native"
+  ],
+  "tier": "B"
+}

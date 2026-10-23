@@ -1,0 +1,10 @@
+<!-- engine-28-avalonia-dotnet — Tier B (A7), seed 20261022. -->
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Dev.Apktester.Engine28Avalonia.MainWindow"
+        Title="engine-28-avalonia-dotnet" Width="320" Height="240">
+  <StackPanel Margin="16" Spacing="8">
+    <TextBlock Text="engine-28-avalonia-dotnet" FontSize="18" />
+    <TextBlock Text="seed: 20261022" />
+  </StackPanel>
+</Window>

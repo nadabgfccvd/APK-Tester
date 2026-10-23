@@ -1,5 +1,9 @@
-# esqueleto A0 — Engines Nightly: Tier B + compat matrix + GH Pages.
-# A7 liga os builds reais do Tier B e a execução do RustyDroid no CI (rustydroid no runner).
+# Engines Nightly — A7: builds REAIS do Tier B + compat-nightly + docs site.
+# ADR 0002: toolchains pesadas ficam GATED no nightly (fail-fast: false);
+# a build de PR nunca espera por elas (ci.yml roda só selftest/plan-only).
+# O job compat-nightly roda scripts/compat-nightly.sh contra TODOS os
+# fixtures (Tier B real + Tier C empacotada) e publica docs/compat-matrix.md
+# no GH Pages junto do site mdBook (job docs-pages).
 name: Engines Nightly
 
 on:
@@ -13,42 +17,162 @@ permissions:
   pages: write
   id-token: write
 
+env:
+  BT: "35.0.0"
+
 jobs:
-  # esqueleto A0: matriz Tier B (toolchains pesadas, gated no nightly; real chega em A7).
+  # ------------------------------------------------------------------
+  # Tier B: builds REAIS dos 9 engines com toolchains pesadas pinadas.
+  # A toolchain é baixada da fonte oficial pelo tools/build-tier-b.py
+  # (Maven Central / npm / NuGet / GitHub Releases / aqt / Flutter SDK)
+  # para a árvore de trabalho — nada de binário commitado.
+  # ------------------------------------------------------------------
   tier-b-matrix:
-    name: "Tier B build (esqueleto A0): ${{ matrix.engine }}"
+    name: "Tier B build real (A7): ${{ matrix.engine }}"
     runs-on: ubuntu-latest
+    timeout-minutes: 100
     strategy:
       fail-fast: false
+      max-parallel: 4
       matrix:
-        engine:
-          - engine-04-scala
-          - engine-13-flutter
-          - engine-14-react-native
-          - engine-15-cordova
-          - engine-17-nativescript
-          - engine-22-lua-defold
-          - engine-23-godot
-          - engine-26-qt-qml
-          - engine-28-avalonia-dotnet
+        include:
+          - { engine: engine-04-scala, java: "21" }
+          - { engine: engine-13-flutter, java: "17" }
+          - { engine: engine-14-react-native, java: "17" }
+          - { engine: engine-15-cordova, java: "17" }
+          - { engine: engine-17-nativescript, java: "17" }
+          # bob.jar 1.9.8 é class-file 65 (Java 21+)
+          - { engine: engine-22-lua-defold, java: "21" }
+          - { engine: engine-23-godot, java: "17" }
+          - { engine: engine-26-qt-qml, java: "17" }
+          - { engine: engine-28-avalonia-dotnet, java: "17" }
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Placeholder de build Tier B (real chega em A7)
-        run: |
-          # A7: build real via tools/build-variants.sh --engine ${{ matrix.engine }} --tier nightly
-          echo "[esqueleto A0] engine ${{ matrix.engine }}: placeholder Tier B"
+      - name: Setup JDK ${{ matrix.java }} (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "${{ matrix.java }}"
 
-  # compat-nightly: roda o RustyDroid contra todas as fixtures e agrega
-  # docs/compat-matrix.md. Hoje (A0, sem rustydroid no runner) todas as
-  # linhas viram SKIP e o job passa — comportamento garantido pelo script.
-  compat-nightly:
-    name: Compat nightly (RustyDroid x fixtures)
+      - name: Componentes Android SDK (platform-tools + platform 36 + build-tools)
+        run: |
+          yes | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" \
+            "platform-tools" "platforms;android-36" "build-tools;${BT}" > /dev/null
+          echo "ANDROID_HOME=${ANDROID_HOME}" >> "${GITHUB_ENV}"
+          echo "ANDROID_SDK_ROOT=${ANDROID_HOME}" >> "${GITHUB_ENV}"
+
+      - name: Build real do engine (toolchain pinada baixada da fonte)
+        run: |
+          mkdir -p reports
+          BT_DIR="${ANDROID_HOME}/build-tools/${BT}"
+          python3 tools/build-tier-b.py \
+            --engine "${{ matrix.engine }}" \
+            --out "suites/engines/${{ matrix.engine }}/dist" \
+            --report "reports/${{ matrix.engine }}.json" \
+            --aapt2 "${BT_DIR}/aapt2" --d8 "${BT_DIR}/d8" \
+            --apksigner "${BT_DIR}/apksigner" \
+            --zipalign "${BT_DIR}/zipalign"
+
+      - name: Verificar o APK contra o contrato (artefatos do detector)
+        run: |
+          python3 tools/build-tier-b.py \
+            --verify-apk "suites/engines/${{ matrix.engine }}/dist/${{ matrix.engine }}.apk" \
+            --engine "${{ matrix.engine }}"
+
+      - name: Upload do APK + report (artefato de CI)
+        uses: actions/upload-artifact@v4
+        with:
+          name: tier-b-${{ matrix.engine }}
+          path: |
+            suites/engines/${{ matrix.engine }}/dist/${{ matrix.engine }}.apk
+            reports/${{ matrix.engine }}.json
+          if-no-files-found: error
+
+  # ------------------------------------------------------------------
+  # Tier C: re-empacota as 9 fixtures honestas para a matriz nightly
+  # (barato: toolchain real do SDK, sem toolchain externa).
+  # ------------------------------------------------------------------
+  tier-c-fixtures:
+    name: "Tier C fixtures (A3) para a matriz nightly"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Setup JDK 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Componentes Android SDK (platform 36 + build-tools)
+        run: |
+          yes | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" \
+            "platforms;android-36" "build-tools;${BT}" > /dev/null
+          echo "ANDROID_HOME=${ANDROID_HOME}" >> "${GITHUB_ENV}"
+
+      - name: Selftests (empacotador 20 modos + gerador Tier C)
+        run: |
+          python3 tools/fixture-pack.py --selftest
+          python3 tools/gen-engine-fixtures.py --selftest
+
+      - name: Empacotar as 9 fixtures Tier C
+        run: |
+          BT_DIR="${ANDROID_HOME}/build-tools/${BT}"
+          for e in engine-05-clojure engine-11-objc engine-18-maui-xamarin \
+                   engine-19-unity-mono engine-20-unity-il2cpp \
+                   engine-21-unreal engine-27-b4x-appinventor \
+                   engine-29-python-kivy-beeware engine-32-twa-pwa; do
+            python3 tools/fixture-pack.py --fixture "$e" \
+              --out "suites/engines/$e/dist" \
+              --aapt2 "${BT_DIR}/aapt2" --d8 "${BT_DIR}/d8" \
+              --apksigner "${BT_DIR}/apksigner" --zipalign "${BT_DIR}/zipalign"
+          done
+
+      - name: Upload das fixtures Tier C (artefato de CI)
+        uses: actions/upload-artifact@v4
+        with:
+          name: tier-c-apks
+          path: suites/engines/*/dist/*.apk
+          if-no-files-found: error
+
+  # ------------------------------------------------------------------
+  # compat-nightly: roda o RustyDroid (se disponível) contra TODOS os
+  # fixtures com APK e agrega docs/compat-matrix.md. Sem rustydroid no
+  # runner, todas as linhas viram SKIP e o job passa (lei do script).
+  # ------------------------------------------------------------------
+  compat-nightly:
+    name: Compat nightly (RustyDroid x fixtures)
+    needs: [tier-b-matrix, tier-c-fixtures]
+    if: ${{ always() && needs.tier-b-matrix.result != 'cancelled' && needs.tier-c-fixtures.result != 'cancelled' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Baixar APKs Tier B (9 engines reais)
+        uses: actions/download-artifact@v4
+        with:
+          pattern: tier-b-*
+          path: .
+          merge-multiple: true
+
+      - name: Baixar e posicionar as fixtures Tier C
+        uses: actions/download-artifact@v4
+        with:
+          name: tier-c-apks
+          path: tier-c-staging
+
+      - name: Copiar Tier C para os diretórios dos contratos
+        run: |
+          for apk in tier-c-staging/*.apk; do
+            base="$(basename "$apk" .apk)"
+            mkdir -p "suites/engines/$base/dist"
+            cp "$apk" "suites/engines/$base/dist/$base.apk"
+          done
+          ls suites/engines/*/dist/*.apk | wc -l
 
       - name: Rodar scripts/compat-nightly.sh
         run: bash scripts/compat-nightly.sh
@@ -59,7 +183,7 @@ jobs:
         with:
           name: compat-matrix
           path: docs/compat-matrix.md
-          if-no-files-found: warn
+          if-no-files-found: error
 
       - name: Abrir issue fixture_gap em regressão
         if: failure()
@@ -85,13 +209,14 @@ jobs:
             --title "fixture_gap: regressão de compatibilidade no nightly (run ${{ github.run_id }})" \
             --body-file /tmp/issue-body.md
 
-  # Publica docs/compat-matrix.md no GH Pages. Roda mesmo se o compat-nightly
-  # apontar gaps (a matriz publicada é justamente o que importa), mas não roda
-  # em cancelamento.
-  pages:
-    name: Publicar matriz de compatibilidade (GH Pages)
-    needs: [tier-b-matrix, compat-nightly]
-    if: ${{ always() && needs.tier-b-matrix.result != 'cancelled' && needs.compat-nightly.result != 'cancelled' }}
+  # ------------------------------------------------------------------
+  # docs-pages: publica o SITE mdBook completo + a matriz de
+  # compatibilidade fresca no GH Pages.
+  # ------------------------------------------------------------------
+  docs-pages:
+    name: Docs site (mdBook) + matriz de compatibilidade (GH Pages)
+    needs: [compat-nightly]
+    if: ${{ always() && needs.compat-nightly.result != 'cancelled' }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -100,33 +225,34 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Baixar artefato compat-matrix
+      - name: Baixar compat-matrix fresca (página do site)
         uses: actions/download-artifact@v4
         with:
           name: compat-matrix
-          path: pages-src
+          path: staging-matrix
 
-      - name: Gerar index.html (raiz do site)
+      - name: Posicionar a matriz como página do site
         run: |
-          {
-            echo '<!doctype html>'
-            echo '<html lang="pt-BR">'
-            echo '  <head>'
-            echo '    <meta charset="utf-8">'
-            echo '    <meta http-equiv="refresh" content="0; url=compat-matrix.md">'
-            echo '    <title>APK Tester — Matriz de compatibilidade</title>'
-            echo '  </head>'
-            echo '  <body>'
-            echo '    <p>Matriz de compatibilidade APK Tester x RustyDroid:</p>'
-            echo '    <p><a href="compat-matrix.md">docs/compat-matrix.md</a></p>'
-            echo '  </body>'
-            echo '</html>'
-          } > pages-src/index.html
+          mkdir -p docs/src
+          find staging-matrix -name compat-matrix.md \
+            -exec cp {} docs/src/compat-matrix.md \;
+          test -f docs/src/compat-matrix.md
+          echo "[A7] compat-matrix.md posicionada no src do site"
+
+      - name: Instalar mdbook (pinado)
+        run: |
+          curl -sSL -o /tmp/mdbook.tar.gz \
+            "https://github.com/rust-lang/mdBook/releases/download/v0.4.40/mdbook-v0.4.40-x86_64-unknown-linux-gnu.tar.gz"
+          tar -xzf /tmp/mdbook.tar.gz -C /usr/local/bin
+          mdbook --version
+
+      - name: Build do site (mdBook)
+        run: mdbook build docs
 
       - name: Empacotar artifact de Pages
         uses: actions/upload-pages-artifact@v3
         with:
-          path: pages-src
+          path: docs/book
 
       - name: Deploy no GH Pages
         id: deployment

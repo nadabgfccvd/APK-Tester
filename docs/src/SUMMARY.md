@@ -14,6 +14,8 @@
 
 [Engenharia de tamanho (gate 850–1000 MiB)](size-engineering.md)
 
+[Compatibilidade nightly (RustyDroid x fixtures)](compat-nightly.md)
+
 [Integração RustyDroid](rustydroid-integration.md)
 
 ---

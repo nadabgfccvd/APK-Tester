@@ -17,7 +17,7 @@ os artefatos são stubs honestos com o layout/marcadores corretos.
 | engine-01-java | Java | A | build real no CI | `classes.dex` + `classes2.dex` (multi-dex, invoke-custom) | entregue (A4, build real) |
 | engine-02-kotlin | Kotlin | A | build real no CI | `classes.dex` + `META-INF/*.kotlin_module` + strings `kotlin.jvm.internal` | entregue (A4, build real) |
 | engine-03-kmp | Kotlin Multiplatform | A | build real no CI | `classes.dex` + `META-INF/*.kotlin_module` (shared/compose) | entregue (A4, build real) |
-| engine-04-scala | Scala | B | nightly (toolchain pesada) | `classes.dex` + strings `scala.runtime` | planejado A7 |
+| engine-04-scala | Scala | B | nightly — scalac 2.13.15 real (Maven Central) + d8 com scala-library | `classes.dex` + strings `scala.runtime` | **entregue (A7)** |
 | engine-05-clojure | Clojure | C | fixture sintético honesto | `classes.dex` stub + strings `clojure.lang` + marcador de fixture | **entregue A3** |
 | engine-06-groovy | Groovy | A | build real no CI | `classes.dex` + strings `org.codehaus.groovy` | entregue (A4, build real) |
 | engine-07-c-ndk | C (NDK) | A | build real no CI | `lib/*/libnative-c.so` (ELF com JNI `Java_*`) | entregue (A4, build real) |
@@ -26,22 +26,22 @@ os artefatos são stubs honestos com o layout/marcadores corretos.
 | engine-10-go | Go | A | build real no CI (gomobile) | `lib/*/libgojni.so` + strings `go.Seq` | entregue (A4, build real) |
 | engine-11-objc | Objective-C | C | fixture sintético honesto | `lib/*/libobjc-fixture.so` stub + marcador de fixture | **entregue A3** |
 | engine-12-zig | Zig | A | build real no CI (zig cc) | `lib/*/libzig-*.so` (seção `.comment` zig) | entregue (A4, build real) |
-| engine-13-flutter | Dart/Flutter | B | nightly (toolchain pesada) | `libflutter.so` + `libapp.so` + `assets/flutter_assets/` | planejado A7 |
-| engine-14-react-native | JS/React Native | B | nightly (toolchain pesada) | `libhermes.so` + `assets/index.android.bundle` (bytecode Hermes) | planejado A7 |
-| engine-15-cordova | JS/Cordova | B | nightly (toolchain pesada) | `assets/www/index.html` + `cordova.js` + `cordova_plugins.js` | planejado A7 |
+| engine-13-flutter | Dart/Flutter | B | nightly — Flutter SDK 3.24.5 estável, `flutter build apk --release --target-platform android-x64` | `libflutter.so` + `libapp.so` + `assets/flutter_assets/` | **entregue (A7)** |
+| engine-14-react-native | JS/React Native | B | nightly — hermesc 0.76.9 (npm) + AARs hermes-android/react-android (Maven Central) | `libhermes.so` + `assets/index.android.bundle` (bytecode Hermes) | **entregue (A7)** |
+| engine-15-cordova | JS/Cordova | B | nightly — cordova.js real do template cordova-android@14.0.1 (npm) + www do fixture | `assets/www/index.html` + `cordova.js` + `cordova_plugins.js` | **entregue (A7)** |
 | engine-16-tauri | Rust/Tauri v2 | A | build real no CI | `lib/*/libtauri*.so` + marcadores wry | entregue (A4, build real) |
-| engine-17-nativescript | JS/NativeScript | B | nightly (toolchain pesada) | `lib/*/libnativescript.so` + `assets/app/` | planejado A7 |
+| engine-17-nativescript | JS/NativeScript | B | nightly — libNativeScript.so real do AAR @nativescript/android@8.8.2 (npm) | `lib/*/libNativeScript.so` + `assets/app/` | **entregue (A7)** |
 | engine-18-maui-xamarin | C#/MAUI/Xamarin | C | fixture sintético honesto | `assemblies/*.dll` stubs + `libmonodroid.so` | **entregue A3** |
 | engine-19-unity-mono | C#/Unity Mono | C | fixture sintético honesto | `Assembly-CSharp.dll` stub + `libunity.so` + `libmonobdwgc-2.0.so` | **entregue A3** |
 | engine-20-unity-il2cpp | C#/Unity IL2CPP | C | fixture sintético honesto | `libil2cpp.so` + `assets/bin/Data/Managed/Metadata/global-metadata.dat` stubs | **entregue A3** |
 | engine-21-unreal | C++/Unreal | C | fixture sintético honesto | `libUE4.so` stub + `assets/*.pak` | **entregue A3** |
-| engine-22-lua-defold | Lua/Defold | B | nightly (toolchain pesada) | `libdmengine.so` + `game.arcd`/`game.arci` | planejado A7 |
-| engine-23-godot | GDScript/Godot | B | nightly (toolchain pesada) | `libgodot_android.so` + `assets/*.pck` | planejado A7 |
+| engine-22-lua-defold | Lua/Defold | B | nightly — bob.jar 1.9.8 (pipeline de conteúdo) + libdmengine release embutido | `libdmengine.so` + `game.arcd`/`game.arci` | **entregue (A7)** |
+| engine-23-godot | GDScript/Godot | B | nightly — Godot 4.3-stable headless + export templates (`--export-release` Android) | `libgodot_android.so` + `assets/*.pck` | **entregue (A7)** |
 | engine-24-haxe | Haxe | A | build real no CI | `classes.dex` + strings `haxe.root` | entregue (A4, build real) |
 | engine-25-python-chaquopy | Python/Chaquopy | A | build real no CI | `classes.dex` + `lib/*/libpython3*.so` + `assets/chaquopy/` | entregue (A4, build real) |
-| engine-26-qt-qml | QML/Qt | B | nightly (toolchain pesada) | `lib/*/libQt6Core*.so` + `assets/qml/` | planejado A7 |
+| engine-26-qt-qml | QML/Qt | B | nightly — kit Qt 6.6.3 android_x86_64 via aqtinstall 3.3.0 | `lib/*/libQt6Core*.so` + `assets/qml/` | **entregue (A7)** |
 | engine-27-b4x-appinventor | B4X/App Inventor | C | fixture sintético honesto | `classes.dex` stub + strings `anywheresoftware.b4a` | **entregue A3** |
-| engine-28-avalonia-dotnet | C#/Avalonia | B | nightly (toolchain pesada) | `assemblies/Avalonia.*.dll` + `libmonodroid.so` + `libskiasharp.so` | planejado A7 |
+| engine-28-avalonia-dotnet | C#/Avalonia | B | nightly — assemblies Avalonia 11.2.2 + nativos oficiais (NuGet pinado) | `assemblies/Avalonia.*.dll` + `libSkiaSharp.so` + `libmono-android.release.so` | **entregue (A7)** |
 | engine-29-python-kivy-beeware | Python/Kivy/BeeWare | C | fixture sintético honesto | `lib/*/libpython3*.so` stub + `assets/python/main.py` | **entregue A3** |
 | engine-30-wasm-in-app | Rust/WASM (host embutido) | A | build real no CI | `assets/module.wasm` + host `libwasmer*.so` + bridge JNI | entregue (A4, build real) |
 | engine-31-hybrid | Kotlin+Rust+Hermes+WASM | A | build real no CI (TST-14) | os quatro marcadores no MESMO APK: `classes.dex` + `librust_*.so` + `index.android.bundle` + `module.wasm` | entregue (A4, build real) |

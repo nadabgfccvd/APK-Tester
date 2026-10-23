@@ -1,0 +1,19 @@
+{
+  "build": "nightly",
+  "built_by": "build-tier-b.py",
+  "detector_artifacts": [
+    "lib/x86_64/libNativeScript.so",
+    "assets/app/"
+  ],
+  "dir": "engine-17-nativescript",
+  "id": "engine-17",
+  "language": "JS/NativeScript",
+  "notes": "Runtime NativeScript (@nativescript/android@8.8.2) + app JS em assets/app; nome real do runtime tem S maiúsculo (refinado em A7); build nightly (A7).",
+  "pins": {
+    "nativescript-android": "8.8.2"
+  },
+  "rustydroid_engines": [
+    "nativescript"
+  ],
+  "tier": "B"
+}

@@ -1,0 +1,6 @@
+-- engine-22-lua-defold — Tier B (A7), seed 20261022.
+-- Conteudo compilado pelo bob.jar 1.9.8 (pipeline Defold real):
+-- game.arcd/game.arci em build/default.
+function init(self)
+	print("engine-22-lua-defold seed=20261022")
+end

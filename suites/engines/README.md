@@ -89,8 +89,14 @@ diferença fundamental vs. Tier C (ADR 0003).
 - **Tier A (inclui `engine-31-hybrid`):** ENTREGUE na fase **A4** — os 14
   diretórios populados com fontes + `build.sh` + builds reais no CI
   (`tier-a-engines`, matriz de 14 jobs) e verificação por contrato.
-- **Tier B:** builds nightly na fase **A7** (`engines-nightly.yml` +
-  `scripts/compat-nightly.sh`).
+- **Tier B:** ENTREGUE na fase **A7** — os 9 diretórios populados com
+  fontes + `build.sh` + `expected-engines.json` (zero drift) e builds REAIS
+  gated no nightly (`engines-nightly.yml`, matriz de 9 jobs com
+  `fail-fast: false`): a toolchain pesada é baixada da fonte oficial pelo
+  orquestrador `tools/build-tier-b.py` (Maven Central / npm / NuGet /
+  GitHub Releases / aqt / Flutter SDK, versões pinadas); o job
+  `compat-nightly` roda `scripts/compat-nightly.sh` contra todos os
+  fixtures e publica a matriz no GH Pages com o site mdBook.
 
 Tier C **populado na fase A3**: os 9 diretórios (`engine-05-clojure`,
 `engine-11-objc`, `engine-18-maui-xamarin`, `engine-19-unity-mono`,

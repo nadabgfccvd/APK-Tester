@@ -1,0 +1,19 @@
+{
+  "build": "nightly",
+  "built_by": "build-tier-b.py",
+  "detector_artifacts": [
+    "classes.dex",
+    "dex-strings:scala.runtime"
+  ],
+  "dir": "engine-04-scala",
+  "id": "engine-04",
+  "language": "Scala",
+  "notes": "Runtime scala.runtime embutido no DEX; build nightly (A7).",
+  "pins": {
+    "scala": "2.13.15"
+  },
+  "rustydroid_engines": [
+    "scala"
+  ],
+  "tier": "B"
+}

@@ -29,6 +29,9 @@ dev.log
 
 # --- Gerados em tempo de empacotamento/CI (nunca commitados; a âncora é o
 #     sha256 dentro do report/contrato) ---
+# matriz de compatibilidade nightly (regenerada pelo engines-nightly.yml e
+# publicada no GH Pages; a página do site é docs/src/compat-matrix.md)
+docs/compat-matrix.md
 suites/parser-torture/huge-arsc/resources.arsc
 suites/parser-torture/exported-audit/src/
 dist2/

@@ -1,0 +1,19 @@
+{
+  "build": "nightly",
+  "built_by": "build-tier-b.py",
+  "detector_artifacts": [
+    "lib/x86_64/libgodot_android.so",
+    "assets/*.pck"
+  ],
+  "dir": "engine-23-godot",
+  "id": "engine-23",
+  "language": "GDScript/Godot",
+  "notes": "Export headless do Godot: libgodot_android.so + pack .pck; build nightly (A7).",
+  "pins": {
+    "godot": "4.3-stable"
+  },
+  "rustydroid_engines": [
+    "godot"
+  ],
+  "tier": "B"
+}

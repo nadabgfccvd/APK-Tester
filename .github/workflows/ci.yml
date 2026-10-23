@@ -51,6 +51,44 @@ jobs:
           done
           exit "$status"
 
+  # Tier B contratos (A7): o PR valida o ORQUESTRADOR e o zero drift dos
+  # contratos (selftest + sync + plan-only dos 9 engines); a build REAL das
+  # toolchains pesadas fica gated no engines-nightly.yml (ADR 0002).
+  tier-b-contracts:
+    name: "Tier B contratos (A7): selftest + sync zero drift"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Selftest do orquestrador Tier B (9 planos + drift)
+        run: python3 tools/build-tier-b.py --selftest
+
+      - name: Zero drift dos contratos Tier B (sync + diff)
+        run: |
+          python3 tools/build-tier-b.py --sync-contracts
+          git diff --exit-code -- \
+            suites/engines/engine-04-scala/expected-engines.json \
+            suites/engines/engine-13-flutter/expected-engines.json \
+            suites/engines/engine-14-react-native/expected-engines.json \
+            suites/engines/engine-15-cordova/expected-engines.json \
+            suites/engines/engine-17-nativescript/expected-engines.json \
+            suites/engines/engine-22-lua-defold/expected-engines.json \
+            suites/engines/engine-23-godot/expected-engines.json \
+            suites/engines/engine-26-qt-qml/expected-engines.json \
+            suites/engines/engine-28-avalonia-dotnet/expected-engines.json
+          echo "[A7] zero drift: contratos por diretório == contrato canônico"
+
+      - name: Plan-only smoke via build.sh de cada engine
+        run: |
+          for e in engine-04-scala engine-13-flutter engine-14-react-native \
+                   engine-15-cordova engine-17-nativescript \
+                   engine-22-lua-defold engine-23-godot engine-26-qt-qml \
+                   engine-28-avalonia-dotnet; do
+            "suites/engines/$e/build.sh" --plan-only > /dev/null
+            echo "[A7] $e: plano ok"
+          done
+
   # Tier A real (A4): 14 engines com build REAL — toolchains pinadas por
   # engine (javac/kotlinc/groovyc/NDK clang/cargo-ndk/gomobile/zig cc/
   # haxe/wat2wasm/hermesc/gradle+chaquopy), pack pelo mesmo caminho do

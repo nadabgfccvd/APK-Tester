@@ -1,0 +1,20 @@
+{
+  "build": "nightly",
+  "built_by": "build-tier-b.py",
+  "detector_artifacts": [
+    "assets/www/index.html",
+    "assets/www/cordova.js",
+    "assets/www/cordova_plugins.js"
+  ],
+  "dir": "engine-15-cordova",
+  "id": "engine-15",
+  "language": "JS/Cordova",
+  "notes": "WebView app: assets/www completo; build nightly (A7).",
+  "pins": {
+    "cordova-android": "14.0.1"
+  },
+  "rustydroid_engines": [
+    "cordova"
+  ],
+  "tier": "B"
+}

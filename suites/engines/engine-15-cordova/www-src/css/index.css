@@ -1,0 +1,15 @@
+/* engine-15-cordova — Tier B (A7), seed 20261022. */
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background: #1d2330;
+  color: #e6e6e6;
+}
+
+#app {
+  padding: 24px;
+}
+
+h1 {
+  font-size: 18px;
+}

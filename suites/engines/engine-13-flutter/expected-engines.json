@@ -1,0 +1,20 @@
+{
+  "build": "nightly",
+  "built_by": "build-tier-b.py",
+  "detector_artifacts": [
+    "lib/x86_64/libflutter.so",
+    "lib/x86_64/libapp.so",
+    "assets/flutter_assets/"
+  ],
+  "dir": "engine-13-flutter",
+  "id": "engine-13",
+  "language": "Dart/Flutter",
+  "notes": "libapp.so (AOT Dart) + flutter_assets; build nightly (A7).",
+  "pins": {
+    "flutter": "3.24.5"
+  },
+  "rustydroid_engines": [
+    "flutter"
+  ],
+  "tier": "B"
+}

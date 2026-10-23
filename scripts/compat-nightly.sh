@@ -64,6 +64,7 @@ while IFS=$'\t' read -r engine_id engine_dir engine_tier want_engines; do
     for cand in \
       "$REPO_ROOT/suites/engines/$engine_dir/dist/app.apk" \
       "$REPO_ROOT/suites/engines/$engine_dir/dist/$engine_dir.apk" \
+      "$REPO_ROOT/suites/engines/$engine_dir/$engine_dir.apk" \
       "$REPO_ROOT/suites/engines/$engine_dir.apk"; do
       if [ -f "$cand" ]; then
         apk="$cand"

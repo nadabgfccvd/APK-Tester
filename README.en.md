@@ -110,7 +110,7 @@ Details in [`suites/engines/README.md`](suites/engines/README.md).
 | `engine-01-java` | Java (DEX, multi-dex, invoke-custom) | A | **delivered (A4)** |
 | `engine-02-kotlin` | Kotlin | A | **delivered (A4)** |
 | `engine-03-kmp` | Kotlin Multiplatform / Compose MP | A | **delivered (A4)** |
-| `engine-04-scala` | Scala | B | planned (A7) |
+| `engine-04-scala` | Scala | B | **delivered (A7, nightly)** |
 | `engine-05-clojure` | Clojure | C | planned (A3) |
 | `engine-06-groovy` | Groovy | A | **delivered (A4)** |
 | `engine-07-c-ndk` | C (NDK) | A | **delivered (A4)** |
@@ -119,22 +119,22 @@ Details in [`suites/engines/README.md`](suites/engines/README.md).
 | `engine-10-go` | Go (gomobile bind) | A | **delivered (A4)** |
 | `engine-11-objc` | Objective-C | C | planned (A3) |
 | `engine-12-zig` | Zig (`zig cc` .so) | A | **delivered (A4)** |
-| `engine-13-flutter` | Flutter (Dart) | B | planned (A7) |
-| `engine-14-react-native` | React Native (Hermes) | B | planned (A7) |
-| `engine-15-cordova` | Cordova (assets/www) | B | planned (A7) |
+| `engine-13-flutter` | Flutter (Dart) | B | **delivered (A7, nightly)** |
+| `engine-14-react-native` | React Native (Hermes) | B | **delivered (A7, nightly)** |
+| `engine-15-cordova` | Cordova (assets/www) | B | **delivered (A7, nightly)** |
 | `engine-16-tauri` | Tauri v2 | A | **delivered (A4)** |
-| `engine-17-nativescript` | NativeScript | B | planned (A7) |
+| `engine-17-nativescript` | NativeScript | B | **delivered (A7, nightly)** |
 | `engine-18-maui-xamarin` | .NET MAUI / Xamarin | C | planned (A3) |
 | `engine-19-unity-mono` | Unity (Mono) | C | planned (A3) |
 | `engine-20-unity-il2cpp` | Unity (IL2CPP) | C | planned (A3) |
 | `engine-21-unreal` | Unreal | C | planned (A3) |
-| `engine-22-lua-defold` | Lua (Defold) | B | planned (A7) |
-| `engine-23-godot` | Godot | B | planned (A7) |
+| `engine-22-lua-defold` | Lua (Defold) | B | **delivered (A7, nightly)** |
+| `engine-23-godot` | Godot | B | **delivered (A7, nightly)** |
 | `engine-24-haxe` | Haxe | A | **delivered (A4)** |
 | `engine-25-python-chaquopy` | Python (Chaquopy) | A | **delivered (A4)** |
-| `engine-26-qt-qml` | Qt / QML | B | planned (A7) |
+| `engine-26-qt-qml` | Qt / QML | B | **delivered (A7, nightly)** |
 | `engine-27-b4x-appinventor` | B4X / App Inventor | C | planned (A3) |
-| `engine-28-avalonia-dotnet` | Avalonia (.NET) | B | planned (A7) |
+| `engine-28-avalonia-dotnet` | Avalonia (.NET) | B | **delivered (A7, nightly)** |
 | `engine-29-python-kivy-beeware` | Python (Kivy/BeeWare) | C | planned (A3) |
 | `engine-30-wasm-in-app` | WASM in-app (module + JS/JNI host) | A | **delivered (A4)** |
 | `engine-31-hybrid` | Hybrid Kotlin+Rust+Hermes+WASM (TST-14) | A | **delivered (A4)** |
@@ -148,14 +148,14 @@ Every phase ends compiling green. Detailed exit criteria in
 | Phase | Scope | Status |
 |---|---|---|
 | **A0** | Repo scaffold + governance kit + CI skeletons + `tools/` generators | **in progress** |
-| A1 | Flagship skeleton (probe harness, manifest-complete with EVERY permission, PermissionsHub, ButtonGrid, IconGrid) | planned |
-| A2 | `sdk-ladder` (minSdk 9 first!) + `parser-torture` pack | planned |
-| A3 | Tier C engine fixtures + `expected-engines.json` | planned |
+| A1 | Flagship skeleton (probe harness, manifest-complete with EVERY permission, PermissionsHub, ButtonGrid, IconGrid) | delivered |
+| A2 | `sdk-ladder` (minSdk 9 first!) + `parser-torture` pack | delivered |
+| A3 | Tier C engine fixtures + `expected-engines.json` | delivered |
 | **A4** | Tier A real builds (Java, Kotlin, C/C++, Rust, Go, Zig, WASM, …) | **delivered (A4)** — 14 engines with REAL builds: orchestrator `tools/build-tier-a.py` + pinned toolchains (`tools/setup-tier-a-toolchain.sh`), packaging through the same fixture-pack path and `--verify-apk` contract check (CI `tier-a-engines`, 14-job matrix) |
 | **A5** | 3D/shader pillar (`:sim3d` golden + shader-library + textures/meshes/audio) | **done (A5)** — `:sim3d` engine 100% integer Q16 (perspective-correct software rasterizer, 10k-body physics, 100k CPU particles, marching cubes, skeleton animation) with byte-exact golden (`contracts/flagship/sim3d-golden.json`), Java==C++ native parity proven in CI, 239-program GLSL ES 3.1 shader-library (215 graphics + 24 compute) validated by glslang, PBR KTX2 textures + meshes (teapot/1024² terrain/50k crowd) + 5.1 audio packed into the APK (CI `flagship-3d`) |
 | **A6** | Size engineering to the [850 MB, 1000 MB] gate + `size-report.csv` | **done (A6)** — "fully optimized" `modern` release (R8 full, resource shrinking with keep.xml for the 1.800 `getIdentifier` families, vcsInfo off, deterministic signing via b64 fixture keystore) + 768 MiB deterministic `gen-bulk.py` payload under `assets/bulk/` (valid KTX2/PLY/WAV + `APKT-BULK1`, sha256/synthetic manifest, full/quick presets) and the real [850, 1000] MB gate with ±2% per-category drift (`size-budget.sh --baseline`, Size Gate workflow) |
-| A7 | Tier B nightly jobs + `compat-nightly` + docs site (mdBook) | planned |
-| A8 | v1.0 gate: full matrix green, deterministic build proven, v1.0.0 release | planned |
+| A7 | Tier B nightly jobs + `compat-nightly` + docs site (mdBook) | delivered |
+| A8 | v1.0 gate: full matrix green, deterministic build proven, v1.0.0 release | delivered |
 
 ## APKBot — anti-regression bot
 

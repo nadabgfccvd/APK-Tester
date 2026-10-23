@@ -1,0 +1,22 @@
+{
+  "build": "nightly",
+  "built_by": "build-tier-b.py",
+  "detector_artifacts": [
+    "assemblies/Avalonia.Controls.dll",
+    "lib/x86_64/libSkiaSharp.so",
+    "lib/x86_64/libmono-android.release.so"
+  ],
+  "dir": "engine-28-avalonia-dotnet",
+  "id": "engine-28",
+  "language": "C#/Avalonia",
+  "notes": ".NET Android com assemblies Avalonia.* + SkiaSharp; nomes reais dos nativos: libSkiaSharp.so (S maiúsculo) e libmono-android.release.so (.NET 8, antigo libmonodroid.so) — refinado em A7; build nightly (A7).",
+  "pins": {
+    "avalonia": "11.2.2",
+    "net-android-runtime-x64": "34.0.154",
+    "skiasharp-native-assets-android": "2.88.9"
+  },
+  "rustydroid_engines": [
+    "avalonia-dotnet"
+  ],
+  "tier": "B"
+}

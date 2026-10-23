@@ -115,7 +115,7 @@ executável"). Detalhes em [`suites/engines/README.md`](suites/engines/README.md
 | `engine-01-java` | Java (DEX, multi-dex, invoke-custom) | A | **entregue (A4)** |
 | `engine-02-kotlin` | Kotlin | A | **entregue (A4)** |
 | `engine-03-kmp` | Kotlin Multiplatform / Compose MP | A | **entregue (A4)** |
-| `engine-04-scala` | Scala | B | planejado (A7) |
+| `engine-04-scala` | Scala | B | **entregue (A7, nightly)** |
 | `engine-05-clojure` | Clojure | C | **entregue (A3)** |
 | `engine-06-groovy` | Groovy | A | **entregue (A4)** |
 | `engine-07-c-ndk` | C (NDK) | A | **entregue (A4)** |
@@ -124,22 +124,22 @@ executável"). Detalhes em [`suites/engines/README.md`](suites/engines/README.md
 | `engine-10-go` | Go (gomobile bind) | A | **entregue (A4)** |
 | `engine-11-objc` | Objective-C | C | **entregue (A3)** |
 | `engine-12-zig` | Zig (`zig cc` .so) | A | **entregue (A4)** |
-| `engine-13-flutter` | Flutter (Dart) | B | planejado (A7) |
-| `engine-14-react-native` | React Native (Hermes) | B | planejado (A7) |
-| `engine-15-cordova` | Cordova (assets/www) | B | planejado (A7) |
+| `engine-13-flutter` | Flutter (Dart) | B | **entregue (A7, nightly)** |
+| `engine-14-react-native` | React Native (Hermes) | B | **entregue (A7, nightly)** |
+| `engine-15-cordova` | Cordova (assets/www) | B | **entregue (A7, nightly)** |
 | `engine-16-tauri` | Tauri v2 | A | **entregue (A4)** |
-| `engine-17-nativescript` | NativeScript | B | planejado (A7) |
+| `engine-17-nativescript` | NativeScript | B | **entregue (A7, nightly)** |
 | `engine-18-maui-xamarin` | .NET MAUI / Xamarin | C | **entregue (A3)** |
 | `engine-19-unity-mono` | Unity (Mono) | C | **entregue (A3)** |
 | `engine-20-unity-il2cpp` | Unity (IL2CPP) | C | **entregue (A3)** |
 | `engine-21-unreal` | Unreal | C | **entregue (A3)** |
-| `engine-22-lua-defold` | Lua (Defold) | B | planejado (A7) |
-| `engine-23-godot` | Godot | B | planejado (A7) |
+| `engine-22-lua-defold` | Lua (Defold) | B | **entregue (A7, nightly)** |
+| `engine-23-godot` | Godot | B | **entregue (A7, nightly)** |
 | `engine-24-haxe` | Haxe | A | **entregue (A4)** |
 | `engine-25-python-chaquopy` | Python (Chaquopy) | A | **entregue (A4)** |
-| `engine-26-qt-qml` | Qt / QML | B | planejado (A7) |
+| `engine-26-qt-qml` | Qt / QML | B | **entregue (A7, nightly)** |
 | `engine-27-b4x-appinventor` | B4X / App Inventor | C | **entregue (A3)** |
-| `engine-28-avalonia-dotnet` | Avalonia (.NET) | B | planejado (A7) |
+| `engine-28-avalonia-dotnet` | Avalonia (.NET) | B | **entregue (A7, nightly)** |
 | `engine-29-python-kivy-beeware` | Python (Kivy/BeeWare) | C | **entregue (A3)** |
 | `engine-30-wasm-in-app` | WASM in-app (módulo + host JS/JNI) | A | **entregue (A4)** |
 | `engine-31-hybrid` | Híbrido Kotlin+Rust+Hermes+WASM (TST-14) | A | **entregue (A4)** |
@@ -159,7 +159,7 @@ Cada fase termina compilando verde. Critérios de saída detalhados em
 | **A4** | Builds reais Tier A (Java, Kotlin, C/C++, Rust, Go, Zig, WASM, …) | **entregue (A4)** — 14 engines com build REAL: orquestrador `tools/build-tier-a.py` + toolchains pinadas (`tools/setup-tier-a-toolchain.sh`), pack pelo mesmo caminho do fixture-pack e verificação `--verify-apk` contra o contrato (CI `tier-a-engines`, matriz de 14 jobs) |
 | **A5** | Pilar 3D/shaders (`:sim3d` golden + shader-library + texturas/meshes/áudio) | **entregue (A5)** — motor `:sim3d` 100% Q16 inteiro (rasterizador perspectiva-correto, física 10k, partículas 100k, marching cubes, esqueleto) com golden byte a byte (`contracts/flagship/sim3d-golden.json`), paridade nativa Java==C++ provada no CI, shader-library de 239 programas GLSL ES 3.1 (215 gráficos + 24 compute) validados por glslang, texturas PBR KTX2 + malhas (teapot/terreno 1024²/crowd 50k) + áudio 5.1 empacotados no APK (CI `flagship-3d`) |
 | **A6** | Engenharia de tamanho até o gate [850 MB, 1000 MB] + `size-report.csv` | **entregue (A6)** — release `modern` "fully optimized" (R8 full, resource shrinking com keep.xml das 1.800 famílias por `getIdentifier`, vcsInfo off, assinatura determinística via keystore de fixture b64) + carga determinística `gen-bulk.py` de 768 MiB em `assets/bulk/` (KTX2/PLY/WAV válidos + `APKT-BULK1`, manifest com sha256/synthetic, presets full/quick) e gate real [850, 1000] MiB com drift ±2% por categoria (`size-budget.sh --baseline`, workflow Size Gate) |
-| A7 | Jobs nightly Tier B + `compat-nightly` + site de docs (mdBook) | planejado |
+| A7 | Jobs nightly Tier B + `compat-nightly` + site de docs (mdBook) | **entregue** |
 | A8 | Gate v1.0: matriz completa verde, build determinístico provado, release v1.0.0 | planejado |
 
 ## APKBot — bot anti-regressão

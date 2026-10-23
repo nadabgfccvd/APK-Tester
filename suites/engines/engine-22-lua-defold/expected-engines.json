@@ -1,0 +1,20 @@
+{
+  "build": "nightly",
+  "built_by": "build-tier-b.py",
+  "detector_artifacts": [
+    "lib/arm64-v8a/libdmengine.so",
+    "assets/game.arcd",
+    "assets/game.arci"
+  ],
+  "dir": "engine-22-lua-defold",
+  "id": "engine-22",
+  "language": "Lua/Defold",
+  "notes": "Engine Defold (dmengine release, embutido no bob.jar 1.9.8) + archive game.arcd/arci do pipeline de conteúdo; ABI real do engine Android é arm64-v8a (refinado em A7); build nightly (A7).",
+  "pins": {
+    "defold-bob": "1.9.8"
+  },
+  "rustydroid_engines": [
+    "lua-defold"
+  ],
+  "tier": "B"
+}
