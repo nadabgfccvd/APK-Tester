@@ -93,14 +93,14 @@ permissões no APK binário com `aapt2`.
 | `app/src/main/java/.../widgets/` | 2 app widgets (`BehemothAppWidget`, `SecondAppWidget`) |
 | `app/src/main/res/` | res "de mão" commitado (XML de appwidget, regras de backup/rede, locales) |
 | `app/src/classic/` + `app/src/modern/` | overlays de manifesto por flavor (minSdk 9 vs 26; `sharedUserId` só no classic; `extractNativeLibs`/`useLegacyPackaging` fica no build a partir de A4) |
-| `app/build/generated/` + `app/src/main/assets/` | res e assets gerados em tempo de build pelos Exec tasks (`gen-strings` / `gen-icons` / `gen-assets`, seed 20261022) e pelo gerador de manifesto (assets `permissions/registry.json` + `permissions.tsv`) |
+| `app/build/generated/` + `app/src/main/assets/` | res e assets gerados em tempo de build pelos Exec tasks (`gen-strings` / `gen-icons` / `gen-assets` e, no A5, `gen-shaders` / `gen-textures` / `gen-meshes` / `gen-audio` — shader-library, texturas KTX2, malhas e áudio 5.1 sob `build/gen/sim3d`, seed 20261022) e pelo gerador de manifesto (assets `permissions/registry.json` + `permissions.tsv`) |
 
 ## Status
 
 | Item | Status |
 |---|---|
 | Esqueleto do flagship (probe harness + manifest completo + PermissionsHub + ButtonGrid + IconGrid, ~30 MB) | **entregue (A1)** — módulo `:app` Gradle (AGP 8.9.2, Gradle 8.11.1, JDK 17) com flavors classic/modern; 5 activities, 2 activity-aliases, 17 services (16 de sistema contando o DeviceAdmin receiver), 10 receivers, 2 providers, 2 widgets, 1 instrumentation; 1004 `uses-permission`, 2 `<permission>` + 1 `<permission-group>` + 1 `<permission-tree>`; build real e zero-drift no CI |
-| Pilar 3D/shaders (`:sim3d` golden + shader-library) | planejado (A5) |
+| Pilar 3D/shaders (`:sim3d` golden + shader-library) | **entregue (A5)** — módulo `:sim3d` (biblioteca Java pura Q16 inteiro: malha 1M vértices, rasterizador perspectiva-correto com z-buffer, física 10k corpos, 100k partículas, marching cubes 48³, esqueleto 16 juntas) com golden byte a byte (`contracts/flagship/sim3d-golden.json`, zero drift no CI) e paridade nativa Java==C++ provada; shader-library de 239 programas GLSL ES 3.1 (215 gráficos + 24 compute) validados por glslang no CI; texturas PBR KTX2 + malhas (teapot/terreno 1024²/crowd 50k) + áudio 5.1 gerados build-time e empacotados no APK; telas `Sim3dActivity` (MEDIA-SM-001) e `GlesProbeActivity` (MEDIA-GX-001, erro estruturado — nunca crash) |
 | Size gate completo ∈ [850 MB, 1000 MB] + `size-report.csv` | planejado (A6) |
 
 Nota: APKs de 850 MB+ são escala de sideload apenas (limite do Play ~200 MB

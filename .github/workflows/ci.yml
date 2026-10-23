@@ -256,6 +256,134 @@ jobs:
           path: suites/flagship/app/build/outputs/apk/*/debug/*.apk
           if-no-files-found: error
 
+  # A5: pilar 3D/shaders — motor :sim3d (Q16 inteiro) com golden zero-drift,
+  # paridade Java/C++ da fisica, validacao glslang dos 239 programas da
+  # shader-library e build do flagship com os ativos 3D empacotados.
+  flagship-3d:
+    name: "Flagship 3D/Shaders (A5): sim3d golden + shader-library + assets"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Componentes Android SDK (platform 36 + build-tools 35.0.0)
+        run: |
+          yes | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" \
+            "platforms;android-36" "build-tools;35.0.0" > /dev/null
+          echo "ANDROID_HOME=${ANDROID_HOME}" >> "${GITHUB_ENV}"
+
+      - name: Instalar glslang (validador GLSL ES 3.1)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq glslang-tools
+
+      - name: Golden selftest do motor (:sim3d)
+        run: |
+          cd suites/flagship
+          ./gradlew --no-daemon :sim3d:goldenSelftest
+
+      - name: Golden zero drift (reexecucao byte a byte vs contrato)
+        run: |
+          cd suites/flagship
+          ./gradlew --no-daemon :sim3d:goldenVerify
+          git diff --exit-code -- contracts/flagship/sim3d-golden.json
+          echo "[A5] zero drift: sim3d-golden.json reproduzido identico"
+
+      - name: Paridade nativa da fisica (Java == C++ JNI fallback)
+        run: |
+          cd suites/flagship
+          ./gradlew --no-daemon :sim3d:compileJava
+          CP="sim3d/build/classes/java/main"
+          cc -shared -fPIC -O2 -fwrapv \
+            -I"${JAVA_HOME}/include" -I"${JAVA_HOME}/include/linux" \
+            sim3d/src/main/cpp/sim3d_native.cpp -o /tmp/libsim3d_native.so
+          java -Xmx1g -Djava.library.path=/tmp -cp "${CP}" \
+            dev.apktester.behemoth.sim3d.Sim3dGolden --parity sim3d_native
+          echo "[A5] paridade inteira Java/C++ provada"
+
+      - name: Gerar shader-library (239 programas) e validar com glslang
+        run: |
+          python3 tools/gen-shaders.py --out /tmp/gen3d --seed 20261022
+          status=0
+          n=0
+          for f in /tmp/gen3d/shader-library/shaders/*/*.vert \
+                   /tmp/gen3d/shader-library/shaders/*/*.frag \
+                   /tmp/gen3d/shader-library/shaders/*/*.comp; do
+            glslangValidator "${f}" || status=1
+            n=$((n+1))
+          done
+          echo "[A5] glslang: ${n} arquivos GLSL ES 3.1 validados"
+          test "${status}" -eq 0
+
+      - name: Consistencia do index.json da shader-library (sha256 + uniforms)
+        run: |
+          python3 - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          root = Path("/tmp/gen3d/shader-library")
+          index = json.loads((root / "index.json").read_text(encoding="utf-8"))
+          assert index["count"] == len(index["programs"]) == 239
+          stages = {"graphics": 0, "compute": 0}
+          for prog in index["programs"]:
+              digest = hashlib.sha256()
+              for rel in prog["files"]:
+                  data = (Path("/tmp/gen3d") / rel).read_bytes()
+                  digest.update(data)
+              assert digest.hexdigest() == prog["sha256"], prog["id"]
+              spv = Path("/tmp/gen3d") / prog["spirv"]["file"]
+              blob = spv.read_bytes()
+              assert blob[:4] == b"\x03\x02\x23\x07", prog["id"]
+              assert len(blob) == prog["spirv"]["bytes"]
+              stages[prog["stage"]] += 1
+          assert stages["graphics"] == 215 and stages["compute"] == 24, stages
+          print(f"[A5] index.json ok: 239 programas ({stages['graphics']} graphics,"
+                f" {stages['compute']} compute), sha256 + blobs SPIR-V style conferidos")
+          PY
+
+      - name: Build do flagship com ativos 3D (classic + modern debug)
+        run: |
+          cd suites/flagship
+          ./gradlew --no-daemon :app:assembleClassicDebug :app:assembleModernDebug
+
+      - name: Assegurar ativos 3D dentro do APK binario
+        run: |
+          APK="suites/flagship/app/build/outputs/apk/classic/debug/app-classic-debug.apk"
+          test -f "${APK}"
+          python3 - <<'PY'
+          import json, zipfile
+          apk = "suites/flagship/app/build/outputs/apk/classic/debug/app-classic-debug.apk"
+          with zipfile.ZipFile(apk) as z:
+              names = set(z.namelist())
+          def need(path):
+              assert path in names, f"asset ausente do APK: {path}"
+          need("assets/shader-library/index.json")
+          with zipfile.ZipFile(apk) as z:
+              index = json.loads(z.read("assets/shader-library/index.json"))
+          shaders = sum(1 for n in names if n.startswith("assets/shader-library/shaders/"))
+          assert index["count"] == 239, index["count"]
+          assert shaders >= 239 * 3, f"arquivos de shader no APK: {shaders}"
+          meshes = [n for n in names if n.startswith("assets/mesh/")]
+          audio = [n for n in names if n.startswith("assets/audio/")]
+          textures = [n for n in names if n.startswith("assets/textures/")]
+          assert any("terrain_1024" in m for m in meshes), meshes
+          assert any("crowd_50000" in m for m in meshes)
+          assert len(audio) >= 2 and all(a.endswith(".wav") for a in audio)
+          assert len(textures) >= 12
+          print(f"[A5] APK ok: {shaders} arquivos de shader, {len(meshes)} malhas,"
+                f" {len(audio)} audio, {len(textures)} texturas")
+          PY
+
+      - name: Upload dos APKs (artefato de CI)
+        uses: actions/upload-artifact@v4
+        with:
+          name: flagship-3d-apks
+          path: suites/flagship/app/build/outputs/apk/*/debug/*.apk
+          if-no-files-found: error
+
   # A2: escada minSdk 9->36 — o MESMO app mínimo (1 activity + 1 service +
   # 1 receiver + 1 provider, 0 permissões) construído em 12 degraus. Os
   # flavors são lidos de rungs.properties (gerado) em tempo de configuração:

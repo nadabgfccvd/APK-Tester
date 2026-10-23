@@ -10,6 +10,8 @@
 
 [Parser Torture](parser-torture.md)
 
+[Pilar 3D/Shaders (:sim3d)](sim3d.md)
+
 [Integração RustyDroid](rustydroid-integration.md)
 
 ---

@@ -10,6 +10,28 @@ de compatibilidade verde).
 
 ## [Unreleased]
 
+### Adicionado (A5 — Pilar 3D/Shaders)
+
+- Módulo `:sim3d` (biblioteca Java pura, Q16.16 somente-inteiro): malha procedural de 1.048.576 vértices,
+  rasterizador de software com correção de perspectiva e z-buffer (4 frames × 1536 triângulos macro),
+  física de 10.000 corpos rígidos (120 passos fixos, grade uniforme, sono), 100.000 partículas CPU,
+  terreno por marching cubes (grade 48³, decomposição canônica em 6 tetraedros) e esqueleto animado
+  (16 juntas, 30 frames, skinning) — tudo com checksums FNV-1a 64 por passo.
+- Contrato `contracts/flagship/sim3d-golden.json` (2,4 KB) com zero drift no CI (`:sim3d:goldenVerify`
+  + `git diff --exit-code`) — execução de referência em 1,6 s no JVM.
+- Paridade nativa Java == C++ da física (`sim3d_native.cpp` + JNI, provada no CI via `--parity`).
+- shader-library: 239 programas GLSL ES 3.1 (215 gráficos + 24 compute com `barrier()`), blobs
+  SPIR-V style sintéticos honestos, `index.json` com sha256/uniforms/stage — todos validados pelo
+  `glslangValidator` no CI.
+- Ativos 3D build-time empacotados no flagship: texturas PBR KTX2 (raw R8G8B8A8 real; ETC1/ASTC
+  stubs honestos), malhas teapot/terreno 1024² (OBJ+GLB)/crowd 50k (glTF instanciado), áudio 5.1 WAV.
+- Telas `Sim3dActivity` (probe `MEDIA-SM-001`, rota CPU executa de verdade) e `GlesProbeActivity`
+  (probe `MEDIA-GX-001`, compila/linka toda a shader-library via GLES 3.1 com resultado estruturado;
+  lei: nunca crash). Manifesto/auditorias regeneradas (7 activities).
+- `contracts/suites.json`: +3 suites do flagship (sim3d-golden, sim3d-cpu, gles-probes).
+- CI: job `flagship-3d` (selftest, zero drift, paridade nativa, glslang, build + asseguração de
+  ativos no APK binário). Docs: `docs/src/sim3d.md`.
+
 ### Adicionado (A4 — Builds reais Tier A)
 
 - 14 engines Tier A com build REAL (payload executável — sem stubs, ADR
