@@ -1,0 +1,145 @@
+{
+  "description": "sha256 canônico dos payloads Tier C dentro dos APKs (âncora da verificação --verify-apk; regenere com python3 tools/gen-engine-fixtures.py --out TMP e copie o report para contracts/engines/)",
+  "engines": {
+    "engine-05-clojure": {
+      "dir": "engine-05-clojure",
+      "files": {
+        "assets/fixture-marker.txt": {
+          "bytes": 290,
+          "sha256": "c8fb725385a941c8911ba7ae10e8c8db7cb1d0762c4c129b1373d1a8c211f0c9"
+        }
+      }
+    },
+    "engine-11-objc": {
+      "dir": "engine-11-objc",
+      "files": {
+        "assets/fixture-marker.txt": {
+          "bytes": 288,
+          "sha256": "c519372d06a85dd5a189b83db306b3da7204e0a1887b7215eca83eaa1f85dfda"
+        },
+        "lib/x86_64/libobjc-fixture.so": {
+          "bytes": 4096,
+          "sha256": "62e4898b3ffc2bd4f845ad7897cb05fa47bbcbe28ac39e0ca7cb1efed3e9a7af"
+        }
+      }
+    },
+    "engine-18-maui-xamarin": {
+      "dir": "engine-18-maui-xamarin",
+      "files": {
+        "assemblies/Mono.Android.dll": {
+          "bytes": 4096,
+          "sha256": "395790060d443633d678ee0280bfbf3c2c16e09a1da43e07349ad77f4cb995f3"
+        },
+        "assemblies/MyApp.dll": {
+          "bytes": 4096,
+          "sha256": "23f15bf815d3e6925088fc87b3ddd932a6e7e83e1316d01451dd6337d7790784"
+        },
+        "assets/fixture-marker.txt": {
+          "bytes": 308,
+          "sha256": "8fd314ae75bed7af2337531ae6a8c31afc9930125d675f97aa96a63462a6961d"
+        },
+        "lib/x86_64/libmonodroid.so": {
+          "bytes": 4096,
+          "sha256": "139c5ebe76a321d319bf23490320b2a1e451d700040914ce35403bc78d8f5598"
+        }
+      }
+    },
+    "engine-19-unity-mono": {
+      "dir": "engine-19-unity-mono",
+      "files": {
+        "assets/bin/Data/Managed/Assembly-CSharp.dll": {
+          "bytes": 4096,
+          "sha256": "90606f957695007b20bcbb3dc81db971512376dfc8710789ae3f3cf0d32c166b"
+        },
+        "assets/fixture-marker.txt": {
+          "bytes": 302,
+          "sha256": "61d83fb0a8f1e2ab946b0bf1fe510138f3f007a0dc5c753f4d4e1d9b7efd89bb"
+        },
+        "lib/x86_64/libmonobdwgc-2.0.so": {
+          "bytes": 4096,
+          "sha256": "7ac90f5091cc5db6eb6fbc376ac8a2bf3d75003a1fec5c5355516b8838f8badc"
+        },
+        "lib/x86_64/libunity.so": {
+          "bytes": 4096,
+          "sha256": "28cc8ac16dd7c1e19f34d4c6155aadfad628144b347297d0f06e003f344e27d8"
+        }
+      }
+    },
+    "engine-20-unity-il2cpp": {
+      "dir": "engine-20-unity-il2cpp",
+      "files": {
+        "assets/bin/Data/Managed/Metadata/global-metadata.dat": {
+          "bytes": 2048,
+          "sha256": "0693e9e7bc403f73a9d6478e93251cd34f66e961bb8c2717b4214c7f4fa9df5d"
+        },
+        "assets/fixture-marker.txt": {
+          "bytes": 308,
+          "sha256": "c37cb95ca52d9cf0677e75a0c3a0372ffe72ac4d6247d92eb77421a03f8865b8"
+        },
+        "lib/x86_64/libil2cpp.so": {
+          "bytes": 4096,
+          "sha256": "647e611aa831898d1dc321167f6bb95abf93d56061edac41d958d8f85936c0a2"
+        },
+        "lib/x86_64/libunity.so": {
+          "bytes": 4096,
+          "sha256": "28cc8ac16dd7c1e19f34d4c6155aadfad628144b347297d0f06e003f344e27d8"
+        }
+      }
+    },
+    "engine-21-unreal": {
+      "dir": "engine-21-unreal",
+      "files": {
+        "assets/fixture-marker.txt": {
+          "bytes": 291,
+          "sha256": "68910b294a079b74cf52cdf66c9659990156539c223123fb2d59188841594ef2"
+        },
+        "assets/main.pak": {
+          "bytes": 1536,
+          "sha256": "98e9535b59444156fa17d204a407d7121f3962306f0cf09ab9b370d8e2ef09b6"
+        },
+        "lib/x86_64/libUE4.so": {
+          "bytes": 4096,
+          "sha256": "a79ec68497afd671f545327533e2f0407ce06b96b9c48fde1a9db184ea54acb2"
+        }
+      }
+    },
+    "engine-27-b4x-appinventor": {
+      "dir": "engine-27-b4x-appinventor",
+      "files": {
+        "assets/fixture-marker.txt": {
+          "bytes": 315,
+          "sha256": "8e403996b5b5b9ce4b9500f11658d895c7713e99635fb1e92a468521421933b3"
+        }
+      }
+    },
+    "engine-29-python-kivy-beeware": {
+      "dir": "engine-29-python-kivy-beeware",
+      "files": {
+        "assets/fixture-marker.txt": {
+          "bytes": 326,
+          "sha256": "d3f912e3f212d22f1d40b90c8633866e2ce417ad2ac5cd52b17bd618ba036149"
+        },
+        "assets/python/main.py": {
+          "bytes": 516,
+          "sha256": "48867c4f647af2f69d6ead0658830ec6c5cca24f0d6b266527631875450dee57"
+        },
+        "lib/x86_64/libpython3.11.so": {
+          "bytes": 4096,
+          "sha256": "c68a348903eceb02b7fcbf6483f95a7fdf5df49755088400f6620124ab6e9fa9"
+        }
+      }
+    },
+    "engine-32-twa-pwa": {
+      "dir": "engine-32-twa-pwa",
+      "files": {
+        "assets/fixture-marker.txt": {
+          "bytes": 286,
+          "sha256": "d8645ee4443111676ee62f74200bdcb18c57a4e19863f720213b8a03e470f92c"
+        }
+      }
+    }
+  },
+  "schema_version": 1,
+  "seed": 20261022,
+  "tool": "gen-engine-fixtures.py"
+}

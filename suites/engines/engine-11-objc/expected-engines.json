@@ -1,0 +1,18 @@
+{
+  "build": "fixture",
+  "detector_artifacts": [
+    "lib/x86_64/libobjc-fixture.so",
+    "assets/fixture-marker.txt"
+  ],
+  "dir": "engine-11-objc",
+  "engine": "engine-11-objc",
+  "language": "Objective-C",
+  "note": "fixture de detecção; payload não executável (ADR 0003). Empacotada por tools/fixture-pack.py, payloads por tools/gen-engine-fixtures.py.",
+  "pack_command": "python3 tools/fixture-pack.py --fixture engine-11-objc --out dist",
+  "payload_not_executable": true,
+  "rustydroid_engines": [
+    "objc"
+  ],
+  "tier": "C",
+  "verify_command": "python3 tools/gen-engine-fixtures.py --verify-apk dist/engine-11-objc.apk --engine engine-11-objc"
+}

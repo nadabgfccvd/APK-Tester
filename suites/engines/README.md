@@ -66,6 +66,16 @@ lei do RustyDroid ("detecção não valida payload nem autoriza execução", ADR
 - **Tier B:** builds nightly na fase **A7** (`engines-nightly.yml` +
   `scripts/compat-nightly.sh`).
 
-Os diretórios ainda não existem nesta fase (A0). Ver a matriz consolidada e
-os contratos em `contracts/engines/expected-engines.json` quando criados, e
-o [README.md](../../README.md) raiz para o contexto geral.
+Tier C **populado na fase A3**: os 9 diretórios (`engine-05-clojure`,
+`engine-11-objc`, `engine-18-maui-xamarin`, `engine-19-unity-mono`,
+`engine-20-unity-il2cpp`, `engine-21-unreal`, `engine-27-b4x-appinventor`,
+`engine-29-python-kivy-beeware`, `engine-32-twa-pwa`) contêm
+`expected-engines.json` (gerado por `tools/gen-engine-fixtures.py
+--sync-contracts`, zero drift contra o contrato canônico
+`contracts/engines/expected-engines.json`) e um README próprio com a
+declaração de honestidade. Os APKs são empacotados pela toolchain real no CI
+(job `tier-c-engines`) e verificados contra
+`contracts/engines/tier-c-payload-report.json`.
+
+Tier A/B: diretórios populados nas fases A4/A7. Ver a matriz consolidada e o
+[README.md](../../README.md) raiz para o contexto geral.

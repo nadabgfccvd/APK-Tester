@@ -1,0 +1,18 @@
+{
+  "build": "fixture",
+  "detector_artifacts": [
+    "lib/x86_64/libUE4.so",
+    "assets/*.pak"
+  ],
+  "dir": "engine-21-unreal",
+  "engine": "engine-21-unreal",
+  "language": "C++/Unreal",
+  "note": "fixture de detecção; payload não executável (ADR 0003). Empacotada por tools/fixture-pack.py, payloads por tools/gen-engine-fixtures.py.",
+  "pack_command": "python3 tools/fixture-pack.py --fixture engine-21-unreal --out dist",
+  "payload_not_executable": true,
+  "rustydroid_engines": [
+    "unreal"
+  ],
+  "tier": "C",
+  "verify_command": "python3 tools/gen-engine-fixtures.py --verify-apk dist/engine-21-unreal.apk --engine engine-21-unreal"
+}
