@@ -1,7 +1,8 @@
 //! engine-09 (Tier A, A4): cdylib Rust real via cargo-ndk.
 //! Sem dependências externas (build offline); JNI exports com nomes reais.
-//! O pânico compilado (black_box) garante a presença de `rust_begin_unwind`
-//! (core) no ELF — âncora elf-strings do contrato.
+//! A âncora de pânico com condição irreconhecível pelo otimizador mantém
+//! `rust_begin_unwind` (core) vivo no objeto e no .symtab (strip=false) —
+//! âncora elf-strings do contrato.
 
 use std::hint::black_box;
 
@@ -19,21 +20,17 @@ fn checksum_inner(seed: u32) -> u32 {
     h
 }
 
-/// caminho compilado mas nunca executado: força o runtime de pânico do
-/// core/std a entrar no binário (rust_begin_unwind permanece no .symtab).
-#[allow(dead_code, unreachable_code)]
-fn panic_anchor() -> u32 {
-    if black_box(false) {
-        panic!("inacessível por construção — âncora do contrato");
-    }
-    0
-}
-
 #[no_mangle]
 pub extern "C" fn Java_dev_apktester_engine_engine09rust_probe_probe(
     _env: *mut core::ffi::c_void,
     _thiz: *mut core::ffi::c_void,
 ) -> i32 {
+    // Condição runtime (pid == 0 nunca acontece num processo real): o
+    // compilador não consegue remover o ramo do pânico, então a machinery
+    // rust_begin_unwind permanece linkada no cdylib.
+    if black_box(std::process::id() == 0) {
+        panic!("apktester: âncora de contrato inatingível por construção");
+    }
     checksum_inner(20261022) as i32
 }
 

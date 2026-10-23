@@ -115,8 +115,8 @@ SPECS = {
     "engine-03-kmp": {
         "kind": "kmp",
         "language": "Kotlin Multiplatform",
-        "description": "Fonte commonMain/platformMain com expect/actual "
-                       "compilada pelo kotlinc + runtime Compose-MP "
+        "description": "Fontes compartilhadas (common/platform) "
+                       "compiladas pelo kotlinc + runtime Compose-MP "
                        "(runtime-desktop 1.6.11) no mesmo DEX.",
     },
     "engine-06-groovy": {
@@ -552,7 +552,6 @@ def plan_for_engine(engine: str, args, work: str, stage: str,
                            "-include-runtime",
             "command": [env_tool("KOTLINC") or ph["kotlinc"],
                         "-include-runtime", "-module-name", engine,
-                        "-Xmulti-platform",
                         "-d", os.path.join(work, "kmp-classes.jar")]
                        + kt_sources(engine),
             "cwd": None})

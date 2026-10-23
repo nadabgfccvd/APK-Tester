@@ -29,16 +29,15 @@ setenv() {
   fi
 }
 
-# add_path DIR — acrescenta ao PATH deste shell e dos próximos passos.
+# add_path DIR — acrescenta ao PATH deste shell. NÃO escreve PATH no
+# GITHUB_ENV: lá, PATH=... SUBSTITUI o PATH inteiro dos passos seguintes
+# (quebrou o python3 do job do haxe). setup + build rodam no MESMO passo.
 add_path() {
   local dir="$1"
   case ":$PATH:" in
     *":$dir:"*) : ;;
     *) PATH="$dir:$PATH"; export PATH ;;
   esac
-  if [ -n "${GITHUB_ENV:-}" ]; then
-    echo "PATH=$dir" >> "$GITHUB_ENV"  # GitHub concatena ao PATH do job
-  fi
 }
 
 fetch() { # fetch <url> <dest>
@@ -176,6 +175,10 @@ case "$ENGINE" in
     add_path "$(go env GOPATH)/bin"
     setenv GOMOBILE "$(command -v gomobile)"
     gomobile init
+    # o módulo gobind requer golang.org/x/mobile (bind gera imports do
+    # bridge) — tidy resolve o go.sum no runner
+    GOBIND_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../suites/engines/engine-10-go/gobind" && pwd)"
+    (cd "$GOBIND_DIR" && go mod tidy)
     ensure_ndk
     ;;
 
