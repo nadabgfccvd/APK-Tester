@@ -630,7 +630,7 @@ def plan_for_engine(engine: str, args, work: str, stage: str,
             "description": f"gomobile bind (x/mobile {PINS['gomobile']}, "
                            "abi x86_64, api 26) -> AAR",
             "command": [env_tool("GOMOBILE") or ph["gomobile"], "bind",
-                        "-target=android", "-abi=x86_64",
+                        "-target=android/x86_64",
                         f"-androidapi={MIN_SDK}",
                         "-o", os.path.join(work, "engine.aar"), "."],
             "cwd": os.path.join(SUITES_ROOT, engine, "gobind")})

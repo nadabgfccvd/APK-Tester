@@ -11,7 +11,7 @@
   "notes": "Módulo WASM compilado em assets + host wasmer/wasmtime nativo + bridge JNI.",
   "pins": {
     "cargo-ndk": "3.5.0",
-    "rust": "1.83.0",
+    "rust": "stable (runner; versão exata no report)",
     "wabt": "1.0.36",
     "wasmer": "7"
   },

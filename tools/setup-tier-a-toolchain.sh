@@ -66,6 +66,7 @@ ensure_ndk() {
     fail "Android NDK não encontrado (instale 'ndk;27.0.12077973' via sdkmanager)"
   fi
   setenv ANDROID_NDK "$ndk"
+  setenv ANDROID_NDK_HOME "$ndk"
   echo "[setup-tier-a] NDK: $ndk"
 }
 
@@ -98,8 +99,9 @@ case "$ENGINE" in
     KOTLIN_VER=2.0.20
     fetch "https://github.com/JetBrains/kotlin/releases/download/v${KOTLIN_VER}/kotlin-compiler-${KOTLIN_VER}.zip" \
       "$CACHE/kotlin-compiler-${KOTLIN_VER}.zip"
-    [ -d "$CACHE/kotlinc-${KOTLIN_VER}" ] || unzip -q "$CACHE/kotlin-compiler-${KOTLIN_VER}.zip" -d "$CACHE"
-    setenv KOTLINC "$CACHE/kotlinc-${KOTLIN_VER}/bin/kotlinc"
+    # o zip extrai para kotlinc/ (sem sufixo): desembrulha num subdir por versão
+    [ -d "$CACHE/kotlin-${KOTLIN_VER}/kotlinc" ] || unzip -q "$CACHE/kotlin-compiler-${KOTLIN_VER}.zip" -d "$CACHE/kotlin-${KOTLIN_VER}"
+    setenv KOTLINC "$CACHE/kotlin-${KOTLIN_VER}/kotlinc/bin/kotlinc"
     [ -x "$KOTLINC" ] || fail "kotlinc não executável"
     ;;
 
@@ -142,8 +144,8 @@ case "$ENGINE" in
     KOTLIN_VER=2.0.20
     fetch "https://github.com/JetBrains/kotlin/releases/download/v${KOTLIN_VER}/kotlin-compiler-${KOTLIN_VER}.zip" \
       "$CACHE/kotlin-compiler-${KOTLIN_VER}.zip"
-    [ -d "$CACHE/kotlinc-${KOTLIN_VER}" ] || unzip -q "$CACHE/kotlin-compiler-${KOTLIN_VER}.zip" -d "$CACHE"
-    setenv KOTLINC "$CACHE/kotlinc-${KOTLIN_VER}/bin/kotlinc"
+    [ -d "$CACHE/kotlin-${KOTLIN_VER}/kotlinc" ] || unzip -q "$CACHE/kotlin-compiler-${KOTLIN_VER}.zip" -d "$CACHE/kotlin-${KOTLIN_VER}"
+    setenv KOTLINC "$CACHE/kotlin-${KOTLIN_VER}/kotlinc/bin/kotlinc"
     WABT_VER=1.0.36
     fetch "https://github.com/WebAssembly/wabt/releases/download/${WABT_VER}/wabt-${WABT_VER}-ubuntu-20.04.tar.gz" \
       "$CACHE/wabt-${WABT_VER}.tar.gz"
@@ -190,20 +192,29 @@ case "$ENGINE" in
     HAXE_VER=4.3.6
     fetch "https://github.com/HaxeFoundation/haxe/releases/download/${HAXE_VER}/haxe-${HAXE_VER}-linux64.tar.gz" \
       "$CACHE/haxe-${HAXE_VER}.tar.gz"
-    [ -d "$CACHE/haxe-${HAXE_VER}" ] || tar -xzf "$CACHE/haxe-${HAXE_VER}.tar.gz" -C "$CACHE"
-    setenv HAXE "$CACHE/haxe-${HAXE_VER}/haxe"
-    setenv HAXE_STD_PATH "$CACHE/haxe-${HAXE_VER}/std"
+    # o tarball extrai para haxe_<buildid>/: localiza a raiz única
+    mkdir -p "$CACHE/haxe-${HAXE_VER}"
+    HAXE_BIN="$(find "$CACHE/haxe-${HAXE_VER}" -maxdepth 2 -name haxe -type f 2>/dev/null | head -1)"
+    if [ -z "$HAXE_BIN" ]; then
+      tar -xzf "$CACHE/haxe-${HAXE_VER}.tar.gz" -C "$CACHE/haxe-${HAXE_VER}"
+      HAXE_BIN="$(find "$CACHE/haxe-${HAXE_VER}" -maxdepth 2 -name haxe -type f | head -1)"
+    fi
+    HAXE_DIR="$(dirname "$HAXE_BIN")"
+    [ -n "$HAXE_DIR" ] || fail "raiz do tarball haxe não encontrada"
+    setenv HAXE "$HAXE_DIR/haxe"
+    setenv HAXE_STD_PATH "$HAXE_DIR/std"
     [ -x "$HAXE" ] || fail "haxe não executável"
-    add_path "$CACHE/haxe-${HAXE_VER}"
-    # ant (hxjava usa build.xml) + haxelib/hxjava
-    if ! command -v ant >/dev/null 2>&1; then
+    add_path "$HAXE_DIR"
+    # ant (hxjava usa build.xml) + neko (o haxelib do tarball é binário
+    # neko: libneko.so.2) + haxelib/hxjava
+    if ! command -v ant >/dev/null 2>&1 || ! ldconfig -p 2>/dev/null | grep -q libneko.so; then
       sudo apt-get update -qq
-      sudo apt-get install -y -qq ant >/dev/null
+      sudo apt-get install -y -qq ant neko >/dev/null
     fi
     "$HAXE" --version
     mkdir -p "$HOME/.haxelib"
-    "$CACHE/haxe-${HAXE_VER}/haxelib" setup "$HOME/.haxelib"
-    "$CACHE/haxe-${HAXE_VER}/haxelib" install hxjava --always >/dev/null
+    "$HAXE_DIR/haxelib" setup "$HOME/.haxelib"
+    "$HAXE_DIR/haxelib" install hxjava --always >/dev/null
     ;;
 
   engine-25-python-chaquopy)

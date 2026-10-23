@@ -12,7 +12,7 @@
   "notes": "cargo-ndk jni crate; marcador ELF do runtime Rust.",
   "pins": {
     "cargo-ndk": "3.5.0",
-    "rust": "1.83.0"
+    "rust": "stable (runner; versão exata no report)"
   },
   "rustydroid_engines": [
     "rust"

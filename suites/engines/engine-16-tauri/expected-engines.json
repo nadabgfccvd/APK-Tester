@@ -11,7 +11,7 @@
   "notes": "Tauri v2 mobile: libs tauri/wry (Rust) + WebView system.",
   "pins": {
     "cargo-ndk": "3.5.0",
-    "rust": "1.83.0",
+    "rust": "stable (runner; versão exata no report)",
     "tauri": "2.12",
     "wry": "0.57"
   },
