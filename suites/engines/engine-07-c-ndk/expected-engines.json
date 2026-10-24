@@ -8,12 +8,23 @@
   "dir": "engine-07-c-ndk",
   "id": "engine-07",
   "language": "C (NDK)",
-  "notes": "ELF C puro com exports JNI Java_*; sem STL.",
+  "notes": "ELF C puro com exports JNI Java_*; sem STL. detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra).",
   "pins": {
     "ndk": "r27 (ANDROID_NDK_LATEST_HOME do runner)"
   },
   "rustydroid_engines": [
-    "c"
+    "c-ndk",
+    "cpp-ndk",
+    "generated-java",
+    "go-mobile",
+    "haxe",
+    "java",
+    "jvm-dynamic",
+    "kotlin",
+    "kotlin-multiplatform",
+    "objective-c-ndk",
+    "rust-ndk",
+    "zig-llvm"
   ],
   "tier": "A"
 }

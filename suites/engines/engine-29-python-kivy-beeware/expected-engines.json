@@ -7,11 +7,23 @@
   "dir": "engine-29-python-kivy-beeware",
   "id": "engine-29",
   "language": "Python/Kivy/BeeWare",
-  "notes": "fixture de detecção; payload não executável (ADR 0003). Empacotada por tools/fixture-pack.py, payloads por tools/gen-engine-fixtures.py.",
+  "notes": "detection fixture, payload not executable. Stub libpython + entrypoint python empacotado (layout python-for-android/briefcase). detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra).",
   "pack_command": "python3 tools/fixture-pack.py --fixture engine-29-python-kivy-beeware --out dist",
   "payload_not_executable": true,
   "rustydroid_engines": [
-    "python-kivy-beeware"
+    "c-ndk",
+    "cpp-ndk",
+    "generated-java",
+    "go-mobile",
+    "haxe",
+    "java",
+    "jvm-dynamic",
+    "kotlin",
+    "kotlin-multiplatform",
+    "objective-c-ndk",
+    "python-engines",
+    "rust-ndk",
+    "zig-llvm"
   ],
   "tier": "C",
   "verify_command": "python3 tools/gen-engine-fixtures.py --verify-apk dist/engine-29-python-kivy-beeware.apk --engine engine-29-python-kivy-beeware"

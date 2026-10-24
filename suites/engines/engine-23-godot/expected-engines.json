@@ -8,12 +8,24 @@
   "dir": "engine-23-godot",
   "id": "engine-23",
   "language": "GDScript/Godot",
-  "notes": "Export headless do Godot: libgodot_android.so + pack .pck; build nightly (A7).",
+  "notes": "Export headless do Godot: libgodot_android.so + pack .pck; build nightly (A7). detect (snapshot 2026-10-24): 'godot' Signature.",
   "pins": {
     "godot": "4.3-stable"
   },
   "rustydroid_engines": [
-    "godot"
+    "c-ndk",
+    "cpp-ndk",
+    "generated-java",
+    "go-mobile",
+    "godot",
+    "haxe",
+    "java",
+    "jvm-dynamic",
+    "kotlin",
+    "kotlin-multiplatform",
+    "objective-c-ndk",
+    "rust-ndk",
+    "zig-llvm"
   ],
   "tier": "B"
 }

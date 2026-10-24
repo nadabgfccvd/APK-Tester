@@ -8,12 +8,17 @@
   "dir": "engine-24-haxe",
   "id": "engine-24",
   "language": "Haxe",
-  "notes": "Target hxjava: classes haxe.root no DEX.",
+  "notes": "Target hxjava: classes haxe.root no DEX. detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra).",
   "pins": {
     "haxe": "4.3.6"
   },
   "rustydroid_engines": [
-    "haxe"
+    "generated-java",
+    "haxe",
+    "java",
+    "jvm-dynamic",
+    "kotlin",
+    "kotlin-multiplatform"
   ],
   "tier": "A"
 }

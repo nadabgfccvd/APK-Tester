@@ -324,6 +324,33 @@ de compatibilidade verde).
   lacuna de cobertura em toda execução; o determinismo byte a byte dos 16
   geradores segue provado por `tools/verify-deterministic.sh` (16/16 PASS).
 
+### Corrigido (AUDIT_ROADMAP_V2 — R1.3: drift real do answer key)
+
+- `contracts/engines/expected-engines.json` + 32 contratos per-dir +
+  `tools/gen-engine-fixtures.py`: o answer key de `rustydroid_engines`
+  era ASPIRACIONAL (nunca exercitado — SKIP=32 em todo nightly desde
+  sempre) e divergia do registro REAL do detector em 9 entradas
+  (maui-xamarin->dotnet-maui, lua-defold->lua-engines,
+  avalonia-dotnet->avalonia, python-kivy-beeware->python-engines,
+  b4x-appinventor sem registro, kmp->kotlin-multiplatform, c->c-ndk,
+  cpp->cpp-ndk, rust->rust-ndk, go->go-mobile, objc->objective-c-ndk,
+  zig->zig-llvm). Verificado CONTRA OS 32 APKs REAIS (artefatos CI):
+  o answer key passa a ser o conjunto EMITIDO completo e determinístico
+  do detector (linhas Signature/Candidate), com o estado Signature
+  documentado em `notes` e os GAPs do detector documentados por entrada
+  (tauri, lua-defold/libdmengine.so, twa-pwa sem asset_statements,
+  scala/clojure/groovy/b4x sem registro) — achados reais para o repo
+  irmão (issue #23 do nightly).
+- `scripts/compat-nightly.sh`: matcher da answer key ancora em LINHAS do
+  detector (`id Signature/Candidate` em row-start) — antes casava
+  substring solta no texto e o nome do pacote do fixture
+  (engineNNnome) mascarava drift (ex.: 'scala' casava via pacote
+  engine04scala mesmo sem registro).
+- `tools/v1-gate.py`: `WORKFLOWS_REQUIRED` ganha
+  `rustydroid-snapshot.yml` (workflow permanente do ADR 0004).
+- `contracts/engines/tier-c-payload-report.json`: payload dos marcadores
+  Tier C regenerado (o marker.txt embute os tokens do answer key).
+
 ## [1.0.1]
 
 ### Corrigido

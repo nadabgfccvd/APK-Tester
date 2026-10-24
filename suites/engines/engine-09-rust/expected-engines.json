@@ -9,13 +9,24 @@
   "dir": "engine-09-rust",
   "id": "engine-09",
   "language": "Rust",
-  "notes": "cargo-ndk jni crate; marcador ELF do runtime Rust.",
+  "notes": "cargo-ndk jni crate; marcador ELF do runtime Rust. detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra).",
   "pins": {
     "cargo-ndk": "3.5.0",
     "rust": "stable (runner; versão exata no report)"
   },
   "rustydroid_engines": [
-    "rust"
+    "c-ndk",
+    "cpp-ndk",
+    "generated-java",
+    "go-mobile",
+    "haxe",
+    "java",
+    "jvm-dynamic",
+    "kotlin",
+    "kotlin-multiplatform",
+    "objective-c-ndk",
+    "rust-ndk",
+    "zig-llvm"
   ],
   "tier": "A"
 }

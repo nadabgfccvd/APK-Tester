@@ -9,12 +9,18 @@
   "dir": "engine-15-cordova",
   "id": "engine-15",
   "language": "JS/Cordova",
-  "notes": "WebView app: assets/www completo; build nightly (A7).",
+  "notes": "WebView app: assets/www completo; build nightly (A7). detect (snapshot 2026-10-24): 'cordova' Signature.",
   "pins": {
     "cordova-android": "14.0.1"
   },
   "rustydroid_engines": [
-    "cordova"
+    "cordova",
+    "generated-java",
+    "haxe",
+    "java",
+    "jvm-dynamic",
+    "kotlin",
+    "kotlin-multiplatform"
   ],
   "tier": "B"
 }

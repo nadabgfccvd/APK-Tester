@@ -9,12 +9,24 @@
   "dir": "engine-13-flutter",
   "id": "engine-13",
   "language": "Dart/Flutter",
-  "notes": "libapp.so (AOT Dart) + flutter_assets; build nightly (A7).",
+  "notes": "libapp.so (AOT Dart) + flutter_assets; build nightly (A7). detect (snapshot 2026-10-24): 'flutter' Signature.",
   "pins": {
     "flutter": "3.24.5"
   },
   "rustydroid_engines": [
-    "flutter"
+    "c-ndk",
+    "cpp-ndk",
+    "flutter",
+    "generated-java",
+    "go-mobile",
+    "haxe",
+    "java",
+    "jvm-dynamic",
+    "kotlin",
+    "kotlin-multiplatform",
+    "objective-c-ndk",
+    "rust-ndk",
+    "zig-llvm"
   ],
   "tier": "B"
 }

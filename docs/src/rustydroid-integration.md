@@ -37,11 +37,13 @@ EOF
 ```bash
 # por engine
 rd engine detect suites/engines/engine-09-rust/dist/app.apk
-# esperado: rust (ver contracts/engines/expected-engines.json, entry engine-09)
+# esperado: linha 'rust-ndk Candidate' (answer key = conjunto EMITIDO
+# completo do detector; ver contracts/engines/expected-engines.json)
 
 # híbrido TST-14: os quatro marcadores num único APK
 rd engine detect suites/engines/engine-31-hybrid/dist/app.apk
-# esperado: tst-14-hybrid
+# esperado: linhas 'react-native' + 'wasm' (candidates) — o híbrido não
+# tem id próprio no registro do detector
 ```
 
 O answer key canônico é `contracts/engines/expected-engines.json`

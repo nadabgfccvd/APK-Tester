@@ -9,10 +9,15 @@
   "dir": "engine-01-java",
   "id": "engine-01",
   "language": "Java",
-  "notes": "Multi-dex com invoke-custom; build real no CI (A4).",
+  "notes": "Multi-dex com invoke-custom; build real no CI (A4). detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra).",
   "pins": {},
   "rustydroid_engines": [
-    "java"
+    "generated-java",
+    "haxe",
+    "java",
+    "jvm-dynamic",
+    "kotlin",
+    "kotlin-multiplatform"
   ],
   "tier": "A"
 }

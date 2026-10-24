@@ -8,12 +8,24 @@
   "dir": "engine-17-nativescript",
   "id": "engine-17",
   "language": "JS/NativeScript",
-  "notes": "Runtime NativeScript (@nativescript/android@8.8.2) + app JS em assets/app; nome real do runtime tem S maiúsculo (refinado em A7); build nightly (A7).",
+  "notes": "Runtime NativeScript (@nativescript/android@8.8.2) + app JS em assets/app; nome real do runtime tem S maiúsculo (refinado em A7); build nightly (A7). detect (snapshot 2026-10-24): 'nativescript' Signature.",
   "pins": {
     "nativescript-android": "8.8.2"
   },
   "rustydroid_engines": [
-    "nativescript"
+    "c-ndk",
+    "cpp-ndk",
+    "generated-java",
+    "go-mobile",
+    "haxe",
+    "java",
+    "jvm-dynamic",
+    "kotlin",
+    "kotlin-multiplatform",
+    "nativescript",
+    "objective-c-ndk",
+    "rust-ndk",
+    "zig-llvm"
   ],
   "tier": "B"
 }

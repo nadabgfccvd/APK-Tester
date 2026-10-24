@@ -9,14 +9,27 @@
   "dir": "engine-28-avalonia-dotnet",
   "id": "engine-28",
   "language": "C#/Avalonia",
-  "notes": ".NET Android com assemblies Avalonia.* + SkiaSharp; nomes reais dos nativos: libSkiaSharp.so (S maiúsculo) e libmono-android.release.so (.NET 8, antigo libmonodroid.so) — refinado em A7; build nightly (A7).",
+  "notes": ".NET Android com assemblies Avalonia.* + SkiaSharp; nomes reais dos nativos: libSkiaSharp.so (S maiúsculo) e libmono-android.release.so (.NET 8, antigo libmonodroid.so) — refinado em A7; build nightly (A7). detect (snapshot 2026-10-24): 'avalonia' Signature.",
   "pins": {
     "avalonia": "11.2.2",
     "net-android-runtime-x64": "34.0.154",
     "skiasharp-native-assets-android": "2.88.9"
   },
   "rustydroid_engines": [
-    "avalonia-dotnet"
+    "avalonia",
+    "c-ndk",
+    "cpp-ndk",
+    "dotnet-maui",
+    "generated-java",
+    "go-mobile",
+    "haxe",
+    "java",
+    "jvm-dynamic",
+    "kotlin",
+    "kotlin-multiplatform",
+    "objective-c-ndk",
+    "rust-ndk",
+    "zig-llvm"
   ],
   "tier": "B"
 }

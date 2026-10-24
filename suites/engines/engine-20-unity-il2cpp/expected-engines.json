@@ -8,11 +8,23 @@
   "dir": "engine-20-unity-il2cpp",
   "id": "engine-20",
   "language": "C#/Unity IL2CPP",
-  "notes": "fixture de detecção; payload não executável (ADR 0003). Empacotada por tools/fixture-pack.py, payloads por tools/gen-engine-fixtures.py.",
+  "notes": "detection fixture, payload not executable. libil2cpp.so + global-metadata.dat stubs (layout IL2CPP correto). detect (snapshot 2026-10-24): 'unity-il2cpp' Signature.",
   "pack_command": "python3 tools/fixture-pack.py --fixture engine-20-unity-il2cpp --out dist",
   "payload_not_executable": true,
   "rustydroid_engines": [
-    "unity-il2cpp"
+    "c-ndk",
+    "cpp-ndk",
+    "generated-java",
+    "go-mobile",
+    "haxe",
+    "java",
+    "jvm-dynamic",
+    "kotlin",
+    "kotlin-multiplatform",
+    "objective-c-ndk",
+    "rust-ndk",
+    "unity-il2cpp",
+    "zig-llvm"
   ],
   "tier": "C",
   "verify_command": "python3 tools/gen-engine-fixtures.py --verify-apk dist/engine-20-unity-il2cpp.apk --engine engine-20-unity-il2cpp"

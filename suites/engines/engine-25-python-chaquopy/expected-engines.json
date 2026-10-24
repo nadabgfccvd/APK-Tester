@@ -9,14 +9,26 @@
   "dir": "engine-25-python-chaquopy",
   "id": "engine-25",
   "language": "Python/Chaquopy",
-  "notes": "Chaquopy: libpython3.x.so + assets/chaquopy (bootstrap e stdlib zip).",
+  "notes": "Chaquopy: libpython3.x.so + assets/chaquopy (bootstrap e stdlib zip). detect (snapshot 2026-10-24): 'python-engines' Signature.",
   "pins": {
     "agp": "8.7.3",
     "chaquopy": "16.1.0",
     "gradle": "8.10.2"
   },
   "rustydroid_engines": [
-    "python-chaquopy"
+    "c-ndk",
+    "cpp-ndk",
+    "generated-java",
+    "go-mobile",
+    "haxe",
+    "java",
+    "jvm-dynamic",
+    "kotlin",
+    "kotlin-multiplatform",
+    "objective-c-ndk",
+    "python-engines",
+    "rust-ndk",
+    "zig-llvm"
   ],
   "tier": "A"
 }

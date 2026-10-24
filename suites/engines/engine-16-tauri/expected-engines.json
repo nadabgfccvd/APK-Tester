@@ -8,7 +8,7 @@
   "dir": "engine-16-tauri",
   "id": "engine-16",
   "language": "Rust/Tauri v2",
-  "notes": "Tauri v2 mobile: libs tauri/wry (Rust) + WebView system.",
+  "notes": "Tauri v2 mobile: libs tauri/wry (Rust) + WebView system. detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra). GAP do detector: id 'tauri' nao dispara para a build real (marcadores do registro divergem do layout cargo-ndk); documentado para o repo irmao.",
   "pins": {
     "cargo-ndk": "3.5.0",
     "rust": "stable (runner; versão exata no report)",
@@ -16,7 +16,18 @@
     "wry": "0.57"
   },
   "rustydroid_engines": [
-    "tauri"
+    "c-ndk",
+    "cpp-ndk",
+    "generated-java",
+    "go-mobile",
+    "haxe",
+    "java",
+    "jvm-dynamic",
+    "kotlin",
+    "kotlin-multiplatform",
+    "objective-c-ndk",
+    "rust-ndk",
+    "zig-llvm"
   ],
   "tier": "A"
 }

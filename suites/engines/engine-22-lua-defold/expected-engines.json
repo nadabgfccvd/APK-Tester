@@ -9,12 +9,23 @@
   "dir": "engine-22-lua-defold",
   "id": "engine-22",
   "language": "Lua/Defold",
-  "notes": "Engine Defold (dmengine release, embutido no bob.jar 1.9.8) + archive game.arcd/arci do pipeline de conteúdo; ABI real do engine Android é arm64-v8a (refinado em A7); build nightly (A7).",
+  "notes": "Engine Defold (dmengine release, embutido no bob.jar 1.9.8) + archive game.arcd/arci do pipeline de conteúdo; ABI real do engine Android é arm64-v8a (refinado em A7); build nightly (A7). detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra). GAP do detector: regra do registro espera libdefold.so, a build real do Defold produz libdmengine.so — 'lua-engines' nao dispara; documentado para o repo irmao.",
   "pins": {
     "defold-bob": "1.9.8"
   },
   "rustydroid_engines": [
-    "lua-defold"
+    "c-ndk",
+    "cpp-ndk",
+    "generated-java",
+    "go-mobile",
+    "haxe",
+    "java",
+    "jvm-dynamic",
+    "kotlin",
+    "kotlin-multiplatform",
+    "objective-c-ndk",
+    "rust-ndk",
+    "zig-llvm"
   ],
   "tier": "B"
 }

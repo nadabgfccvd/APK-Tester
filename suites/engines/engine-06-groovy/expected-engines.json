@@ -8,12 +8,17 @@
   "dir": "engine-06-groovy",
   "id": "engine-06",
   "language": "Groovy",
-  "notes": "Runtime Groovy (dex do runtime + código gerado).",
+  "notes": "Runtime Groovy (dex do runtime + código gerado). detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra). groovy nao tem registro no detector; id fino via detector_artifacts.",
   "pins": {
     "groovy": "3.0.21"
   },
   "rustydroid_engines": [
-    "groovy"
+    "generated-java",
+    "haxe",
+    "java",
+    "jvm-dynamic",
+    "kotlin",
+    "kotlin-multiplatform"
   ],
   "tier": "A"
 }

@@ -8,11 +8,16 @@
   "dir": "engine-32-twa-pwa",
   "id": "engine-32",
   "language": "TWA/PWA",
-  "notes": "fixture de detecção; payload não executável (ADR 0003). Empacotada por tools/fixture-pack.py, payloads por tools/gen-engine-fixtures.py.",
+  "notes": "detection fixture, payload not executable. Marcadores de TWA (digital asset links, androidx.browser trusted) + activity vazia. detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra). GAP do detector: 'twa-pwa' nao dispara sem asset_statements/metadata que o fixture minimo nao tem; documentado para o repo irmao.",
   "pack_command": "python3 tools/fixture-pack.py --fixture engine-32-twa-pwa --out dist",
   "payload_not_executable": true,
   "rustydroid_engines": [
-    "twa"
+    "generated-java",
+    "haxe",
+    "java",
+    "jvm-dynamic",
+    "kotlin",
+    "kotlin-multiplatform"
   ],
   "tier": "C",
   "verify_command": "python3 tools/gen-engine-fixtures.py --verify-apk dist/engine-32-twa-pwa.apk --engine engine-32-twa-pwa"

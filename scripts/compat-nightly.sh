@@ -143,14 +143,20 @@ while IFS=$'\t' read -r engine_id engine_dir engine_tier want_engines; do
     if rd inspect --json "$apk" > "$WORK_DIR/$engine_id.inspect.json" 2> "$log"; then
       if rd engine detect "$apk" > "$WORK_DIR/$engine_id.detect.txt" 2>> "$log"; then
         if WANT="$want_engines" DETECT_OUT="$WORK_DIR/$engine_id.detect.txt" python3 -c '
-import os, sys
+import os, re, sys
 want = [w.strip() for w in os.environ.get("WANT", "").split(",") if w.strip()]
-out = open(os.environ["DETECT_OUT"], encoding="utf-8", errors="replace").read().lower()
-missing = [w for w in want if w.lower() not in out]
+out = open(os.environ["DETECT_OUT"], encoding="utf-8",
+           errors="replace").read()
+# Answer key (R1.3): casa ids de registro em LINHAS do detector (row-start
+# "id Signature/Candidate"), nunca substring solta no texto — o nome do
+# pacote do fixture (engineNNnome) vaza na saida e mascarava drift.
+present = set(re.findall(
+    r"^([a-z][a-z0-9-]+)\s+(?:Signature|Candidate)\b", out, re.M))
+missing = [w for w in want if w.lower() not in present]
 if missing:
     print("detector nao casou: " + ", ".join(missing))
     sys.exit(1)
-print("todos os engines esperados apareceram na saida do detector")
+print("todos os engines esperados apareceram como linhas do detector")
 '; then
           status="OK"
           details="inspect ok + detect ok (answer key casada)"

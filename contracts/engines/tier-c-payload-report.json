@@ -5,8 +5,8 @@
       "dir": "engine-05-clojure",
       "files": {
         "assets/fixture-marker.txt": {
-          "bytes": 290,
-          "sha256": "c8fb725385a941c8911ba7ae10e8c8db7cb1d0762c4c129b1373d1a8c211f0c9"
+          "bytes": 347,
+          "sha256": "b94ad20b3f804be24c354b13330f4cb69c59dbba6edb5ec0ceefc5ff74ef63a0"
         }
       }
     },
@@ -14,8 +14,8 @@
       "dir": "engine-11-objc",
       "files": {
         "assets/fixture-marker.txt": {
-          "bytes": 288,
-          "sha256": "c519372d06a85dd5a189b83db306b3da7204e0a1887b7215eca83eaa1f85dfda"
+          "bytes": 406,
+          "sha256": "dff4ba8bd43c9fe92537b7d7a2ea7387b66f5800dd6b8715c5377c37dbed32b7"
         },
         "lib/x86_64/libobjc-fixture.so": {
           "bytes": 4096,
@@ -35,8 +35,8 @@
           "sha256": "23f15bf815d3e6925088fc87b3ddd932a6e7e83e1316d01451dd6337d7790784"
         },
         "assets/fixture-marker.txt": {
-          "bytes": 308,
-          "sha256": "8fd314ae75bed7af2337531ae6a8c31afc9930125d675f97aa96a63462a6961d"
+          "bytes": 439,
+          "sha256": "37da917c5cfdf750dad4c74cb88c8c3673b31f2b5079d353dfa15a7f7e07934e"
         },
         "lib/x86_64/libmonodroid.so": {
           "bytes": 4096,
@@ -52,8 +52,8 @@
           "sha256": "90606f957695007b20bcbb3dc81db971512376dfc8710789ae3f3cf0d32c166b"
         },
         "assets/fixture-marker.txt": {
-          "bytes": 302,
-          "sha256": "61d83fb0a8f1e2ab946b0bf1fe510138f3f007a0dc5c753f4d4e1d9b7efd89bb"
+          "bytes": 425,
+          "sha256": "6504ed1173acf27689ddfb0385774757cefa721ae9f5ceb402b46b2254364a72"
         },
         "lib/x86_64/libmonobdwgc-2.0.so": {
           "bytes": 4096,
@@ -73,8 +73,8 @@
           "sha256": "0693e9e7bc403f73a9d6478e93251cd34f66e961bb8c2717b4214c7f4fa9df5d"
         },
         "assets/fixture-marker.txt": {
-          "bytes": 308,
-          "sha256": "c37cb95ca52d9cf0677e75a0c3a0372ffe72ac4d6247d92eb77421a03f8865b8"
+          "bytes": 431,
+          "sha256": "81a0c20143a9d7276d3ebc29f62f15de94645e4d5f17d989c774d87e12af86d2"
         },
         "lib/x86_64/libil2cpp.so": {
           "bytes": 4096,
@@ -90,8 +90,8 @@
       "dir": "engine-21-unreal",
       "files": {
         "assets/fixture-marker.txt": {
-          "bytes": 291,
-          "sha256": "68910b294a079b74cf52cdf66c9659990156539c223123fb2d59188841594ef2"
+          "bytes": 414,
+          "sha256": "d7e0a20bda099624af17c80edc6d76863233be420ba5b8290fb6fa97ce2125e9"
         },
         "assets/main.pak": {
           "bytes": 1536,
@@ -107,8 +107,8 @@
       "dir": "engine-27-b4x-appinventor",
       "files": {
         "assets/fixture-marker.txt": {
-          "bytes": 315,
-          "sha256": "8e403996b5b5b9ce4b9500f11658d895c7713e99635fb1e92a468521421933b3"
+          "bytes": 364,
+          "sha256": "2f1eb32207866bf5f9b5cbb28d638130692769c38206265d0bd9588ef685db2e"
         }
       }
     },
@@ -116,8 +116,8 @@
       "dir": "engine-29-python-kivy-beeware",
       "files": {
         "assets/fixture-marker.txt": {
-          "bytes": 326,
-          "sha256": "d3f912e3f212d22f1d40b90c8633866e2ce417ad2ac5cd52b17bd618ba036149"
+          "bytes": 444,
+          "sha256": "70e68badecf1d92ca1c235deb2c96c309d74b982ec2c899a72debee26e926589"
         },
         "assets/python/main.py": {
           "bytes": 516,
@@ -133,8 +133,8 @@
       "dir": "engine-32-twa-pwa",
       "files": {
         "assets/fixture-marker.txt": {
-          "bytes": 286,
-          "sha256": "d8645ee4443111676ee62f74200bdcb18c57a4e19863f720213b8a03e470f92c"
+          "bytes": 347,
+          "sha256": "5dd69b80b7f9cc8e63d98c28332dc5e5ca8595cd171818ba6cbbf01751144553"
         }
       }
     }

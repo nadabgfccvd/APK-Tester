@@ -15,7 +15,7 @@ publicacao da versao 1.0.0 (GOVERNANCE.md, politica 0.x -> 1.0):
   d7  rustydroid_zero_drift contratos coherentes (answer keys, zero drift);
   d8  expected_engines_detect expected-engines.json completo e verificavel;
   d9  determinism_proof     duas builds de release consecutivas byte-identicas;
-  d10 governance_complete   kit de governanca + docs mdBook + 5 workflows.
+  d10 governance_complete   kit de governanca + docs mdBook + 6 workflows.
 
 Modos:
   --sync     escreve o contrato estatico em contracts/v1-gate.json (commitado;
@@ -60,6 +60,7 @@ WORKFLOWS_REQUIRED = [
     "ci.yml",
     "engines-nightly.yml",
     "release.yml",
+    "rustydroid-snapshot.yml",
     "size-gate.yml",
 ]
 
@@ -152,7 +153,7 @@ CRITERIA_DOD = [
     ),
     (
         "governance_complete",
-        "Kit de governanca completo, docs mdBook, 5 workflows, milestones "
+        "Kit de governanca completo, docs mdBook, 6 workflows, milestones "
         "A0-A8, release v1.0.0",
     ),
 ]

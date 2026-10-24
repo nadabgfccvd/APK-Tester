@@ -8,7 +8,7 @@
   "dir": "engine-30-wasm-in-app",
   "id": "engine-30",
   "language": "Rust/WASM (host embutido)",
-  "notes": "Módulo WASM compilado em assets + host wasmer/wasmtime nativo + bridge JNI.",
+  "notes": "Módulo WASM compilado em assets + host wasmer/wasmtime nativo + bridge JNI. detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra).",
   "pins": {
     "cargo-ndk": "3.5.0",
     "rust": "stable (runner; versão exata no report)",
@@ -16,7 +16,19 @@
     "wasmer": "7"
   },
   "rustydroid_engines": [
-    "wasm"
+    "c-ndk",
+    "cpp-ndk",
+    "generated-java",
+    "go-mobile",
+    "haxe",
+    "java",
+    "jvm-dynamic",
+    "kotlin",
+    "kotlin-multiplatform",
+    "objective-c-ndk",
+    "rust-ndk",
+    "wasm",
+    "zig-llvm"
   ],
   "tier": "A"
 }

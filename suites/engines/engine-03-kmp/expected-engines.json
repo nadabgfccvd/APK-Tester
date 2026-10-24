@@ -9,13 +9,18 @@
   "dir": "engine-03-kmp",
   "id": "engine-03",
   "language": "Kotlin Multiplatform",
-  "notes": "Shared module KMP/Compose-MP no mesmo DEX do app Android.",
+  "notes": "Shared module KMP/Compose-MP no mesmo DEX do app Android. detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra).",
   "pins": {
     "compose-mp": "1.6.11",
     "kotlin": "2.0.20"
   },
   "rustydroid_engines": [
-    "kmp"
+    "generated-java",
+    "haxe",
+    "java",
+    "jvm-dynamic",
+    "kotlin",
+    "kotlin-multiplatform"
   ],
   "tier": "A"
 }

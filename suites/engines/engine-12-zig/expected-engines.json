@@ -8,12 +8,23 @@
   "dir": "engine-12-zig",
   "id": "engine-12",
   "language": "Zig",
-  "notes": "zig cc produzindo .so; seção .comment/características zig.",
+  "notes": "zig cc produzindo .so; seção .comment/características zig. detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra).",
   "pins": {
     "zig": "0.13.0"
   },
   "rustydroid_engines": [
-    "zig"
+    "c-ndk",
+    "cpp-ndk",
+    "generated-java",
+    "go-mobile",
+    "haxe",
+    "java",
+    "jvm-dynamic",
+    "kotlin",
+    "kotlin-multiplatform",
+    "objective-c-ndk",
+    "rust-ndk",
+    "zig-llvm"
   ],
   "tier": "A"
 }

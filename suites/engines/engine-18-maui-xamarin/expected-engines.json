@@ -7,11 +7,24 @@
   "dir": "engine-18-maui-xamarin",
   "id": "engine-18",
   "language": "C#/MAUI/Xamarin",
-  "notes": "fixture de detecção; payload não executável (ADR 0003). Empacotada por tools/fixture-pack.py, payloads por tools/gen-engine-fixtures.py.",
+  "notes": "detection fixture, payload not executable. Stubs de assemblies/*.dll + libmonodroid.so (layout Mono correto). detect (snapshot 2026-10-24): 'dotnet-maui' Signature.",
   "pack_command": "python3 tools/fixture-pack.py --fixture engine-18-maui-xamarin --out dist",
   "payload_not_executable": true,
   "rustydroid_engines": [
-    "maui-xamarin"
+    "avalonia",
+    "c-ndk",
+    "cpp-ndk",
+    "dotnet-maui",
+    "generated-java",
+    "go-mobile",
+    "haxe",
+    "java",
+    "jvm-dynamic",
+    "kotlin",
+    "kotlin-multiplatform",
+    "objective-c-ndk",
+    "rust-ndk",
+    "zig-llvm"
   ],
   "tier": "C",
   "verify_command": "python3 tools/gen-engine-fixtures.py --verify-apk dist/engine-18-maui-xamarin.apk --engine engine-18-maui-xamarin"

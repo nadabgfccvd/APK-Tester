@@ -8,9 +8,20 @@
       "language": "Java",
       "tier": "A",
       "build": "real",
-      "rustydroid_engines": ["java"],
-      "detector_artifacts": ["classes.dex", "classes2.dex", "dex-strings:invoke-custom"],
-      "notes": "Multi-dex com invoke-custom; build real no CI (A4)."
+      "rustydroid_engines": [
+        "generated-java",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform"
+      ],
+      "detector_artifacts": [
+        "classes.dex",
+        "classes2.dex",
+        "dex-strings:invoke-custom"
+      ],
+      "notes": "Multi-dex com invoke-custom; build real no CI (A4). detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra)."
     },
     {
       "id": "engine-02",
@@ -18,9 +29,20 @@
       "language": "Kotlin",
       "tier": "A",
       "build": "real",
-      "rustydroid_engines": ["kotlin"],
-      "detector_artifacts": ["classes.dex", "META-INF/*.kotlin_module", "dex-strings:kotlin.jvm.internal"],
-      "notes": "Metadata Kotlin em META-INF + intrinsics kotlin.jvm.internal no DEX."
+      "rustydroid_engines": [
+        "generated-java",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform"
+      ],
+      "detector_artifacts": [
+        "classes.dex",
+        "META-INF/*.kotlin_module",
+        "dex-strings:kotlin.jvm.internal"
+      ],
+      "notes": "Metadata Kotlin em META-INF + intrinsics kotlin.jvm.internal no DEX. detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra)."
     },
     {
       "id": "engine-03",
@@ -28,9 +50,20 @@
       "language": "Kotlin Multiplatform",
       "tier": "A",
       "build": "real",
-      "rustydroid_engines": ["kmp"],
-      "detector_artifacts": ["classes.dex", "META-INF/*.kotlin_module", "dex-strings:kotlin.multiplatform"],
-      "notes": "Shared module KMP/Compose-MP no mesmo DEX do app Android."
+      "rustydroid_engines": [
+        "generated-java",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform"
+      ],
+      "detector_artifacts": [
+        "classes.dex",
+        "META-INF/*.kotlin_module",
+        "dex-strings:kotlin.multiplatform"
+      ],
+      "notes": "Shared module KMP/Compose-MP no mesmo DEX do app Android. detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra)."
     },
     {
       "id": "engine-04",
@@ -38,9 +71,19 @@
       "language": "Scala",
       "tier": "B",
       "build": "nightly",
-      "rustydroid_engines": ["scala"],
-      "detector_artifacts": ["classes.dex", "dex-strings:scala.runtime"],
-      "notes": "Runtime scala.runtime embutido no DEX; build nightly (A7)."
+      "rustydroid_engines": [
+        "generated-java",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform"
+      ],
+      "detector_artifacts": [
+        "classes.dex",
+        "dex-strings:scala.runtime"
+      ],
+      "notes": "Runtime scala.runtime embutido no DEX; build nightly (A7). detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra). scala nao tem registro no detector (28 ids); identificacao fina via detector_artifacts (dex-strings:scala.runtime)."
     },
     {
       "id": "engine-05",
@@ -48,9 +91,20 @@
       "language": "Clojure",
       "tier": "C",
       "build": "fixture",
-      "rustydroid_engines": ["clojure"],
-      "detector_artifacts": ["classes.dex", "dex-strings:clojure.lang", "assets/fixture-marker.txt"],
-      "notes": "detection fixture, payload not executable. Stub com strings clojure.lang e layout correto (tools/fixture-pack.py)."
+      "rustydroid_engines": [
+        "generated-java",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform"
+      ],
+      "detector_artifacts": [
+        "classes.dex",
+        "dex-strings:clojure.lang",
+        "assets/fixture-marker.txt"
+      ],
+      "notes": "detection fixture, payload not executable. Stub com strings clojure.lang e layout correto (tools/fixture-pack.py). detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra). clojure nao tem registro no detector; id fino via detector_artifacts."
     },
     {
       "id": "engine-06",
@@ -58,9 +112,19 @@
       "language": "Groovy",
       "tier": "A",
       "build": "real",
-      "rustydroid_engines": ["groovy"],
-      "detector_artifacts": ["classes.dex", "dex-strings:org.codehaus.groovy"],
-      "notes": "Runtime Groovy (dex do runtime + código gerado)."
+      "rustydroid_engines": [
+        "generated-java",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform"
+      ],
+      "detector_artifacts": [
+        "classes.dex",
+        "dex-strings:org.codehaus.groovy"
+      ],
+      "notes": "Runtime Groovy (dex do runtime + código gerado). detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra). groovy nao tem registro no detector; id fino via detector_artifacts."
     },
     {
       "id": "engine-07",
@@ -68,9 +132,25 @@
       "language": "C (NDK)",
       "tier": "A",
       "build": "real",
-      "rustydroid_engines": ["c"],
-      "detector_artifacts": ["lib/arm64-v8a/libnative-c.so", "lib/x86_64/libnative-c.so"],
-      "notes": "ELF C puro com exports JNI Java_*; sem STL."
+      "rustydroid_engines": [
+        "c-ndk",
+        "cpp-ndk",
+        "generated-java",
+        "go-mobile",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform",
+        "objective-c-ndk",
+        "rust-ndk",
+        "zig-llvm"
+      ],
+      "detector_artifacts": [
+        "lib/arm64-v8a/libnative-c.so",
+        "lib/x86_64/libnative-c.so"
+      ],
+      "notes": "ELF C puro com exports JNI Java_*; sem STL. detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra)."
     },
     {
       "id": "engine-08",
@@ -78,9 +158,26 @@
       "language": "C++ (NDK)",
       "tier": "A",
       "build": "real",
-      "rustydroid_engines": ["cpp"],
-      "detector_artifacts": ["lib/arm64-v8a/libnative-cpp.so", "lib/x86_64/libnative-cpp.so", "lib/x86_64/libc++_shared.so"],
-      "notes": "ELF C++ com libc++_shared.so (marcador de STL)."
+      "rustydroid_engines": [
+        "c-ndk",
+        "cpp-ndk",
+        "generated-java",
+        "go-mobile",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform",
+        "objective-c-ndk",
+        "rust-ndk",
+        "zig-llvm"
+      ],
+      "detector_artifacts": [
+        "lib/arm64-v8a/libnative-cpp.so",
+        "lib/x86_64/libnative-cpp.so",
+        "lib/x86_64/libc++_shared.so"
+      ],
+      "notes": "ELF C++ com libc++_shared.so (marcador de STL). detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra)."
     },
     {
       "id": "engine-09",
@@ -88,9 +185,26 @@
       "language": "Rust",
       "tier": "A",
       "build": "real",
-      "rustydroid_engines": ["rust"],
-      "detector_artifacts": ["lib/arm64-v8a/librust_native.so", "lib/x86_64/librust_native.so", "elf-strings:rust_begin_unwind"],
-      "notes": "cargo-ndk jni crate; marcador ELF do runtime Rust."
+      "rustydroid_engines": [
+        "c-ndk",
+        "cpp-ndk",
+        "generated-java",
+        "go-mobile",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform",
+        "objective-c-ndk",
+        "rust-ndk",
+        "zig-llvm"
+      ],
+      "detector_artifacts": [
+        "lib/arm64-v8a/librust_native.so",
+        "lib/x86_64/librust_native.so",
+        "elf-strings:rust_begin_unwind"
+      ],
+      "notes": "cargo-ndk jni crate; marcador ELF do runtime Rust. detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra)."
     },
     {
       "id": "engine-10",
@@ -98,9 +212,25 @@
       "language": "Go",
       "tier": "A",
       "build": "real",
-      "rustydroid_engines": ["go"],
-      "detector_artifacts": ["lib/x86_64/libgojni.so", "dex-strings:go.Seq"],
-      "notes": "gomobile bind: libgojni.so + bridge golang.org/x/mobile no DEX."
+      "rustydroid_engines": [
+        "c-ndk",
+        "cpp-ndk",
+        "generated-java",
+        "go-mobile",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform",
+        "objective-c-ndk",
+        "rust-ndk",
+        "zig-llvm"
+      ],
+      "detector_artifacts": [
+        "lib/x86_64/libgojni.so",
+        "dex-strings:go.Seq"
+      ],
+      "notes": "gomobile bind: libgojni.so + bridge golang.org/x/mobile no DEX. detect (snapshot 2026-10-24): 'go-mobile' Signature."
     },
     {
       "id": "engine-11",
@@ -108,9 +238,25 @@
       "language": "Objective-C",
       "tier": "C",
       "build": "fixture",
-      "rustydroid_engines": ["objc"],
-      "detector_artifacts": ["lib/x86_64/libobjc-fixture.so", "assets/fixture-marker.txt"],
-      "notes": "detection fixture, payload not executable. Stub ELF com marcadores objc_* (runtime ObjC é raro em Android — fixture honesta)."
+      "rustydroid_engines": [
+        "c-ndk",
+        "cpp-ndk",
+        "generated-java",
+        "go-mobile",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform",
+        "objective-c-ndk",
+        "rust-ndk",
+        "zig-llvm"
+      ],
+      "detector_artifacts": [
+        "lib/x86_64/libobjc-fixture.so",
+        "assets/fixture-marker.txt"
+      ],
+      "notes": "detection fixture, payload not executable. Stub ELF com marcadores objc_* (runtime ObjC é raro em Android — fixture honesta). detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra)."
     },
     {
       "id": "engine-12",
@@ -118,9 +264,25 @@
       "language": "Zig",
       "tier": "A",
       "build": "real",
-      "rustydroid_engines": ["zig"],
-      "detector_artifacts": ["lib/x86_64/libzig_native.so", "elf-strings:zig"],
-      "notes": "zig cc produzindo .so; seção .comment/características zig."
+      "rustydroid_engines": [
+        "c-ndk",
+        "cpp-ndk",
+        "generated-java",
+        "go-mobile",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform",
+        "objective-c-ndk",
+        "rust-ndk",
+        "zig-llvm"
+      ],
+      "detector_artifacts": [
+        "lib/x86_64/libzig_native.so",
+        "elf-strings:zig"
+      ],
+      "notes": "zig cc produzindo .so; seção .comment/características zig. detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra)."
     },
     {
       "id": "engine-13",
@@ -128,9 +290,27 @@
       "language": "Dart/Flutter",
       "tier": "B",
       "build": "nightly",
-      "rustydroid_engines": ["flutter"],
-      "detector_artifacts": ["lib/x86_64/libflutter.so", "lib/x86_64/libapp.so", "assets/flutter_assets/"],
-      "notes": "libapp.so (AOT Dart) + flutter_assets; build nightly (A7)."
+      "rustydroid_engines": [
+        "c-ndk",
+        "cpp-ndk",
+        "flutter",
+        "generated-java",
+        "go-mobile",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform",
+        "objective-c-ndk",
+        "rust-ndk",
+        "zig-llvm"
+      ],
+      "detector_artifacts": [
+        "lib/x86_64/libflutter.so",
+        "lib/x86_64/libapp.so",
+        "assets/flutter_assets/"
+      ],
+      "notes": "libapp.so (AOT Dart) + flutter_assets; build nightly (A7). detect (snapshot 2026-10-24): 'flutter' Signature."
     },
     {
       "id": "engine-14",
@@ -138,9 +318,27 @@
       "language": "JS/React Native",
       "tier": "B",
       "build": "nightly",
-      "rustydroid_engines": ["react-native"],
-      "detector_artifacts": ["lib/x86_64/libhermes.so", "assets/index.android.bundle", "dex-strings:com.facebook.react"],
-      "notes": "Bundle Hermes (magic bytecode) + classes com.facebook.react; build nightly (A7)."
+      "rustydroid_engines": [
+        "c-ndk",
+        "cpp-ndk",
+        "generated-java",
+        "go-mobile",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform",
+        "objective-c-ndk",
+        "react-native",
+        "rust-ndk",
+        "zig-llvm"
+      ],
+      "detector_artifacts": [
+        "lib/x86_64/libhermes.so",
+        "assets/index.android.bundle",
+        "dex-strings:com.facebook.react"
+      ],
+      "notes": "Bundle Hermes (magic bytecode) + classes com.facebook.react; build nightly (A7). detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra)."
     },
     {
       "id": "engine-15",
@@ -148,9 +346,21 @@
       "language": "JS/Cordova",
       "tier": "B",
       "build": "nightly",
-      "rustydroid_engines": ["cordova"],
-      "detector_artifacts": ["assets/www/index.html", "assets/www/cordova.js", "assets/www/cordova_plugins.js"],
-      "notes": "WebView app: assets/www completo; build nightly (A7)."
+      "rustydroid_engines": [
+        "cordova",
+        "generated-java",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform"
+      ],
+      "detector_artifacts": [
+        "assets/www/index.html",
+        "assets/www/cordova.js",
+        "assets/www/cordova_plugins.js"
+      ],
+      "notes": "WebView app: assets/www completo; build nightly (A7). detect (snapshot 2026-10-24): 'cordova' Signature."
     },
     {
       "id": "engine-16",
@@ -158,9 +368,25 @@
       "language": "Rust/Tauri v2",
       "tier": "A",
       "build": "real",
-      "rustydroid_engines": ["tauri"],
-      "detector_artifacts": ["lib/x86_64/libtauri_android.so", "lib/x86_64/libwry.so"],
-      "notes": "Tauri v2 mobile: libs tauri/wry (Rust) + WebView system."
+      "rustydroid_engines": [
+        "c-ndk",
+        "cpp-ndk",
+        "generated-java",
+        "go-mobile",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform",
+        "objective-c-ndk",
+        "rust-ndk",
+        "zig-llvm"
+      ],
+      "detector_artifacts": [
+        "lib/x86_64/libtauri_android.so",
+        "lib/x86_64/libwry.so"
+      ],
+      "notes": "Tauri v2 mobile: libs tauri/wry (Rust) + WebView system. detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra). GAP do detector: id 'tauri' nao dispara para a build real (marcadores do registro divergem do layout cargo-ndk); documentado para o repo irmao."
     },
     {
       "id": "engine-17",
@@ -168,9 +394,26 @@
       "language": "JS/NativeScript",
       "tier": "B",
       "build": "nightly",
-      "rustydroid_engines": ["nativescript"],
-      "detector_artifacts": ["lib/x86_64/libNativeScript.so", "assets/app/"],
-      "notes": "Runtime NativeScript (@nativescript/android@8.8.2) + app JS em assets/app; nome real do runtime tem S maiúsculo (refinado em A7); build nightly (A7)."
+      "rustydroid_engines": [
+        "c-ndk",
+        "cpp-ndk",
+        "generated-java",
+        "go-mobile",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform",
+        "nativescript",
+        "objective-c-ndk",
+        "rust-ndk",
+        "zig-llvm"
+      ],
+      "detector_artifacts": [
+        "lib/x86_64/libNativeScript.so",
+        "assets/app/"
+      ],
+      "notes": "Runtime NativeScript (@nativescript/android@8.8.2) + app JS em assets/app; nome real do runtime tem S maiúsculo (refinado em A7); build nightly (A7). detect (snapshot 2026-10-24): 'nativescript' Signature."
     },
     {
       "id": "engine-18",
@@ -178,9 +421,27 @@
       "language": "C#/MAUI/Xamarin",
       "tier": "C",
       "build": "fixture",
-      "rustydroid_engines": ["maui-xamarin"],
-      "detector_artifacts": ["assemblies/*.dll", "lib/x86_64/libmonodroid.so"],
-      "notes": "detection fixture, payload not executable. Stubs de assemblies/*.dll + libmonodroid.so (layout Mono correto)."
+      "rustydroid_engines": [
+        "avalonia",
+        "c-ndk",
+        "cpp-ndk",
+        "dotnet-maui",
+        "generated-java",
+        "go-mobile",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform",
+        "objective-c-ndk",
+        "rust-ndk",
+        "zig-llvm"
+      ],
+      "detector_artifacts": [
+        "assemblies/*.dll",
+        "lib/x86_64/libmonodroid.so"
+      ],
+      "notes": "detection fixture, payload not executable. Stubs de assemblies/*.dll + libmonodroid.so (layout Mono correto). detect (snapshot 2026-10-24): 'dotnet-maui' Signature."
     },
     {
       "id": "engine-19",
@@ -188,9 +449,27 @@
       "language": "C#/Unity Mono",
       "tier": "C",
       "build": "fixture",
-      "rustydroid_engines": ["unity-mono"],
-      "detector_artifacts": ["assets/bin/Data/Managed/Assembly-CSharp.dll", "lib/x86_64/libunity.so", "lib/x86_64/libmonobdwgc-2.0.so"],
-      "notes": "detection fixture, payload not executable. Assembly-CSharp.dll stub + runtime Mono do Unity."
+      "rustydroid_engines": [
+        "c-ndk",
+        "cpp-ndk",
+        "generated-java",
+        "go-mobile",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform",
+        "objective-c-ndk",
+        "rust-ndk",
+        "unity-mono",
+        "zig-llvm"
+      ],
+      "detector_artifacts": [
+        "assets/bin/Data/Managed/Assembly-CSharp.dll",
+        "lib/x86_64/libunity.so",
+        "lib/x86_64/libmonobdwgc-2.0.so"
+      ],
+      "notes": "detection fixture, payload not executable. Assembly-CSharp.dll stub + runtime Mono do Unity. detect (snapshot 2026-10-24): 'unity-mono' Signature."
     },
     {
       "id": "engine-20",
@@ -198,9 +477,27 @@
       "language": "C#/Unity IL2CPP",
       "tier": "C",
       "build": "fixture",
-      "rustydroid_engines": ["unity-il2cpp"],
-      "detector_artifacts": ["lib/x86_64/libil2cpp.so", "assets/bin/Data/Managed/Metadata/global-metadata.dat", "lib/x86_64/libunity.so"],
-      "notes": "detection fixture, payload not executable. libil2cpp.so + global-metadata.dat stubs (layout IL2CPP correto)."
+      "rustydroid_engines": [
+        "c-ndk",
+        "cpp-ndk",
+        "generated-java",
+        "go-mobile",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform",
+        "objective-c-ndk",
+        "rust-ndk",
+        "unity-il2cpp",
+        "zig-llvm"
+      ],
+      "detector_artifacts": [
+        "lib/x86_64/libil2cpp.so",
+        "assets/bin/Data/Managed/Metadata/global-metadata.dat",
+        "lib/x86_64/libunity.so"
+      ],
+      "notes": "detection fixture, payload not executable. libil2cpp.so + global-metadata.dat stubs (layout IL2CPP correto). detect (snapshot 2026-10-24): 'unity-il2cpp' Signature."
     },
     {
       "id": "engine-21",
@@ -208,9 +505,26 @@
       "language": "C++/Unreal",
       "tier": "C",
       "build": "fixture",
-      "rustydroid_engines": ["unreal"],
-      "detector_artifacts": ["lib/x86_64/libUE4.so", "assets/*.pak"],
-      "notes": "detection fixture, payload not executable. libUE4.so stub + .pak placeholder."
+      "rustydroid_engines": [
+        "c-ndk",
+        "cpp-ndk",
+        "generated-java",
+        "go-mobile",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform",
+        "objective-c-ndk",
+        "rust-ndk",
+        "unreal",
+        "zig-llvm"
+      ],
+      "detector_artifacts": [
+        "lib/x86_64/libUE4.so",
+        "assets/*.pak"
+      ],
+      "notes": "detection fixture, payload not executable. libUE4.so stub + .pak placeholder. detect (snapshot 2026-10-24): 'unreal' Signature."
     },
     {
       "id": "engine-22",
@@ -218,9 +532,26 @@
       "language": "Lua/Defold",
       "tier": "B",
       "build": "nightly",
-      "rustydroid_engines": ["lua-defold"],
-      "detector_artifacts": ["lib/arm64-v8a/libdmengine.so", "assets/game.arcd", "assets/game.arci"],
-      "notes": "Engine Defold (dmengine release, embutido no bob.jar 1.9.8) + archive game.arcd/arci do pipeline de conteúdo; ABI real do engine Android é arm64-v8a (refinado em A7); build nightly (A7)."
+      "rustydroid_engines": [
+        "c-ndk",
+        "cpp-ndk",
+        "generated-java",
+        "go-mobile",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform",
+        "objective-c-ndk",
+        "rust-ndk",
+        "zig-llvm"
+      ],
+      "detector_artifacts": [
+        "lib/arm64-v8a/libdmengine.so",
+        "assets/game.arcd",
+        "assets/game.arci"
+      ],
+      "notes": "Engine Defold (dmengine release, embutido no bob.jar 1.9.8) + archive game.arcd/arci do pipeline de conteúdo; ABI real do engine Android é arm64-v8a (refinado em A7); build nightly (A7). detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra). GAP do detector: regra do registro espera libdefold.so, a build real do Defold produz libdmengine.so — 'lua-engines' nao dispara; documentado para o repo irmao."
     },
     {
       "id": "engine-23",
@@ -228,9 +559,26 @@
       "language": "GDScript/Godot",
       "tier": "B",
       "build": "nightly",
-      "rustydroid_engines": ["godot"],
-      "detector_artifacts": ["lib/x86_64/libgodot_android.so", "assets/*.pck"],
-      "notes": "Export headless do Godot: libgodot_android.so + pack .pck; build nightly (A7)."
+      "rustydroid_engines": [
+        "c-ndk",
+        "cpp-ndk",
+        "generated-java",
+        "go-mobile",
+        "godot",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform",
+        "objective-c-ndk",
+        "rust-ndk",
+        "zig-llvm"
+      ],
+      "detector_artifacts": [
+        "lib/x86_64/libgodot_android.so",
+        "assets/*.pck"
+      ],
+      "notes": "Export headless do Godot: libgodot_android.so + pack .pck; build nightly (A7). detect (snapshot 2026-10-24): 'godot' Signature."
     },
     {
       "id": "engine-24",
@@ -238,9 +586,19 @@
       "language": "Haxe",
       "tier": "A",
       "build": "real",
-      "rustydroid_engines": ["haxe"],
-      "detector_artifacts": ["classes.dex", "dex-strings:haxe.root"],
-      "notes": "Target hxjava: classes haxe.root no DEX."
+      "rustydroid_engines": [
+        "generated-java",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform"
+      ],
+      "detector_artifacts": [
+        "classes.dex",
+        "dex-strings:haxe.root"
+      ],
+      "notes": "Target hxjava: classes haxe.root no DEX. detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra)."
     },
     {
       "id": "engine-25",
@@ -248,9 +606,27 @@
       "language": "Python/Chaquopy",
       "tier": "A",
       "build": "real",
-      "rustydroid_engines": ["python-chaquopy"],
-      "detector_artifacts": ["classes.dex", "lib/x86_64/libpython3*.so", "assets/chaquopy/"],
-      "notes": "Chaquopy: libpython3.x.so + assets/chaquopy (bootstrap e stdlib zip)."
+      "rustydroid_engines": [
+        "c-ndk",
+        "cpp-ndk",
+        "generated-java",
+        "go-mobile",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform",
+        "objective-c-ndk",
+        "python-engines",
+        "rust-ndk",
+        "zig-llvm"
+      ],
+      "detector_artifacts": [
+        "classes.dex",
+        "lib/x86_64/libpython3*.so",
+        "assets/chaquopy/"
+      ],
+      "notes": "Chaquopy: libpython3.x.so + assets/chaquopy (bootstrap e stdlib zip). detect (snapshot 2026-10-24): 'python-engines' Signature."
     },
     {
       "id": "engine-26",
@@ -258,9 +634,26 @@
       "language": "QML/Qt",
       "tier": "B",
       "build": "nightly",
-      "rustydroid_engines": ["qt-qml"],
-      "detector_artifacts": ["lib/x86_64/libQt6Core*.so", "assets/qml/"],
-      "notes": "Qt libs (QtCore etc.) + assets QML; build nightly (A7)."
+      "rustydroid_engines": [
+        "c-ndk",
+        "cpp-ndk",
+        "generated-java",
+        "go-mobile",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform",
+        "objective-c-ndk",
+        "qt-qml",
+        "rust-ndk",
+        "zig-llvm"
+      ],
+      "detector_artifacts": [
+        "lib/x86_64/libQt6Core*.so",
+        "assets/qml/"
+      ],
+      "notes": "Qt libs (QtCore etc.) + assets QML; build nightly (A7). detect (snapshot 2026-10-24): 'qt-qml' Signature."
     },
     {
       "id": "engine-27",
@@ -268,9 +661,19 @@
       "language": "B4X/App Inventor",
       "tier": "C",
       "build": "fixture",
-      "rustydroid_engines": ["b4x-appinventor"],
-      "detector_artifacts": ["classes.dex", "dex-strings:anywheresoftware.b4a"],
-      "notes": "detection fixture, payload not executable. Stub DEX com strings anywheresoftware.b4a / com.google.appinventor."
+      "rustydroid_engines": [
+        "generated-java",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform"
+      ],
+      "detector_artifacts": [
+        "classes.dex",
+        "dex-strings:anywheresoftware.b4a"
+      ],
+      "notes": "detection fixture, payload not executable. Stub DEX com strings anywheresoftware.b4a / com.google.appinventor. detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra). b4x/app inventor nao tem registro no detector; o fixture e Java gerado (candidate 'generated-java')."
     },
     {
       "id": "engine-28",
@@ -278,9 +681,28 @@
       "language": "C#/Avalonia",
       "tier": "B",
       "build": "nightly",
-      "rustydroid_engines": ["avalonia-dotnet"],
-      "detector_artifacts": ["assemblies/Avalonia.Controls.dll", "lib/x86_64/libSkiaSharp.so", "lib/x86_64/libmono-android.release.so"],
-      "notes": ".NET Android com assemblies Avalonia.* + SkiaSharp; nomes reais dos nativos: libSkiaSharp.so (S maiúsculo) e libmono-android.release.so (.NET 8, antigo libmonodroid.so) — refinado em A7; build nightly (A7)."
+      "rustydroid_engines": [
+        "avalonia",
+        "c-ndk",
+        "cpp-ndk",
+        "dotnet-maui",
+        "generated-java",
+        "go-mobile",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform",
+        "objective-c-ndk",
+        "rust-ndk",
+        "zig-llvm"
+      ],
+      "detector_artifacts": [
+        "assemblies/Avalonia.Controls.dll",
+        "lib/x86_64/libSkiaSharp.so",
+        "lib/x86_64/libmono-android.release.so"
+      ],
+      "notes": ".NET Android com assemblies Avalonia.* + SkiaSharp; nomes reais dos nativos: libSkiaSharp.so (S maiúsculo) e libmono-android.release.so (.NET 8, antigo libmonodroid.so) — refinado em A7; build nightly (A7). detect (snapshot 2026-10-24): 'avalonia' Signature."
     },
     {
       "id": "engine-29",
@@ -288,9 +710,26 @@
       "language": "Python/Kivy/BeeWare",
       "tier": "C",
       "build": "fixture",
-      "rustydroid_engines": ["python-kivy-beeware"],
-      "detector_artifacts": ["lib/x86_64/libpython3*.so", "assets/python/main.py"],
-      "notes": "detection fixture, payload not executable. Stub libpython + entrypoint python empacotado (layout python-for-android/briefcase)."
+      "rustydroid_engines": [
+        "c-ndk",
+        "cpp-ndk",
+        "generated-java",
+        "go-mobile",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform",
+        "objective-c-ndk",
+        "python-engines",
+        "rust-ndk",
+        "zig-llvm"
+      ],
+      "detector_artifacts": [
+        "lib/x86_64/libpython3*.so",
+        "assets/python/main.py"
+      ],
+      "notes": "detection fixture, payload not executable. Stub libpython + entrypoint python empacotado (layout python-for-android/briefcase). detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra)."
     },
     {
       "id": "engine-30",
@@ -298,9 +737,26 @@
       "language": "Rust/WASM (host embutido)",
       "tier": "A",
       "build": "real",
-      "rustydroid_engines": ["wasm"],
-      "detector_artifacts": ["assets/module.wasm", "lib/x86_64/libwasmer.so"],
-      "notes": "Módulo WASM compilado em assets + host wasmer/wasmtime nativo + bridge JNI."
+      "rustydroid_engines": [
+        "c-ndk",
+        "cpp-ndk",
+        "generated-java",
+        "go-mobile",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform",
+        "objective-c-ndk",
+        "rust-ndk",
+        "wasm",
+        "zig-llvm"
+      ],
+      "detector_artifacts": [
+        "assets/module.wasm",
+        "lib/x86_64/libwasmer.so"
+      ],
+      "notes": "Módulo WASM compilado em assets + host wasmer/wasmtime nativo + bridge JNI. detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra)."
     },
     {
       "id": "engine-31",
@@ -308,9 +764,29 @@
       "language": "Kotlin+Rust+Hermes+WASM",
       "tier": "A",
       "build": "real",
-      "rustydroid_engines": ["tst-14-hybrid"],
-      "detector_artifacts": ["classes.dex", "lib/x86_64/librust_hybrid.so", "assets/index.android.bundle", "assets/module.wasm"],
-      "notes": "TST-14: os quatro marcadores (Kotlin DEX, ELF Rust, bundle Hermes, módulo WASM) num ÚNICO APK — teste de cobertura unificada."
+      "rustydroid_engines": [
+        "c-ndk",
+        "cpp-ndk",
+        "generated-java",
+        "go-mobile",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform",
+        "objective-c-ndk",
+        "react-native",
+        "rust-ndk",
+        "wasm",
+        "zig-llvm"
+      ],
+      "detector_artifacts": [
+        "classes.dex",
+        "lib/x86_64/librust_hybrid.so",
+        "assets/index.android.bundle",
+        "assets/module.wasm"
+      ],
+      "notes": "TST-14: os quatro marcadores (Kotlin DEX, ELF Rust, bundle Hermes, módulo WASM) num ÚNICO APK — teste de cobertura unificada. detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra). híbrido: sem id proprio no detector; os ids TST-14 (react-native + wasm) disparam como candidates."
     },
     {
       "id": "engine-32",
@@ -318,9 +794,20 @@
       "language": "TWA/PWA",
       "tier": "C",
       "build": "fixture",
-      "rustydroid_engines": ["twa"],
-      "detector_artifacts": ["dex-strings:asset_statements", "dex-strings:androidx.browser.trusted", "assets/fixture-marker.txt"],
-      "notes": "detection fixture, payload not executable. Marcadores de TWA (digital asset links, androidx.browser trusted) + activity vazia."
+      "rustydroid_engines": [
+        "generated-java",
+        "haxe",
+        "java",
+        "jvm-dynamic",
+        "kotlin",
+        "kotlin-multiplatform"
+      ],
+      "detector_artifacts": [
+        "dex-strings:asset_statements",
+        "dex-strings:androidx.browser.trusted",
+        "assets/fixture-marker.txt"
+      ],
+      "notes": "detection fixture, payload not executable. Marcadores de TWA (digital asset links, androidx.browser trusted) + activity vazia. detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra). GAP do detector: 'twa-pwa' nao dispara sem asset_statements/metadata que o fixture minimo nao tem; documentado para o repo irmao."
     }
   ]
 }

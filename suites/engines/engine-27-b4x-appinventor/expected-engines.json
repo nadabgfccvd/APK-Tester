@@ -7,11 +7,16 @@
   "dir": "engine-27-b4x-appinventor",
   "id": "engine-27",
   "language": "B4X/App Inventor",
-  "notes": "fixture de detecção; payload não executável (ADR 0003). Empacotada por tools/fixture-pack.py, payloads por tools/gen-engine-fixtures.py.",
+  "notes": "detection fixture, payload not executable. Stub DEX com strings anywheresoftware.b4a / com.google.appinventor. detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra). b4x/app inventor nao tem registro no detector; o fixture e Java gerado (candidate 'generated-java').",
   "pack_command": "python3 tools/fixture-pack.py --fixture engine-27-b4x-appinventor --out dist",
   "payload_not_executable": true,
   "rustydroid_engines": [
-    "b4x-appinventor"
+    "generated-java",
+    "haxe",
+    "java",
+    "jvm-dynamic",
+    "kotlin",
+    "kotlin-multiplatform"
   ],
   "tier": "C",
   "verify_command": "python3 tools/gen-engine-fixtures.py --verify-apk dist/engine-27-b4x-appinventor.apk --engine engine-27-b4x-appinventor"

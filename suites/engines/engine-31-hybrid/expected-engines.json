@@ -10,7 +10,7 @@
   "dir": "engine-31-hybrid",
   "id": "engine-31",
   "language": "Kotlin+Rust+Hermes+WASM",
-  "notes": "TST-14: os quatro marcadores (Kotlin DEX, ELF Rust, bundle Hermes, módulo WASM) num ÚNICO APK — teste de cobertura unificada.",
+  "notes": "TST-14: os quatro marcadores (Kotlin DEX, ELF Rust, bundle Hermes, módulo WASM) num ÚNICO APK — teste de cobertura unificada. detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra). híbrido: sem id proprio no detector; os ids TST-14 (react-native + wasm) disparam como candidates.",
   "pins": {
     "cargo-ndk": "3.5.0",
     "hermes-engine": "0.11.0",
@@ -19,7 +19,20 @@
     "wabt": "1.0.36"
   },
   "rustydroid_engines": [
-    "tst-14-hybrid"
+    "c-ndk",
+    "cpp-ndk",
+    "generated-java",
+    "go-mobile",
+    "haxe",
+    "java",
+    "jvm-dynamic",
+    "kotlin",
+    "kotlin-multiplatform",
+    "objective-c-ndk",
+    "react-native",
+    "rust-ndk",
+    "wasm",
+    "zig-llvm"
   ],
   "tier": "A"
 }

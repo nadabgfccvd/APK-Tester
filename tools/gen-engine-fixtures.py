@@ -107,7 +107,7 @@ if __name__ == "__main__":
 ENGINES = {
     "engine-05-clojure": {
         "language": "Clojure",
-        "rustydroid_engines": ["clojure"],
+        "rustydroid_engines": ["generated-java", "haxe", "java", "jvm-dynamic", "kotlin", "kotlin-multiplatform"],
         "detector_artifacts": [
             "classes.dex", "dex-strings:clojure.lang",
             "assets/fixture-marker.txt"],
@@ -120,7 +120,7 @@ ENGINES = {
     },
     "engine-11-objc": {
         "language": "Objective-C",
-        "rustydroid_engines": ["objc"],
+        "rustydroid_engines": ["c-ndk", "cpp-ndk", "generated-java", "go-mobile", "haxe", "java", "jvm-dynamic", "kotlin", "kotlin-multiplatform", "objective-c-ndk", "rust-ndk", "zig-llvm"],
         "detector_artifacts": [
             "lib/x86_64/libobjc-fixture.so", "assets/fixture-marker.txt"],
         "java_markers": [],
@@ -136,7 +136,7 @@ ENGINES = {
     },
     "engine-18-maui-xamarin": {
         "language": "C#/MAUI/Xamarin",
-        "rustydroid_engines": ["maui-xamarin"],
+        "rustydroid_engines": ["avalonia", "c-ndk", "cpp-ndk", "dotnet-maui", "generated-java", "go-mobile", "haxe", "java", "jvm-dynamic", "kotlin", "kotlin-multiplatform", "objective-c-ndk", "rust-ndk", "zig-llvm"],
         "detector_artifacts": [
             "assemblies/*.dll", "lib/x86_64/libmonodroid.so"],
         "java_markers": [],
@@ -158,7 +158,7 @@ ENGINES = {
     },
     "engine-19-unity-mono": {
         "language": "C#/Unity Mono",
-        "rustydroid_engines": ["unity-mono"],
+        "rustydroid_engines": ["c-ndk", "cpp-ndk", "generated-java", "go-mobile", "haxe", "java", "jvm-dynamic", "kotlin", "kotlin-multiplatform", "objective-c-ndk", "rust-ndk", "unity-mono", "zig-llvm"],
         "detector_artifacts": [
             "assets/bin/Data/Managed/Assembly-CSharp.dll",
             "lib/x86_64/libunity.so", "lib/x86_64/libmonobdwgc-2.0.so"],
@@ -182,7 +182,7 @@ ENGINES = {
     },
     "engine-20-unity-il2cpp": {
         "language": "C#/Unity IL2CPP",
-        "rustydroid_engines": ["unity-il2cpp"],
+        "rustydroid_engines": ["c-ndk", "cpp-ndk", "generated-java", "go-mobile", "haxe", "java", "jvm-dynamic", "kotlin", "kotlin-multiplatform", "objective-c-ndk", "rust-ndk", "unity-il2cpp", "zig-llvm"],
         "detector_artifacts": [
             "lib/x86_64/libil2cpp.so",
             "assets/bin/Data/Managed/Metadata/global-metadata.dat",
@@ -205,7 +205,7 @@ ENGINES = {
     },
     "engine-21-unreal": {
         "language": "C++/Unreal",
-        "rustydroid_engines": ["unreal"],
+        "rustydroid_engines": ["c-ndk", "cpp-ndk", "generated-java", "go-mobile", "haxe", "java", "jvm-dynamic", "kotlin", "kotlin-multiplatform", "objective-c-ndk", "rust-ndk", "unreal", "zig-llvm"],
         "detector_artifacts": ["lib/x86_64/libUE4.so", "assets/*.pak"],
         "java_markers": [],
         "dex_string_markers": [],
@@ -219,7 +219,7 @@ ENGINES = {
     },
     "engine-27-b4x-appinventor": {
         "language": "B4X/App Inventor",
-        "rustydroid_engines": ["b4x-appinventor"],
+        "rustydroid_engines": ["generated-java", "haxe", "java", "jvm-dynamic", "kotlin", "kotlin-multiplatform"],
         "detector_artifacts": [
             "classes.dex", "dex-strings:anywheresoftware.b4a"],
         "java_markers": [("anywheresoftware.b4a", ["BA", "Common"]),
@@ -232,7 +232,7 @@ ENGINES = {
     },
     "engine-29-python-kivy-beeware": {
         "language": "Python/Kivy/BeeWare",
-        "rustydroid_engines": ["python-kivy-beeware"],
+        "rustydroid_engines": ["c-ndk", "cpp-ndk", "generated-java", "go-mobile", "haxe", "java", "jvm-dynamic", "kotlin", "kotlin-multiplatform", "objective-c-ndk", "python-engines", "rust-ndk", "zig-llvm"],
         "detector_artifacts": [
             "lib/x86_64/libpython3*.so", "assets/python/main.py"],
         "java_markers": [],
@@ -249,7 +249,7 @@ ENGINES = {
     },
     "engine-32-twa-pwa": {
         "language": "TWA/PWA",
-        "rustydroid_engines": ["twa"],
+        "rustydroid_engines": ["generated-java", "haxe", "java", "jvm-dynamic", "kotlin", "kotlin-multiplatform"],
         "detector_artifacts": [
             "dex-strings:asset_statements",
             "dex-strings:androidx.browser.trusted",

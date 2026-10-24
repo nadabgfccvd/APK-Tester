@@ -8,12 +8,17 @@
   "dir": "engine-04-scala",
   "id": "engine-04",
   "language": "Scala",
-  "notes": "Runtime scala.runtime embutido no DEX; build nightly (A7).",
+  "notes": "Runtime scala.runtime embutido no DEX; build nightly (A7). detect (snapshot 2026-10-24): sem Signature — ids candidates da familia estrutural; o conjunto EMITIDO completo e o answer key (drift = qualquer mudanca de regra). scala nao tem registro no detector (28 ids); identificacao fina via detector_artifacts (dex-strings:scala.runtime).",
   "pins": {
     "scala": "2.13.15"
   },
   "rustydroid_engines": [
-    "scala"
+    "generated-java",
+    "haxe",
+    "java",
+    "jvm-dynamic",
+    "kotlin",
+    "kotlin-multiplatform"
   ],
   "tier": "B"
 }
