@@ -227,6 +227,8 @@ mkdir -p "$(dirname "$OUT_MD")"
   # aspas simples INTENCIONAIS: backticks literais no markdown gerado
   # shellcheck disable=SC2016
   echo 'Gerada por `scripts/compat-nightly.sh` com o snapshot pinado do CLI `rd`'
+  # aspas simples INTENCIONAIS (backticks literais no markdown gerado)
+  # shellcheck disable=SC2016
   echo '(ADR 0004); answer key: `contracts/engines/expected-engines.json`.'
   echo
   echo '## Engines (answer key: inspect + detect + match)'

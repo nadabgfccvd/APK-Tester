@@ -219,7 +219,7 @@ dependencies {
     implementation(project(":sim3d"))
     implementation(project(":native"))
     implementation(project(":rust"))
-    modernImplementation(project(":compose"))
+    add("modernImplementation", project(":compose"))
 }
 
 // preBuild e criada pelo AGP depois do evaluate; matching.configureEach
