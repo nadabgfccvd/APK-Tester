@@ -10,6 +10,52 @@ de compatibilidade verde).
 
 ## [Unreleased]
 
+### Adicionado (A9 — CI hardening, roadmap W6)
+
+- Lint REAL de Python no CI (roadmap 6.1): job de lint ganha `ruff`
+  (pinado 0.17.2, seleção explícita E4/E7/E9+F no novo `ruff.toml`) —
+  os 20 achados reais da árvore foram corrigidos (3 imports mortos, 6
+  variáveis atribuídas e nunca usadas, 5 nomes ambíguos `l`, f-strings
+  vazias, lambda-assignment). A decisão de FORMATO está documentada no
+  `ruff.toml`: SEM formatador automático (o estilo é parte da identidade
+  do código de fixture; o diff é o revisor); UP/PERF/SIM ficam
+  deliberadamente desligados (opiniões de refatoração, não erros).
+- Novo job `gen-selftests` (roadmap 6.2): TODOS os selftests de
+  `tools/*.py` rodam a cada PR — antes 11 geradores (KTX2, WAV 5.1,
+  ladder, arsc, dex-stress, strings, icons, buttons, trap-manifest,
+  torture-contracts, snapshot-aosp) só rodavam localmente. Inclui o
+  APKBot `--local --check-list locale_sync` para exercitar checks do bot
+  em cada PR.
+- Prova de determinismo com hashes EMBUTIDOS (roadmap 6.3): o
+  `verify-deterministic.sh --mode apk` ganha `--canonical-out` — a
+  impressão digital canônica de cada build (sha256 sobre nome+sha de
+  cada entrada, ordenados, META-INF ignorado). O `v1-gate.py` ganha
+  `--determinism-evidence FILE`: com a evidência, a prova deixa de ser
+  flag de confiança — o hash vai no relatório e builds divergentes
+  REPROVAM (verificado: par igual passa, par divergente exit 1). O
+  workflow Release passa o arquivo real e, em tag, commita
+  `contracts/determinism-baseline.txt` em main (log de release por
+  design: atualizado a cada tag, fora do zero-drift).
+- Escada assinada com keystore de fixture (roadmap 6.4): os 12 degraus
+  da sdk-ladder assinam com `ladder-test.keystore.b64` commitado como
+  texto base64 (mesmo padrão A6 do flagship) — debug E release. Antes os
+  APKs da escada anexados à release carregavam o
+  `~/.android/debug.keystore` (variável por host), quebrando a
+  comparabilidade dos sha256sums entre rebuilds. Configuração do Gradle
+  validada localmente (decodeKeystore + validateSigning para os 12
+  rungs).
+- Política de testes documentada (roadmap 6.5) no CONTRIBUTING: os
+  `--selftest` SÃO a suíte de testes unitários (lei stdlib-only se aplica
+  aos testes; sem pytest) — parsers de contratos cobertos nos selftests
+  das próprias ferramentas (zero-drift, round-trip, corrupção detectada);
+  job `gen-selftests` executa tudo no CI.
+- Decisões documentadas: determinismo é garantia POR-RUNNER (ADR 0001,
+  roadmap 6.6 — prova cross-platform/macOS é gap registrado, não
+  silêncio); `gen-buttons.py` é âncora de contrato/referência, não passo
+  de build (roadmap 6.7 — o Kotlin A0 foi superseded pelas Activities
+  Java commitadas do A1; o gerador segue como fonte da convenção de
+  nomes + alvo do cheque determinism).
+
 ### Corrigido (A9 — governança e higiene, roadmap W5)
 
 - Política de binários × gradle-wrapper: a exceção agora é EXPLÍCITA e

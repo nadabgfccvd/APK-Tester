@@ -445,7 +445,6 @@ def verify_arsc(data: bytes) -> dict:
 
     types = {}
     inner = pos + 288
-    expect_type_pool = True
     while inner < pos + psize:
         itype, ihsize, isize = struct.unpack_from("<HHI", data, inner)
         if inner + isize > pos + psize:
@@ -573,7 +572,7 @@ def selftest() -> int:
     try:
         out_a, out_b = os.path.join(tmp, "a"), os.path.join(tmp, "b")
         report_a = generate(out_a, DEFAULT_ENTRIES, DEFAULT_SEED)
-        report_b = generate(out_b, DEFAULT_ENTRIES, DEFAULT_SEED)
+        generate(out_b, DEFAULT_ENTRIES, DEFAULT_SEED)
         for rel in ("resources.arsc", "arsc-report.json", "huge-arsc-audit.md",
                     "manifest.json"):
             with open(os.path.join(out_a, rel), "rb") as fh:

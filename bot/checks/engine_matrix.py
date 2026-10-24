@@ -259,10 +259,8 @@ def run(ctx) -> CheckResult:
             fingerprint=f"{CHECK_ID}:suites:pendentes-fase"))
 
     # ---- Sanidade de contagem de suítes ------------------------------------
-    count_ok = True
     if suites_ok and set_a:
         if len(suites) < len(set_a):
-            count_ok = False
             findings.append(Finding(
                 check=CHECK_ID, target="suites-json", severity="regression",
                 title="suites.json com menos suítes que engines no contrato",

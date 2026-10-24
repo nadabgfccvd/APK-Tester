@@ -8,6 +8,16 @@ grade de 600 ImageViews (ic_0001..ic_0600 -> R.drawable.ic_vector_NNNN).
 Cada clique emite uma linha JSON de probe no logcat, tag "MAXPROBE/UI",
 no contrato assets/probe/maxprobe-report.schema.json (gerado por gen-assets).
 
+STATUS (A9/roadmap 6.7, decisão documentada): o Kotlin deste gerador NÃO é
+passo de build — é ÂNCORA DE CONTRATO/REFERÊNCIA. O design A0 (Fragments +
+grade) foi superseded no A1 pelas Activities Java commitadas no :app
+(ButtonGridActivity e irmãs, UI real do APK); o gerador permanece como
+fonte determinística da convenção de nomes (btn_label_NNNN, content-desc
+"Button N of 1200", ids ic_NNNN) e como alvo do cheque determinism do
+APKBot (manifest.json com sha256 por artefato, comparável entre execuções
+e tempos). Conectar a saída ao build exigiria migrar o :app de volta para
+Fragments — custo sem benefício de fixture (a UI REAL já está commitada).
+
 Determinístico por --seed (afeta comentários/ordem estável, não há PRNG de
 conteúdo). Apenas stdlib python3; manifest.json com sha256 por artefato.
 

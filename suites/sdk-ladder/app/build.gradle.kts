@@ -6,11 +6,21 @@
 // zero drift por construcao: os flavors NUNCA podem divergir do answer key
 // contracts/sdk-ladder/answer-key.json, que sai da mesma RUNGS do gerador.
 //
+import java.util.Base64
 import java.util.Properties
 
 plugins {
     id("com.android.application")
 }
+
+// A9 (roadmap 6.4) — keystore de fixture commitado como texto base64
+// (mesmo padrao do flagship/A6): os 12 degraus assinam com a MESMA chave em
+// qualquer maquina (debug E release). Antes, os APKs da escada anexados ao
+// workflow Release carregavam a assinatura do ~/.android/debug.keystore —
+// variavel por host, quebrando a comparabilidade dos sha256sums entre
+// rebuilds. NAO e segredo: chave de teste publica (ver keystore/README.md).
+val keystoreSrc = layout.projectDirectory.file("../keystore/ladder-test.keystore.b64")
+val keystoreOut = layout.buildDirectory.file("keystore/ladder-test.keystore")
 
 // Degraus da escada: rungs.properties e gerado (NAO editar a mao). Sem ele o
 // configure falha cedo com instrucao explicita de regeneracao.
@@ -42,6 +52,17 @@ android {
         versionName = "1.0.0-min26"
     }
 
+    // A9 (roadmap 6.4) — keystore de fixture (detalhes em keystore/README.md)
+    signingConfigs {
+        create("ladderTest") {
+            storeFile = keystoreOut.get().asFile
+            storePassword = "ladder2026"
+            keyAlias = "ladder-test"
+            keyPassword = "ladder2026"
+            storeType = "PKCS12"
+        }
+    }
+
     flavorDimensions += "rung"
     productFlavors {
         for (rungName in rungNames) {
@@ -65,8 +86,16 @@ android {
     }
 
     buildTypes {
+        // A9 (roadmap 6.4): assinatura deterministica nos DOIS build types —
+        // keystore de fixture decodificado do texto base64 commitado (ver
+        // keystore/README.md). O debug deixa de usar ~/.android/debug.keystore
+        // (variavel por host); o release ganha assinatura estavel de fixture.
+        getByName("debug") {
+            signingConfig = signingConfigs.getByName("ladderTest")
+        }
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("ladderTest")
         }
     }
 
@@ -78,4 +107,20 @@ android {
         checkReleaseBuilds = false
         abortOnError = false
     }
+}
+
+// A9 (roadmap 6.4) — decodifica o keystore de fixture (texto b64 -> PKCS12
+// binario em build/keystore/) antes de qualquer validacao de assinatura.
+val decodeKeystore = tasks.register("decodeKeystore") {
+    inputs.file(keystoreSrc)
+    outputs.file(keystoreOut)
+    doLast {
+        val out = keystoreOut.get().asFile
+        out.parentFile.mkdirs()
+        val decoded = Base64.getMimeDecoder().decode(keystoreSrc.asFile.readText())
+        out.writeBytes(decoded)
+    }
+}
+tasks.matching { it.name.startsWith("validateSigning") }.configureEach {
+    dependsOn(decodeKeystore)
 }

@@ -341,8 +341,8 @@ def run_selftest() -> int:
 
         # rungs.properties: ordenado, coerente com RUNGS, parseavel.
         props_text = a["outputs"]["suites/sdk-ladder/rungs.properties"]
-        prop_lines = [l for l in props_text.splitlines()
-                      if l and not l.startswith("#")]
+        prop_lines = [line for line in props_text.splitlines()
+                      if line and not line.startswith("#")]
         assert len(prop_lines) == 12
         parsed = []
         for line in prop_lines:
@@ -355,7 +355,8 @@ def run_selftest() -> int:
 
         # Auditoria: tabela com exatamente 12 linhas de dados.
         audit = a["outputs"]["contracts/sdk-ladder/ladder-audit.md"]
-        data_rows = [l for l in audit.splitlines() if l.startswith("| sdk-ladder-")]
+        data_rows = [line for line in audit.splitlines()
+                     if line.startswith("| sdk-ladder-")]
         assert len(data_rows) == 12, (
             "tabela do audit tem %d linhas, esperado 12" % len(data_rows))
         for rec in answer["rungs"]:

@@ -57,7 +57,7 @@
         },
         "by_base_level_sums": true,
         "manifest_matches_registry": true,
-        "manifest_sdk23": 3,
+        "manifest_sdk23": 2,
         "manifest_uses_permission": 1004,
         "platform_permissions": 1004,
         "sdk23_matches_registry": true
@@ -152,7 +152,7 @@
         "docs_engine_matrix": true,
         "per_dir_contracts": 32,
         "tier_c_payload_report": true,
-        "verify_apk_steps_in_ci": 3,
+        "verify_apk_steps_in_ci": 4,
         "verify_apk_steps_min": 3
       },
       "status": "pass"

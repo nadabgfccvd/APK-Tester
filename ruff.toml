@@ -1,0 +1,34 @@
+# ruff.toml — lint real de Python do APK Tester (A9/roadmap 6.1).
+#
+# Seleção: E4/E7/E9 (pycodestyle de erro) + F (Pyflakes) — o mesmo conjunto
+# do default do ruff, declarado EXPLICITAMENTE para ficar estável entre
+# versões da ferramenta (o default pode mudar; o contrato do repo não).
+# São os achados que importam para um repo de geradores: imports mortos,
+# nomes não definidos, variáveis atribuídas e nunca usadas, nomes
+# ambíguos, syntax errors.
+#
+# DECISÃO DE FORMATO (documentada, roadmap 6.1): este repositório NÃO usa
+# formatador automático (ruff format/black). O estilo vigente — colunas de
+# ~79-100, aspas duplas, PT-BR nos comentários/docstrings com ASCII nos
+# identificadores — é parte da identidade do código de fixture e os bytes
+# dos geradores são contrato (CHANGELOG audita mudanças); um formatador
+# reescreveria arquivos inteiros criando diffs gigantes sem valor. O lint
+# acima garante o que é objective (erros reais); a formatação fica sob
+# responsabilidade de quem edita, com o diff como revisor.
+#
+# O que NÃO está ligado (e por quê):
+# - UP (pyupgrade): sugeriria f-strings/`zoneinfo` em código que roda em
+#   python3 stdlib mínimo dos runners — reescrita cosmética;
+# - PERF/FURB/SIM/BLE/...: opiniões de refatoração, não erros; ligar tudo
+#   geraria centenas de findings em código estável e byte-contractado.
+#
+# Rodar: `ruff check tools bot` (CI instala `ruff` via pip no job de lint).
+
+select = ["E4", "E7", "E9", "F"]
+
+exclude = [
+    "suites",       # fontes das suítes (Java/Kotlin/JS/rust etc., não lint Python)
+    "bot/state",    # JSON de estado, não código
+]
+
+line-length = 100

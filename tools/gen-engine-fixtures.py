@@ -55,7 +55,6 @@ import hashlib
 import json
 import os
 import struct
-import subprocess
 import sys
 import tempfile
 import zipfile

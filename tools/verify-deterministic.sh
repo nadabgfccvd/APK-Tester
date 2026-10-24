@@ -19,12 +19,17 @@ SEED=20261022
 MODE=""
 APK1=""
 APK2=""
+CANONICAL_OUT=""
 
 erro() { echo "erro: $*" >&2; exit 2; }
 
 usage() {
   echo "uso: tools/verify-deterministic.sh --mode generators [--seed N]"
-  echo "     tools/verify-deterministic.sh --mode apk --apk1 PATH --apk2 PATH"
+  echo "     tools/verify-deterministic.sh --mode apk --apk1 PATH --apk2 PATH \\"
+  echo "          [--canonical-out FILE]"
+  echo "       --canonical-out: grava a impressao digital canonica do CONTEUDO"
+  echo "       (sha256 sobre nome+sha por entrada ordenados, META-INF ignorado)"
+  echo "       de cada APK — a evidencia embeddavel no v1-gate (A9/roadmap 6.3)"
 }
 
 [ $# -eq 0 ] && { usage >&2; exit 2; }
@@ -35,6 +40,7 @@ while [ $# -gt 0 ]; do
     --seed) [ $# -ge 2 ] || erro "--seed exige valor"; SEED="$2"; shift 2 ;;
     --apk1) [ $# -ge 2 ] || erro "--apk1 exige caminho"; APK1="$2"; shift 2 ;;
     --apk2) [ $# -ge 2 ] || erro "--apk2 exige caminho"; APK2="$2"; shift 2 ;;
+    --canonical-out) [ $# -ge 2 ] || erro "--canonical-out exige caminho"; CANONICAL_OUT="$2"; shift 2 ;;
     --help) usage; exit 0 ;;
     *) erro "flag desconhecida: $1 (use --help)" ;;
   esac
@@ -116,8 +122,9 @@ case "$MODE" in
     [ -n "$APK2" ] || erro "--mode apk exige --apk2"
     [ -f "$APK1" ] || erro "APK nao encontrado: $APK1"
     [ -f "$APK2" ] || erro "APK nao encontrado: $APK2"
-    if ! python3 - "$APK1" "$APK2" <<'PY'
+    if ! python3 - "$APK1" "$APK2" "${CANONICAL_OUT}" <<'PY'
 import hashlib
+import os
 import sys
 import zipfile
 
@@ -136,7 +143,31 @@ def entry_hashes(path: str) -> dict:
     return out
 
 
+def canonical_fingerprint(hashes: dict) -> str:
+    """Sha256 do conteudo canonico: nome+sha por entrada, ordenados por
+    nome, META-INF ignorado — igual entre dois builds identicos em conteudo
+    mesmo com mtimes/assinatura diferentes (a evidencia embeddavel do
+    v1-gate, A9/roadmap 6.3)."""
+    h = hashlib.sha256()
+    for name in sorted(hashes):
+        h.update(name.encode("utf-8"))
+        h.update(b"\x00")
+        h.update(hashes[name].encode("ascii"))
+        h.update(b"\x00")
+    return h.hexdigest()
+
+
 a, b = entry_hashes(sys.argv[1]), entry_hashes(sys.argv[2])
+canonical_out = sys.argv[3] if len(sys.argv) > 3 else ""
+fp_a, fp_b = canonical_fingerprint(a), canonical_fingerprint(b)
+print(f"[verify-deterministic] impressao digital canonica (excl. META-INF):")
+print(f"[verify-deterministic]   {fp_a}  {os.path.basename(sys.argv[1])}")
+print(f"[verify-deterministic]   {fp_b}  {os.path.basename(sys.argv[2])}")
+if canonical_out:
+    with open(canonical_out, "w", encoding="utf-8", newline="\n") as fh:
+        fh.write(f"{fp_a}  {os.path.basename(sys.argv[1])}\n")
+        fh.write(f"{fp_b}  {os.path.basename(sys.argv[2])}\n")
+    print(f"[verify-deterministic] impressoes gravadas em {canonical_out}")
 only_a = sorted(set(a) - set(b))
 only_b = sorted(set(b) - set(a))
 changed = sorted(k for k in set(a) & set(b) if a[k] != b[k])

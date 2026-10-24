@@ -594,8 +594,8 @@ def build_permissions_audit(registry: dict) -> str:
     add("")
     add("STATUS: **preenchida em A1** — answer key das permissoes declaradas pelo")
     add("flagship, gerada por `tools/gen-flagship-manifest.py` a partir do registry")
-    add(f"canonico `contracts/flagship/permissions-registry.json` (snapshot verbatim")
-    add(f"do `frameworks/base/core/res/AndroidManifest.xml` do AOSP master,")
+    add("canonico `contracts/flagship/permissions-registry.json` (snapshot verbatim")
+    add("do `frameworks/base/core/res/AndroidManifest.xml` do AOSP master,")
     add(f"sha256 `{prov['snapshot_sha256']}`, capturado em {prov['snapshot_utc']}).")
     add("")
     add("## Metodologia")
@@ -942,7 +942,7 @@ def run_selftest() -> int:
 
     with tempfile.TemporaryDirectory() as tmp:
         a = generate(Path(tmp) / "a")
-        b = generate(Path(tmp) / "b")
+        generate(Path(tmp) / "b")
         for rel, text in a["outputs"].items():
             assert (Path(tmp) / "a" / rel).read_text(encoding="utf-8") == text
             assert (Path(tmp) / "b" / rel).read_text(encoding="utf-8") == text, \
@@ -986,7 +986,8 @@ def run_selftest() -> int:
         a["outputs"]["suites/flagship/app/src/main/assets/permissions/registry.json"])
     assert len(assets["permissions"]) == len(perms)
     tsv = a["outputs"]["suites/flagship/app/src/main/assets/permissions/permissions.tsv"]
-    tsv_rows = [l for l in tsv.splitlines() if l and not l.startswith("#")]
+    tsv_rows = [line for line in tsv.splitlines()
+                if line and not line.startswith("#")]
     assert len(tsv_rows) == len(perms)
     ledger = json.loads(a["outputs"]["contracts/flagship/manifest.json"])
     ledger_paths = {e["path"] for e in ledger["artifacts"]}

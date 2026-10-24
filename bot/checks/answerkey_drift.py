@@ -299,7 +299,7 @@ def run(ctx) -> CheckResult:
 
         novos, sumidos = [], []
         for n in names:
-            if n.lower() in {l.lower() for l in local_names}:
+            if n.lower() in {name.lower() for name in local_names}:
                 continue
             if not _covered(_tokens(n)[0], local_toksets, local_union):
                 novos.append(n)

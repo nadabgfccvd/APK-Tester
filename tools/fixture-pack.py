@@ -332,7 +332,6 @@ def generate_tree(cfg: dict, mode: str, seed: int, work: str) -> list:
         files = {"res/values/strings.xml": strings_xml(mode)}
         java_files = []
     else:
-        pkg_path = pkg.replace(".", "/")
         files = {
             "AndroidManifest.xml": manifest_xml(cfg, mode, pkg),
             "res/values/strings.xml": strings_xml(mode),
@@ -514,7 +513,7 @@ def build_plan(args, cfg: dict, work: str, out_apk: str, tools: dict,
             "description": f"anexa classes.dex..classes{DEX_BATCHES}.dex na "
                            "raiz do APK",
             "command": ["zip", "-j", "-X", unsigned]
-                       + [f"classes.dex" if i == 1 else f"classes{i}.dex"
+                       + ["classes.dex" if i == 1 else f"classes{i}.dex"
                           for i in range(1, DEX_BATCHES + 1)],
             "cwd": os.path.join(work, "dexout")})
     else:

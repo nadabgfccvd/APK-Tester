@@ -156,7 +156,7 @@ def build_manifest_xml() -> str:
     """AndroidManifest.xml das 9 armadilhas (aapt2-safe, determinístico)."""
     lines = [
         '<?xml version="1.0" encoding="utf-8"?>',
-        f'<!-- ARMADILHAS INTENCIONAIS (ver exported-audit-traps.md). Gerado',
+        '<!-- ARMADILHAS INTENCIONAIS (ver exported-audit-traps.md). Gerado',
         f'     por tools/{TOOL} — NAO editar a mao; regenere com a ferramenta. -->',
         '<manifest xmlns:android="http://schemas.android.com/apk/res/android"',
         f'    package="{PACKAGE}"',

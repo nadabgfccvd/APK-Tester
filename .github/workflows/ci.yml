@@ -15,11 +15,19 @@ permissions:
 
 jobs:
   lint:
-    name: Lint (shellcheck, compileall, bash -n)
+    name: Lint (ruff, shellcheck, compileall, bash -n)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      # A9/roadmap 6.1: lint REAL de Python (ruff, seleção E4/E7/E9+F no
+      # ruff.toml — a decisão de formato está documentada lá: sem
+      # formatador automático; o diff é o revisor do estilo).
+      - name: ruff (tools/ bot/ — pyflakes + erros pycodestyle)
+        run: |
+          python3 -m pip install --quiet ruff==0.17.2
+          ruff check tools bot
 
       - name: shellcheck (tools/*.sh, scripts/*.sh, engines build.sh)
         run: |
@@ -50,6 +58,38 @@ jobs:
             bash -n "$f" || status=1
           done
           exit "$status"
+
+  # A9/roadmap 6.2: TODOS os selftests dos geradores num job barato. Antes
+  # só fixture-pack/gen-engine-fixtures/build-tier-a/b/v1-gate rodavam no CI
+  # — as asserções estruturais dos 11 gen-* restantes (KTX2 spec-completo,
+  # WAV EXTENSIBLE, ladder zero-drift, arsc, dex-stress, strings, icons...)
+  # só rodavam localmente. Roda sem toolchain Android (stdlib only); o
+  # snapshot-aosp faz 1 fetch do AOSP (~500 KB). Inclui o APKBot --local
+  # com o check locale_sync (puramente local) para exercitar os checks em
+  # cada PR.
+  gen-selftests:
+    name: "Selftests (A9): todos os geradores + APKBot local"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Selftest de cada tools/*.py que expõe --selftest
+        run: |
+          status=0
+          for t in tools/*.py; do
+            if grep -q -- "--selftest" "$t"; then
+              echo "::group::python3 $t --selftest"
+              python3 "$t" --selftest || status=1
+              echo "::endgroup::"
+            fi
+          done
+          exit "$status"
+
+      - name: APKBot local (check locale_sync em cada PR)
+        run: |
+          python3 bot/apkbot.py --local --check-list locale_sync
+          git checkout -- bot/state/bot-state.json 2>/dev/null || true
 
   # Tier B contratos (A7): o PR valida o ORQUESTRADOR e o zero drift dos
   # contratos (selftest + sync + plan-only dos 9 engines); a build REAL das

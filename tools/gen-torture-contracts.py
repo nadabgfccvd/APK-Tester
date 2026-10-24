@@ -145,7 +145,8 @@ def build_fixtures_audit() -> str:
     add("|---|---|---|---|---|---|---|---|---|")
     for mode in TORTURE_ORDER:
         cfg = fixture_pack.MODES[mode]
-        sig = lambda flag: "sim" if cfg[flag] else "nao"
+        def sig(flag):
+            return "sim" if cfg[flag] else "nao"
         add(f"| `{mode}` | `{apk_name(mode)}` | {cfg['min_sdk']} | "
             f"{cfg['target_sdk']} | {sig('v1')} | {sig('v2')} | {sig('v3')} | "
             f"{PATOLOGIA[mode]} | {EXPECTED_RESULTS[mode]} |")

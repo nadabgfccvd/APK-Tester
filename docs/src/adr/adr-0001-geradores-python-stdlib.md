@@ -36,10 +36,20 @@ limpo. O contrato comum dos geradores é `--seed` / `--out`.
 - Reprodutibilidade total: mesmo checkout + mesma seed => mesmos bytes
   (verificável por `tools/verify-deterministic.sh`: duas builds byte-idênticas
   exceto assinatura).
-- CI simples: `python3 -m compileall tools scripts` é lint suficiente; nada a
-  instalar.
+- CI: lint real desde a A9 (ruff, seleção E4/E7/E9+F no `ruff.toml` —
+  erros objetivos: imports mortos, nomes não definidos, variáveis não
+  usadas) + `compileall` + shellcheck; a decisão de FORMATO (sem
+  formatador automático) está documentada no `ruff.toml`.
 - Geração pesada (4K PBR, áudio longo, malhas) é mais lenta que com libs
   binárias — aceito: roda offline e é paralelizável.
+- **Escopo da garantia de determinismo (A9, roadmap 6.6 — decisão
+  documentada):** a prova é POR-RUNNER (mesma máquina/python/stdlib — o
+  CI do repo roda ubuntu-latest; `verify-deterministic.sh` compara duas
+  execuções no MESMO ambiente, e a prova de release compara duas builds
+  no MESMO run). Independência de libm/plataforma (2º runner em macOS)
+  é trabalho futuro NÃO assumido: os geradores evitam float-no-output
+  onde o conteúdo é contrato (inteiros/bytes), mas a prova formal
+  cross-platform não existe — gap registrado, não silêncio.
 - Proibido commitar qualquer `dist/`, `build/` ou asset binário gerado.
 - **Exceção (A9, roadmap 5.1): `gradle/wrapper/gradle-wrapper.jar`.** As
   suítes Gradle (flagship e sdk-ladder) commitam o jar do wrapper — é a

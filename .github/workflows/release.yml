@@ -111,8 +111,11 @@ jobs:
           bash tools/verify-deterministic.sh --mode apk \
             --apk1 dist/build1/flagship-modern-release.apk \
             --apk2 suites/flagship/app/build/outputs/apk/modern/release/app-modern-release.apk \
+            --canonical-out dist/determinism-baseline.txt \
             | tee dist/determinism-proof.txt
           echo "[A8] DoD: duas builds de release consecutivas byte-identicas (exceto META-INF)"
+          echo "[A9] impressao digital canonica das duas builds (embeddada no v1-gate):"
+          cat dist/determinism-baseline.txt
 
       - name: Size gate fresco ([850, 1000] MiB + drift ±2%)
         run: |
@@ -144,6 +147,7 @@ jobs:
             dist/size-report.csv
             dist/flagship-release.sha256
             dist/determinism-proof.txt
+            dist/determinism-baseline.txt
           if-no-files-found: error
 
   # ------------------------------------------------------------------
@@ -515,6 +519,7 @@ jobs:
           find flagship-staging -name 'flagship-classic-release.apk' -exec cp {} dist/apks/ \;
           find flagship-staging -name 'size-report.csv' -exec cp {} dist/size-report.csv \;
           find flagship-staging -name 'determinism-proof.txt' -exec cp {} dist/determinism-proof.txt \;
+          find flagship-staging -name 'determinism-baseline.txt' -exec cp {} dist/determinism-baseline.txt \;
           N="$(ls dist/apks/*.apk | wc -l)"
           echo "APKs coletados: ${N}"
           # 2 flagship + 14 Tier A + 9 Tier B + 9 Tier C + 12 escada + 11 tortura
@@ -525,7 +530,10 @@ jobs:
       - name: Gate v1.0 com evidências dinâmicas (tools/v1-gate.py)
         run: |
           # --determinism-pass é legítimo: o need build-flagship (verde) provou
-          # as duas builds consecutivas byte a byte neste mesmo run.
+          # as duas builds consecutivas byte a byte neste mesmo run. A partir
+          # da A9 (roadmap 6.3) a prova é EMBADDADA: --determinism-evidence
+          # carrega as impressões digitais canônicas das duas builds — o
+          # v1-gate reprova se divergirem e o hash vai no relatório.
           # --release-proven somente em tag v* (o draft release é o passo final).
           EXTRA=()
           if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
@@ -535,11 +543,45 @@ jobs:
             --apks-dir dist/apks \
             --flagship-apk dist/apks/flagship-modern-release.apk \
             --determinism-pass \
+            --determinism-evidence dist/determinism-baseline.txt \
             "${EXTRA[@]}" \
             --out dist/v1-gate.json
           cat dist/v1-gate.json
           # o gate result deve ser pass (em tag) — em dispatch sem tag o
           # criterio de governanca fica evidence-release e isso NAO reprova.
+
+      # A9/roadmap 6.3: baseline de determinismo COMMITADO — a impressão
+      # digital canônica das duas builds de release fica no repo (atualizada
+      # a cada tag; é log de release por design, fora do zero-drift do CI).
+      - name: Commitar baseline de determinismo (somente em tag)
+        if: github.ref_type == 'tag'
+        run: |
+          set -euo pipefail
+          git config user.name "xisto"
+          git config user.email "xisto@users.noreply.github.com"
+          {
+            echo "# contracts/determinism-baseline.txt — impressão digital canônica"
+            echo "# das DUAS builds consecutivas do flagship modern release"
+            echo "# (sha256 sobre nome+sha de cada entrada, ordenados, META-INF"
+            echo "# ignorado — tools/verify-deterministic.sh --canonical-out)."
+            echo "# ATUALIZADO A CADA TAG pelo workflow Release (log de release:"
+            echo "# muda por design; fora do zero-drift do CI). Tag: ${GITHUB_REF_NAME}"
+            echo "# Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            cat dist/determinism-baseline.txt
+          } > contracts/determinism-baseline.txt
+          git fetch origin main
+          git checkout main
+          git add contracts/determinism-baseline.txt
+          if git diff --quiet --cached; then
+            echo "[A9] baseline inalterado; nada a commitar"
+          else
+            git commit -m "release: baseline de determinismo ${GITHUB_REF_NAME} [skip ci] — impressao digital canonica das duas builds de release embutida no v1-gate (A9/roadmap 6.3)"
+            git push origin main
+            echo "[A9] baseline de determinismo commitado em main"
+          fi
+          # volta ao checkout da TAG: os passos seguintes empacotam os
+          # contratos DA TAG (não de um main que possa ter avançado)
+          git checkout "${GITHUB_SHA}"
 
       - name: Empacotar contratos + suite de APKs
         run: |

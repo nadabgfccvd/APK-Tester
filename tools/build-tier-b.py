@@ -64,7 +64,6 @@ import glob
 import hashlib
 import json
 import os
-import re
 import shutil
 import stat
 import subprocess
@@ -73,7 +72,6 @@ import tarfile
 import tempfile
 import urllib.request
 import zipfile
-import fnmatch
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 if TOOLS_DIR not in sys.path:

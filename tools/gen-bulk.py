@@ -508,7 +508,7 @@ def selftest() -> int:
             dir_a = os.path.join(tmp, "a")
             dir_b = os.path.join(tmp, "b")
             man_a = generate(dir_a, "quick", seed)
-            man_b = generate(dir_b, "quick", seed)
+            generate(dir_b, "quick", seed)
 
             # (a) determinismo: duas gerações byte-idênticas
             with open(os.path.join(dir_a, "bulk", "manifest.json"), "rb") as fh:
@@ -631,8 +631,8 @@ def selftest() -> int:
                 end = raw.index(b"end_header\n") + len(b"end_header\n")
                 text = raw[:end].decode("ascii")
                 assert text.startswith("ply\nformat binary_little_endian 1.0\n")
-                n_line = next(l for l in text.splitlines()
-                              if l.startswith("element vertex "))
+                n_line = next(line for line in text.splitlines()
+                              if line.startswith("element vertex "))
                 n = int(n_line.rsplit(" ", 1)[1])
                 assert len(raw) - end == 12 * n, "payload PLY != 12*N"
                 assert (b"comment " + PLY_NOTE.encode("ascii")) in raw

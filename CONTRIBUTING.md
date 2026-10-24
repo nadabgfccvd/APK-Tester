@@ -57,6 +57,30 @@ python3 tools/fixture-pack.py --help
 Após alterar qualquer gerador, rode `tools/verify-deterministic.sh` e confirme
 que duas execuções produzem saída byte-idêntica.
 
+## Política de testes (decisão A9, roadmap 6.5)
+
+A suíte de testes unitários deste repositório É o conjunto de `--selftest`
+das ferramentas — não há framework de testes externo (pytest & cia.):
+a lei stdlib-only se aplica aos testes como ao resto, e cada `--selftest`
+é um executável isolado com asserções duras, determinístico e sem rede
+(exceto o snapshot do AOSP, ~500 KB). Contrato por ferramenta:
+
+- **todo** `tools/*.py` que gera artefato expõe `--selftest`; o job
+  `gen-selftests` do CI executa TODOS eles a cada PR (desde a A9 —
+  antes só 5 ferramentas tinham selftest exercido no CI);
+- os *parsers de contratos* são cobertos onde vivem: cada gerador valida
+  o próprio contrato no selftest (zero-drift contra o canônico, round-trip
+  verify, detecção de corrupção); o `v1-gate.py --selftest` cobre a leitura
+  de `v1-gate.json`/size-report; os checks do APKBot são exercidos no
+  mesmo job (`bot/apkbot.py --local --check-list locale_sync`) e no
+  schedule de 6 h (todos os 9 checks);
+- um bug corrigido ganha asserção no selftest da ferramenta onde nasceu
+  (os "negativos": entrada corrompida DEVE reprovar, nunca derrubar).
+
+Testes de runtime (instalação/execução dos APKs) vivem fora daqui: são o
+`rustydroid test contracts/suites.json` contra os fixtures — a suíte é
+golden-fixture, não app de produção.
+
 ## Como adicionar um fixture
 
 1. Abra uma issue com o template `fixture_gap` descrevendo o gap (qual engine,

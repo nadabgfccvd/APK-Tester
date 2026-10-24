@@ -664,6 +664,13 @@ def check_expected_engines_detect(ctx: StaticContext, args) -> tuple:
         p = ROOT / ".github" / "workflows" / wf
         if p.is_file():
             ci_text += load_text(p)
+    # A9/roadmap 5.5: o laço Tier C de pack+verify virou o script
+    # compartilhado scripts/pack-tier-c.sh (chamado pelos workflows
+    # ci/nightly/release) — as verificações --verify-apk que estavam
+    # inline nos workflows agora vivem lá e contam para o critério.
+    pack_script = ROOT / "scripts" / "pack-tier-c.sh"
+    if pack_script.is_file():
+        ci_text += load_text(pack_script)
     m["verify_apk_steps_in_ci"] = ci_text.count("--verify-apk")
     m["verify_apk_steps_min"] = 3
     m["compat_nightly_job"] = "compat-nightly:" in load_text(
@@ -725,6 +732,55 @@ def check_determinism_proof(ctx: StaticContext, args) -> tuple:
         "determinismo de fixtures no CI; a prova das DUAS builds de release "
         "consecutivas do flagship e dinamica — workflow Release"
     )
+    # A9/roadmap 6.3: com --determinism-evidence, a prova deixa de ser
+    # flag de confiança — as impressões digitais CANÔNICAS das duas builds
+    # (verify-deterministic.sh --canonical-out) são lidas, embeddadas no
+    # relatório e DEVEM casar; divergência reprova mesmo com a flag.
+    evidence_file = getattr(args, "determinism_evidence", None)
+    if args.determinism_pass and evidence_file:
+        try:
+            lines = [ln.strip() for ln in
+                     Path(evidence_file).read_text(encoding="utf-8").splitlines()
+                     if ln.strip()]
+        except OSError as exc:
+            m["determinism_evidence_error"] = str(exc)
+            return FAIL, m, (
+                f"evidência de determinismo ilegível ({evidence_file}: "
+                f"{exc}) — regenere com verify-deterministic.sh "
+                "--canonical-out"
+            )
+        fps, names = [], []
+        for ln in lines:
+            parts = ln.split(None, 1)
+            if len(parts) != 2 or len(parts[0]) != 64:
+                m["determinism_evidence_error"] = f"linha malformada: {ln!r}"
+                return FAIL, m, "evidência de determinismo malformada"
+            fps.append(parts[0])
+            names.append(parts[1].strip())
+        m["determinism_builds"] = len(fps)
+        m["determinism_content_sha256"] = fps[0] if fps else None
+        m["determinism_build_names"] = names
+        if len(fps) < 2 or len(set(fps)) != 1:
+            m["determinism_hashes_match"] = False
+            return FAIL, m, (
+                "impressões digitais canônicas das builds DIVERGEM "
+                f"({len(fps)} builds, {len(set(fps))} hashes distintos) — "
+                "determinismo quebrado"
+            )
+        m["determinism_hashes_match"] = True
+        status = PASS
+        evidence = (
+            "duas builds consecutivas do flagship modern release "
+            "(gradlew clean entre elas) comparadas por "
+            "verify-deterministic.sh --mode apk: conteúdo idêntico entrada "
+            "a entrada, META-INF (assinatura/mtimes) ignorado — e a prova "
+            "AGORA é evidência embeddada (A9/roadmap 6.3): impressão "
+            "digital canônica (sha256 sobre nome+sha de cada entrada, "
+            "ordenados) DAS DUAS builds = "
+            f"`{fps[0]}`, gravada em contracts/determinism-baseline.txt "
+            "pelo workflow Release"
+        )
+        return status, m, evidence
     if args.determinism_pass:
         status = PASS
         evidence = (
@@ -732,7 +788,8 @@ def check_determinism_proof(ctx: StaticContext, args) -> tuple:
             "(gradlew clean entre elas) comparadas por "
             "verify-deterministic.sh --mode apk: conteudo identico entrada "
             "a entrada, META-INF (assinatura/mtimes) ignorado — provado no "
-            "workflow Release"
+            "workflow Release (sem --determinism-evidence: prova por flag; "
+            "o Release passa o arquivo com os hashes reais)"
         )
     return status, m, evidence
 
@@ -981,6 +1038,14 @@ def main() -> int:
     parser.add_argument("--determinism-pass", action="store_true",
                         help="evidencia: duas builds consecutivas provadas "
                              "byte a byte (verify-deterministic apk)")
+    parser.add_argument("--determinism-evidence", metavar="FILE",
+                        default=None,
+                        help="evidencia REAL (A9/roadmap 6.3): arquivo do "
+                             "verify-deterministic.sh --canonical-out com a "
+                             "impressao digital canonica das DUAS builds — "
+                             "o hash e embeddado no relatorio e as builds "
+                             "DEVEM casar (senao FAIL mesmo com "
+                             "--determinism-pass)")
     parser.add_argument("--release-proven", action="store_true",
                         help="evidencia: workflow Release verde no tag "
                              "v1.0.0 (milestones + release)")
@@ -1005,6 +1070,9 @@ def main() -> int:
     ]
     if args.sync and dynamic_flags:
         erro("--sync e estatico: nao combina com flags de evidencia")
+    if args.determinism_evidence and not args.determinism_pass:
+        erro("--determinism-evidence exige --determinism-pass "
+             "(a evidencia completa a prova, nao a substitui)")
 
     if not (args.sync or args.check):
         parser.error("use --sync, --check ou --selftest")
