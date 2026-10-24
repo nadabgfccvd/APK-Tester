@@ -2229,147 +2229,147 @@
           "skipped": "escreve em docs/ no repo"
         },
         "fixture-pack:dry-run": {
-          "cv": 0.0071,
+          "cv": 0.0069,
           "durations_s": [
-            0.051,
-            0.05,
-            0.05
+            0.034,
+            0.034,
+            0.035
           ]
         },
         "fixture-pack:selftest": {
-          "cv": 0.0081,
+          "cv": 0.1699,
           "durations_s": [
-            0.718,
-            0.708,
-            0.705
+            0.692,
+            0.51,
+            0.475
           ]
         },
         "gen-arsc-stress": {
-          "cv": 0.003,
+          "cv": 0.0071,
           "durations_s": [
-            3.837,
-            3.863,
-            3.84
+            2.285,
+            2.286,
+            2.32
           ]
         },
         "gen-assets": {
-          "cv": 0.0101,
+          "cv": 0.0173,
           "durations_s": [
-            0.046,
-            0.046,
-            0.047
+            0.031,
+            0.03,
+            0.03
           ]
         },
         "gen-audio": {
-          "cv": 0.0041,
+          "cv": 0.0055,
           "durations_s": [
-            0.425,
-            0.421,
-            0.422
+            0.224,
+            0.226,
+            0.227
           ]
         },
         "gen-bulk": {
-          "cv": 0.0029,
+          "cv": 0.0014,
           "durations_s": [
-            0.203,
-            0.201,
-            0.203
+            0.146,
+            0.146,
+            0.146
           ]
         },
         "gen-buttons": {
-          "cv": 0.0083,
+          "cv": 0.0104,
           "durations_s": [
-            0.047,
-            0.046,
-            0.046
+            0.031,
+            0.03,
+            0.03
           ]
         },
         "gen-dex-stress": {
-          "cv": 0.0043,
+          "cv": 0.0075,
           "durations_s": [
-            0.265,
-            0.265,
-            0.262
+            0.154,
+            0.157,
+            0.157
           ]
         },
         "gen-engine-fixtures": {
-          "cv": 0.0058,
+          "cv": 0.0152,
           "durations_s": [
-            0.068,
-            0.068,
-            0.067
+            0.044,
+            0.043,
+            0.043
           ]
         },
         "gen-flagship-manifest": {
-          "cv": 0.006,
+          "cv": 0.0073,
           "durations_s": [
-            0.096,
-            0.095,
-            0.094
-          ]
-        },
-        "gen-icons": {
-          "cv": 0.0027,
-          "durations_s": [
-            0.29,
-            0.291,
-            0.291
-          ]
-        },
-        "gen-ladder": {
-          "cv": 0.0118,
-          "durations_s": [
-            0.043,
-            0.042,
-            0.042
-          ]
-        },
-        "gen-meshes": {
-          "cv": 0.0099,
-          "durations_s": [
-            0.058,
             0.06,
+            0.061,
             0.06
           ]
         },
-        "gen-shaders": {
-          "cv": 0.0028,
+        "gen-icons": {
+          "cv": 0.0076,
           "durations_s": [
-            0.508,
-            0.506,
-            0.505
+            0.154,
+            0.157,
+            0.156
+          ]
+        },
+        "gen-ladder": {
+          "cv": 0.0127,
+          "durations_s": [
+            0.029,
+            0.028,
+            0.028
+          ]
+        },
+        "gen-meshes": {
+          "cv": 0.0046,
+          "durations_s": [
+            0.037,
+            0.037,
+            0.037
+          ]
+        },
+        "gen-shaders": {
+          "cv": 0.0626,
+          "durations_s": [
+            0.276,
+            0.277,
+            0.315
           ]
         },
         "gen-strings": {
-          "cv": 0.0045,
+          "cv": 0.0071,
           "durations_s": [
-            0.144,
-            0.143,
-            0.145
+            0.089,
+            0.088,
+            0.088
           ]
         },
         "gen-textures": {
-          "cv": 0.0183,
+          "cv": 0.0112,
           "durations_s": [
-            0.097,
-            0.096,
-            0.1
+            0.056,
+            0.057,
+            0.056
           ]
         },
         "gen-torture-contracts": {
-          "cv": 0.0066,
+          "cv": 0.0038,
           "durations_s": [
-            3.142,
-            3.123,
-            3.173
+            1.9,
+            1.913,
+            1.896
           ]
         },
         "gen-trap-manifest": {
-          "cv": 0.0088,
+          "cv": 0.033,
           "durations_s": [
-            0.042,
-            0.042,
-            0.041
+            0.03,
+            0.028,
+            0.028
           ]
         }
       }
@@ -2377,7 +2377,7 @@
     "governance": {
       "bot_since_sha": "b212b248a04bbd36f949df34df411c12571c9180",
       "labels_count": 35,
-      "last_audited_sha": "678dbd9c27c6978495fb7bc7868285797cb2870e",
+      "last_audited_sha": "4c9fbadadd9e03d472fda3c01f665e428d2b89e3",
       "milestones_ok": true
     },
     "permission_drift": {
@@ -3649,6 +3649,22 @@
           },
           "date": "2026-10-24T00:44:01Z",
           "total_bytes": 960783552
+        },
+        {
+          "categories": {
+            "arsc": 942852,
+            "audio": 151497816,
+            "dex": 57136,
+            "locales": 0,
+            "meshes": 221282589,
+            "other": 369686353,
+            "resources": 849780,
+            "shaders": 2544034,
+            "so": 0,
+            "textures": 213922992
+          },
+          "date": "2026-10-24T01:23:42Z",
+          "total_bytes": 960783552
         }
       ]
     }
@@ -3677,35 +3693,7 @@
       "title": "links mortos: docs/src/compat-matrix.md"
     }
   },
-  "open_issues": {
-    "answerkey_drift:registry:arquivo-mudou": {
-      "check": "answerkey_drift",
-      "first_seen": "2026-10-23T20:54:01Z",
-      "number": 19,
-      "severity": "drift",
-      "target": "rustydroid:README.md",
-      "title": "Arquivo do registro de engines do irmão mudou",
-      "url": "https://github.com/nadabgfccvd/APK-Tester/issues/19"
-    },
-    "size_drift:total:previsao-breach": {
-      "check": "size_drift",
-      "first_seen": "2026-10-23T04:05:18Z",
-      "number": 4,
-      "severity": "drift",
-      "target": "size:total",
-      "title": "Previsão: total do flagship cruzará o size gate",
-      "url": "https://github.com/nadabgfccvd/APK-Tester/issues/4"
-    },
-    "staleness:docs/src/compat-matrix.md:link-morto": {
-      "check": "staleness",
-      "first_seen": "2026-10-23T20:54:01Z",
-      "number": 18,
-      "severity": "drift",
-      "target": "docs/src/compat-matrix.md",
-      "title": "links mortos: docs/src/compat-matrix.md",
-      "url": "https://github.com/nadabgfccvd/APK-Tester/issues/18"
-    }
-  },
+  "open_issues": {},
   "runs": [
     {
       "checks_ran": 8,
@@ -3882,8 +3870,19 @@
         "new": 0,
         "regression": 0
       }
+    },
+    {
+      "checks_ran": 8,
+      "date": "2026-10-24T01:23:42Z",
+      "findings_count": {
+        "drift": 0,
+        "flaky": 0,
+        "info": 5,
+        "new": 0,
+        "regression": 0
+      }
     }
   ],
   "schema_version": 1,
-  "updated": "2026-10-24T00:45:08Z"
+  "updated": "2026-10-24T01:24:39Z"
 }
