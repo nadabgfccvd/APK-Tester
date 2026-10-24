@@ -2229,147 +2229,147 @@
           "skipped": "escreve em docs/ no repo"
         },
         "fixture-pack:dry-run": {
-          "cv": 0.0038,
+          "cv": 0.0071,
           "durations_s": [
-            0.042,
+            0.051,
+            0.05,
+            0.05
+          ]
+        },
+        "fixture-pack:selftest": {
+          "cv": 0.0081,
+          "durations_s": [
+            0.718,
+            0.708,
+            0.705
+          ]
+        },
+        "gen-arsc-stress": {
+          "cv": 0.003,
+          "durations_s": [
+            3.837,
+            3.863,
+            3.84
+          ]
+        },
+        "gen-assets": {
+          "cv": 0.0101,
+          "durations_s": [
+            0.046,
+            0.046,
+            0.047
+          ]
+        },
+        "gen-audio": {
+          "cv": 0.0041,
+          "durations_s": [
+            0.425,
+            0.421,
+            0.422
+          ]
+        },
+        "gen-bulk": {
+          "cv": 0.0029,
+          "durations_s": [
+            0.203,
+            0.201,
+            0.203
+          ]
+        },
+        "gen-buttons": {
+          "cv": 0.0083,
+          "durations_s": [
+            0.047,
+            0.046,
+            0.046
+          ]
+        },
+        "gen-dex-stress": {
+          "cv": 0.0043,
+          "durations_s": [
+            0.265,
+            0.265,
+            0.262
+          ]
+        },
+        "gen-engine-fixtures": {
+          "cv": 0.0058,
+          "durations_s": [
+            0.068,
+            0.068,
+            0.067
+          ]
+        },
+        "gen-flagship-manifest": {
+          "cv": 0.006,
+          "durations_s": [
+            0.096,
+            0.095,
+            0.094
+          ]
+        },
+        "gen-icons": {
+          "cv": 0.0027,
+          "durations_s": [
+            0.29,
+            0.291,
+            0.291
+          ]
+        },
+        "gen-ladder": {
+          "cv": 0.0118,
+          "durations_s": [
+            0.043,
             0.042,
             0.042
           ]
         },
-        "fixture-pack:selftest": {
-          "cv": 0.2285,
-          "durations_s": [
-            0.919,
-            0.578,
-            0.587
-          ]
-        },
-        "gen-arsc-stress": {
-          "cv": 0.0072,
-          "durations_s": [
-            3.02,
-            3.07,
-            3.029
-          ]
-        },
-        "gen-assets": {
-          "cv": 0.0062,
-          "durations_s": [
-            0.037,
-            0.037,
-            0.037
-          ]
-        },
-        "gen-audio": {
-          "cv": 0.0319,
-          "durations_s": [
-            0.337,
-            0.339,
-            0.315
-          ]
-        },
-        "gen-bulk": {
-          "cv": 0.0063,
-          "durations_s": [
-            0.178,
-            0.177,
-            0.175
-          ]
-        },
-        "gen-buttons": {
-          "cv": 0.011,
-          "durations_s": [
-            0.037,
-            0.036,
-            0.036
-          ]
-        },
-        "gen-dex-stress": {
-          "cv": 0.0036,
-          "durations_s": [
-            0.196,
-            0.198,
-            0.197
-          ]
-        },
-        "gen-engine-fixtures": {
-          "cv": 0.0071,
-          "durations_s": [
-            0.054,
-            0.053,
-            0.054
-          ]
-        },
-        "gen-flagship-manifest": {
-          "cv": 0.0063,
-          "durations_s": [
-            0.079,
-            0.078,
-            0.079
-          ]
-        },
-        "gen-icons": {
-          "cv": 0.0022,
-          "durations_s": [
-            0.202,
-            0.201,
-            0.202
-          ]
-        },
-        "gen-ladder": {
-          "cv": 0.0163,
-          "durations_s": [
-            0.036,
-            0.035,
-            0.035
-          ]
-        },
         "gen-meshes": {
-          "cv": 0.0069,
+          "cv": 0.0099,
           "durations_s": [
-            0.048,
-            0.048,
-            0.049
+            0.058,
+            0.06,
+            0.06
           ]
         },
         "gen-shaders": {
-          "cv": 0.0062,
+          "cv": 0.0028,
           "durations_s": [
-            0.37,
-            0.374,
-            0.368
+            0.508,
+            0.506,
+            0.505
           ]
         },
         "gen-strings": {
-          "cv": 0.0018,
+          "cv": 0.0045,
           "durations_s": [
-            0.115,
-            0.114,
-            0.114
+            0.144,
+            0.143,
+            0.145
           ]
         },
         "gen-textures": {
-          "cv": 0.0057,
+          "cv": 0.0183,
           "durations_s": [
-            0.078,
-            0.079,
-            0.078
+            0.097,
+            0.096,
+            0.1
           ]
         },
         "gen-torture-contracts": {
-          "cv": 0.006,
+          "cv": 0.0066,
           "durations_s": [
-            2.44,
-            2.468,
-            2.472
+            3.142,
+            3.123,
+            3.173
           ]
         },
         "gen-trap-manifest": {
-          "cv": 0.0131,
+          "cv": 0.0088,
           "durations_s": [
-            0.034,
-            0.033,
-            0.034
+            0.042,
+            0.042,
+            0.041
           ]
         }
       }
@@ -2377,7 +2377,7 @@
     "governance": {
       "bot_since_sha": "b212b248a04bbd36f949df34df411c12571c9180",
       "labels_count": 35,
-      "last_audited_sha": "2fe98b17e239c7dbaf7243ba948aa2848a22ce25",
+      "last_audited_sha": "678dbd9c27c6978495fb7bc7868285797cb2870e",
       "milestones_ok": true
     },
     "permission_drift": {
@@ -3633,16 +3633,46 @@
           },
           "date": "2026-10-23T21:12:15Z",
           "total_bytes": 960783552
+        },
+        {
+          "categories": {
+            "arsc": 942852,
+            "audio": 151497816,
+            "dex": 57136,
+            "locales": 0,
+            "meshes": 221282589,
+            "other": 369686353,
+            "resources": 849780,
+            "shaders": 2544034,
+            "so": 0,
+            "textures": 213922992
+          },
+          "date": "2026-10-24T00:44:01Z",
+          "total_bytes": 960783552
         }
       ]
     }
   },
   "bot": "apkbot",
-  "confirmations": {},
+  "confirmations": {
+    "answerkey_drift:eb52b9cc92374f77e57d1c54bc056c6e92f16fa41b228912c6bca6026c1dd86d": {
+      "check": "answerkey_drift",
+      "first_seen": "2026-10-24T00:44:01Z",
+      "payload": {
+        "confident": false,
+        "local_names_count": 32,
+        "named_rows": 0,
+        "names": [],
+        "registry_sha": "d63720e81d0a5527fed289a2e5060d2aa0a6ea47c6ff5c71d458cd8530704ebd",
+        "source_path": "README.md"
+      },
+      "runs_seen": 1
+    }
+  },
   "flap_history": {
     "answerkey_drift:registry:arquivo-mudou": {
-      "count": 1,
-      "last_seen": "2026-10-23T21:12:15Z",
+      "count": 2,
+      "last_seen": "2026-10-24T00:44:01Z",
       "title": "Arquivo do registro de engines do irmão mudou"
     },
     "governance:labels:divergencia": {
@@ -3651,13 +3681,13 @@
       "title": "Labels do GitHub divergem de labels.json"
     },
     "size_drift:total:previsao-breach": {
-      "count": 7,
-      "last_seen": "2026-10-23T21:12:15Z",
+      "count": 8,
+      "last_seen": "2026-10-24T00:44:01Z",
       "title": "Previsão: total do flagship cruzará o size gate"
     },
     "staleness:docs/src/compat-matrix.md:link-morto": {
-      "count": 1,
-      "last_seen": "2026-10-23T21:12:15Z",
+      "count": 2,
+      "last_seen": "2026-10-24T00:44:01Z",
       "title": "links mortos: docs/src/compat-matrix.md"
     }
   },
@@ -3855,8 +3885,19 @@
         "new": 0,
         "regression": 0
       }
+    },
+    {
+      "checks_ran": 8,
+      "date": "2026-10-24T00:44:01Z",
+      "findings_count": {
+        "drift": 3,
+        "flaky": 0,
+        "info": 5,
+        "new": 0,
+        "regression": 0
+      }
     }
   ],
   "schema_version": 1,
-  "updated": "2026-10-23T21:13:22Z"
+  "updated": "2026-10-24T00:45:08Z"
 }
