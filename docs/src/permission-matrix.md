@@ -48,9 +48,10 @@ REQUEST_INSTALL/DELETE_PACKAGES, PACKAGE_USAGE_STATS,
 SCHEDULE_EXACT_ALARM/USE_EXACT_ALARM, USE_FULL_SCREEN_INTENT,
 ACCESS_NOTIFICATION_POLICY, IGNORE_BATTERY_OPTIMIZATIONS, QUERY_ALL_PACKAGES,
 ...), todas as FOREGROUND_SERVICE_* (15), variantes deprecated com
-`maxSdkVersion` (GET_TASKS 25, PROCESS_OUTGOING_CALLS 28, USE_CREDENTIALS 22,
-PERSISTENT_ACTIVITY 15, READ_EXTERNAL_STORAGE 32, USE_FINGERPRINT 27,
-BLUETOOTH/BLUETOOTH_ADMIN 30, ...), `uses-permission-sdk-23`, e declarações
+`maxSdkVersion` (GET_TASKS 21, PROCESS_OUTGOING_CALLS 28, USE_CREDENTIALS 22,
+PERSISTENT_ACTIVITY 15, READ_EXTERNAL_STORAGE 32, USE_FINGERPRINT 28,
+BLUETOOTH/BLUETOOTH_ADMIN 30, ... — níveis de deprecação documentados,
+auditados valor a valor pelo check `permission_drift` do APKBot), `uses-permission-sdk-23`, e declarações
 custom `<permission>` (normal + signature), `<permission-group>` e
 `<permission-tree>`.
 

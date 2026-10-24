@@ -30,18 +30,17 @@
   "max_sdk_version": {
    "android.permission.BLUETOOTH": 30,
    "android.permission.BLUETOOTH_ADMIN": 30,
-   "android.permission.GET_TASKS": 25,
+   "android.permission.GET_TASKS": 21,
    "android.permission.PERSISTENT_ACTIVITY": 15,
    "android.permission.PROCESS_OUTGOING_CALLS": 28,
    "android.permission.READ_EXTERNAL_STORAGE": 32,
    "android.permission.USE_CREDENTIALS": 22,
-   "android.permission.USE_FINGERPRINT": 27,
+   "android.permission.USE_FINGERPRINT": 28,
    "android.permission.WRITE_EXTERNAL_STORAGE": 32
   },
   "uses_permission_sdk_23": [
    "android.permission.GET_ACCOUNTS",
-   "android.permission.READ_PHONE_NUMBERS",
-   "android.permission.USE_FINGERPRINT"
+   "android.permission.READ_PHONE_NUMBERS"
   ]
  },
  "non_platform_definitions": [

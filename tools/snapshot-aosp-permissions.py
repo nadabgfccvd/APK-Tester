@@ -113,25 +113,41 @@ DANGEROUS_GROUPS = {
     # PermissionController — fica com grupo vazio, documentado.
 }
 
-# maxSdkVersion das <uses-permission> deprecadas no flagship (plataforma
-# documentada; o manifesto master nao usa maxSdkVersion nos self-uses).
+# maxSdkVersion das <uses-permission> deprecadas no flagship. Fonte: nivel de
+# deprecao documentado da plataforma (developer.android.com, "This constant
+# was deprecated in API level N"; AOSP master nao usa maxSdkVersion nos
+# self-uses — a tabela e curada e auditada por bot/checks/permission_drift.py,
+# que valida os VALORES contra a tabela EXPECTED_MAX_SDK independente):
+#   GET_TASKS 21 · PROCESS_OUTGOING_CALLS 28 · USE_CREDENTIALS 22 ·
+#   PERSISTENT_ACTIVITY 15 · READ_EXTERNAL_STORAGE 32 ·
+#   WRITE_EXTERNAL_STORAGE 32 · USE_FINGERPRINT 28 (USE_BIOMETRIC chega no
+#   28) · BLUETOOTH/BLUETOOTH_ADMIN 30 (migracao oficial Android 12: as
+#   novas runtime BLUETOOTH_SCAN/CONNECT/ADVERTISE valem do 31 em diante).
+# Correcao da auditoria A9 (roadmap 0.2): os tetos de GET_TASKS e
+# USE_FINGERPRINT estavam errados na fonte curada (agora 21 e 28).
 FLAGSHIP_MAX_SDK = {
-    "android.permission.GET_TASKS": 25,
+    "android.permission.GET_TASKS": 21,
     "android.permission.PROCESS_OUTGOING_CALLS": 28,
     "android.permission.USE_CREDENTIALS": 22,
     "android.permission.PERSISTENT_ACTIVITY": 15,
     "android.permission.READ_EXTERNAL_STORAGE": 32,
     "android.permission.WRITE_EXTERNAL_STORAGE": 32,
-    "android.permission.USE_FINGERPRINT": 27,
+    "android.permission.USE_FINGERPRINT": 28,
     "android.permission.BLUETOOTH": 30,
     "android.permission.BLUETOOTH_ADMIN": 30,
 }
 
 # Conjunto emitido como <uses-permission-sdk-23> (so relevante em API 23+;
 # o manifesto AOSP master nao usa o elemento — escolha documentada da suite).
+# USE_FINGERPRINT fica FORA daqui (auditoria A9, roadmap 0.4, opcao (a)):
+# declaracao UNICA no elemento comum com maxSdkVersion=28 — antes ele
+# aparecia DUAS vezes (uses-permission maxSdk=27 + uses-permission-sdk-23
+# sem teto), um conflito nao deliberado que tornava o par ambiguo para
+# parsers (o conflito deliberado da suite e o cleartext, documentado no
+# manifest-audit.md). Semantica preservada: adicionada no API 23, a
+# permissao so vale mesmo assim em 23..28 com o teto do elemento comum.
 FLAGSHIP_SDK23 = [
     "android.permission.GET_ACCOUNTS",
-    "android.permission.USE_FINGERPRINT",
     "android.permission.READ_PHONE_NUMBERS",
 ]
 

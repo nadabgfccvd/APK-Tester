@@ -27,7 +27,7 @@ contratuais na coluna `alvo`.
 |------|----------|
 | uses-permission (plataforma, snapshot verbatim) | 1004 |
 | uses-permission com maxSdkVersion | 9 |
-| uses-permission-sdk-23 | 3 |
+| uses-permission-sdk-23 | 2 |
 | permission custom | 2 (normal + signature) |
 | permission-group custom | 1 |
 | permission-tree custom | 1 |

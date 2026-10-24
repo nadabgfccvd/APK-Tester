@@ -79,19 +79,18 @@ master prompt).
 |-----------|---------------|
 | android.permission.BLUETOOTH | 30 |
 | android.permission.BLUETOOTH_ADMIN | 30 |
-| android.permission.GET_TASKS | 25 |
+| android.permission.GET_TASKS | 21 |
 | android.permission.PERSISTENT_ACTIVITY | 15 |
 | android.permission.PROCESS_OUTGOING_CALLS | 28 |
 | android.permission.READ_EXTERNAL_STORAGE | 32 |
 | android.permission.USE_CREDENTIALS | 22 |
-| android.permission.USE_FINGERPRINT | 27 |
+| android.permission.USE_FINGERPRINT | 28 |
 | android.permission.WRITE_EXTERNAL_STORAGE | 32 |
 
 ## uses-permission-sdk-23 (declaradas so para API 23+)
 
 - `android.permission.GET_ACCOUNTS`
 - `android.permission.READ_PHONE_NUMBERS`
-- `android.permission.USE_FINGERPRINT`
 
 ## Permissoes custom da suite
 
@@ -483,7 +482,7 @@ Colunas: name | protectionLevel (verbatim) | group | maxSdkVersion | @hide.
 | android.permission.GET_PEOPLE_TILE_PREVIEW | signature\|recents |  |  | sim |
 | android.permission.GET_PROCESS_STATE_AND_OOM_SCORE | signature\|privileged\|development |  |  | sim |
 | android.permission.GET_RUNTIME_PERMISSIONS | signature |  |  | sim |
-| android.permission.GET_TASKS | normal |  | 25 | nao |
+| android.permission.GET_TASKS | normal |  | 21 | nao |
 | android.permission.GET_TOP_ACTIVITY_INFO | signature\|recents |  |  | sim |
 | android.permission.GLOBAL_SEARCH | signature\|privileged |  |  | nao |
 | android.permission.GLOBAL_SEARCH_CONTROL | signature |  |  | sim |
@@ -1083,7 +1082,7 @@ Colunas: name | protectionLevel (verbatim) | group | maxSdkVersion | @hide.
 | android.permission.USE_CREDENTIALS | normal |  | 22 | sim |
 | android.permission.USE_DATA_IN_BACKGROUND | signature |  |  | sim |
 | android.permission.USE_EXACT_ALARM | normal |  |  | nao |
-| android.permission.USE_FINGERPRINT | normal |  | 27 | nao |
+| android.permission.USE_FINGERPRINT | normal |  | 28 | nao |
 | android.permission.USE_FULL_SCREEN_INTENT | normal\|appop |  |  | nao |
 | android.permission.USE_ICC_AUTH_WITH_DEVICE_IDENTIFIER | signature\|appop |  |  | nao |
 | android.permission.USE_ON_DEVICE_INTELLIGENCE | signature\|privileged |  |  | sim |

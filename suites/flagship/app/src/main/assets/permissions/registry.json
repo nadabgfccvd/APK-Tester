@@ -2864,7 +2864,7 @@
    "base_level": "normal",
    "group": "",
    "hide": false,
-   "max_sdk_version": 25,
+   "max_sdk_version": 21,
    "name": "android.permission.GET_TASKS",
    "protection_level": "normal"
   },
@@ -7664,7 +7664,7 @@
    "base_level": "normal",
    "group": "",
    "hide": false,
-   "max_sdk_version": 27,
+   "max_sdk_version": 28,
    "name": "android.permission.USE_FINGERPRINT",
    "protection_level": "normal"
   },

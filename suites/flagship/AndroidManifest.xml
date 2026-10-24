@@ -364,7 +364,7 @@
     <uses-permission android:name="android.permission.GET_PEOPLE_TILE_PREVIEW"/>
     <uses-permission android:name="android.permission.GET_PROCESS_STATE_AND_OOM_SCORE"/>
     <uses-permission android:name="android.permission.GET_RUNTIME_PERMISSIONS"/>
-    <uses-permission android:name="android.permission.GET_TASKS" android:maxSdkVersion="25"/>
+    <uses-permission android:name="android.permission.GET_TASKS" android:maxSdkVersion="21"/>
     <uses-permission android:name="android.permission.GET_TOP_ACTIVITY_INFO"/>
     <uses-permission android:name="android.permission.GLOBAL_SEARCH"/>
     <uses-permission android:name="android.permission.GLOBAL_SEARCH_CONTROL"/>
@@ -964,7 +964,7 @@
     <uses-permission android:name="android.permission.USE_CREDENTIALS" android:maxSdkVersion="22"/>
     <uses-permission android:name="android.permission.USE_DATA_IN_BACKGROUND"/>
     <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
-    <uses-permission android:name="android.permission.USE_FINGERPRINT" android:maxSdkVersion="27"/>
+    <uses-permission android:name="android.permission.USE_FINGERPRINT" android:maxSdkVersion="28"/>
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"/>
     <uses-permission android:name="android.permission.USE_ICC_AUTH_WITH_DEVICE_IDENTIFIER"/>
     <uses-permission android:name="android.permission.USE_ON_DEVICE_INTELLIGENCE"/>
@@ -1014,10 +1014,9 @@
     <uses-permission android:name="android.permission.WRITE_SYSTEM_PREFERENCES"/>
     <uses-permission android:name="android.permission.WRITE_USER_DICTIONARY"/>
     <uses-permission android:name="android.permission.WRITE_VERIFICATION_STATE_E2EE_CONTACT_KEYS"/>
-    <!-- 3 via uses-permission-sdk-23 (so API 23+) -->
+    <!-- 2 via uses-permission-sdk-23 (so API 23+) -->
     <uses-permission-sdk-23 android:name="android.permission.GET_ACCOUNTS"/>
     <uses-permission-sdk-23 android:name="android.permission.READ_PHONE_NUMBERS"/>
-    <uses-permission-sdk-23 android:name="android.permission.USE_FINGERPRINT"/>
 
     <!-- uses-feature: 3 required + glEsVersion 0x00030002 + opcionais -->
     <uses-feature android:name="android.hardware.camera" android:required="true"/>

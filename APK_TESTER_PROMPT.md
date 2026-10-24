@@ -86,9 +86,11 @@ apk-tester/
   PACKAGES, PACKAGE_USAGE_STATS, SCHEDULE_EXACT_ALARM/USE_EXACT_ALARM, USE_FULL_SCREEN_
   INTENT, ACCESS_NOTIFICATION_POLICY, START_FOREGROUND_SERVICES_FROM_BACKGROUND,
   IGNORE_BATTERY_OPTIMIZATIONS, QUERY_ALL_PACKAGES), all FOREGROUND_SERVICE_* type
-  permissions (15), all deprecated-with-maxSdkVersion variants (GET_TASKS 25,
+  permissions (15), all deprecated-with-maxSdkVersion variants (GET_TASKS 21,
   PROCESS_OUTGOING_CALLS 28, USE_CREDENTIALS 22, PERSISTENT_ACTIVITY 15,
-  READ_EXTERNAL_STORAGE 32, USE_FINGERPRINT 27, BLUETOOTH/ADMIN 30 …),
+  READ_EXTERNAL_STORAGE 32, USE_FINGERPRINT 28, BLUETOOTH/ADMIN 30 …
+  — corretos per the documented deprecation levels; audited value-by-value
+  by the APKBot permission_drift check, see CHANGELOG A9),
   `@hide`/internal strings (ACCESS_CACHE_FILESYSTEM, CLEAR_APP_USER_DATA,
   FORCE_STOP_PACKAGES, MOVE_PACKAGE, UPDATE_DEVICE_STATS, SHUTDOWN, …) — audit marks
   each `@hide`. Include `<uses-permission-sdk-23>`, custom `<permission>` (normal +

@@ -354,7 +354,7 @@ android.permission.GET_PASSWORD	signature			hide
 android.permission.GET_PEOPLE_TILE_PREVIEW	signature			hide
 android.permission.GET_PROCESS_STATE_AND_OOM_SCORE	signature			hide
 android.permission.GET_RUNTIME_PERMISSIONS	signature			hide
-android.permission.GET_TASKS	normal		25	public
+android.permission.GET_TASKS	normal		21	public
 android.permission.GET_TOP_ACTIVITY_INFO	signature			hide
 android.permission.GLOBAL_SEARCH	signature			public
 android.permission.GLOBAL_SEARCH_CONTROL	signature			hide
@@ -954,7 +954,7 @@ android.permission.USE_COMPANION_TRANSPORTS	signature			hide
 android.permission.USE_CREDENTIALS	normal		22	hide
 android.permission.USE_DATA_IN_BACKGROUND	signature			hide
 android.permission.USE_EXACT_ALARM	normal			public
-android.permission.USE_FINGERPRINT	normal		27	public
+android.permission.USE_FINGERPRINT	normal		28	public
 android.permission.USE_FULL_SCREEN_INTENT	normal			public
 android.permission.USE_ICC_AUTH_WITH_DEVICE_IDENTIFIER	signature			public
 android.permission.USE_ON_DEVICE_INTELLIGENCE	signature			hide
