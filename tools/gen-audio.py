@@ -24,8 +24,12 @@ Custo: por canal sintetiza-se 1 s (frequências inteiras em Hz fecham o ciclo
 com emenda perfeita) e o chunk é repetido até --loop-seconds — loops
 ambientes são periódicos por natureza; o arquivo final é PCM completo.
 
-Cabeçalho: PCM clássico do módulo wave (não WAVE_FORMAT_EXTENSIBLE); os
-parsers-alvo do fixture toleram — anotado no index.json.
+Cabeçalho: 5.1 (6 canais) usa WAVE_FORMAT_EXTENSIBLE (0xFFFE) com channel
+mask FL|FR|FC|LFE|BL|BR (0x3F, posições de alto-falante da Microsoft) e
+SubFormat GUID KSDATAFORMAT_SUBTYPE_PCM — header manual de 68 B (RIFF 12 +
+fmt 8+40 + data 8), correção da auditoria A9/roadmap 3.2: o fmt clássico de
+44 B não descreve layout 5.1. Estéreo/mono seguem no PCM clássico do módulo
+wave (44 B, sem máscara — layouts triviais); anotado no index.json.
 
 Uso: python3 tools/gen-audio.py --out DIR [--channels 6] [--loops 8]
      [--loop-seconds 60] [--size-budget-mb X] [--seed 20261022] [--selftest]
@@ -50,6 +54,11 @@ TOOL = "gen-audio.py"
 SAMPLE_RATE = 48000
 MIB = 1024 * 1024
 WAV_HEADER_BYTES = 44  # RIFF+fmt+data que o módulo wave grava para PCM 16-bit
+WAVE_FORMAT_EXTENSIBLE = 0xFFFE
+KSDATAFORMAT_SUBTYPE_PCM = bytes.fromhex("0100000000001000800000aa00389b71")
+CHANNEL_MASK_5_1 = 0x0000003F  # FL|FR|FC|LFE|BL|BR (SPEAKER_* Microsoft)
+EXTENSIBLE_HEADER_BYTES = 68   # RIFF 12 + fmt 8+40 (cbSize 22 + mask +
+                               # SubFormat GUID) + data 8
 TWO_PI = 2.0 * math.pi
 LAYOUT_5_1 = ("FL", "FR", "FC", "LFE", "BL", "BR")
 LAYOUT_2_0 = ("FL", "FR")
@@ -141,7 +150,14 @@ def interleave(chunks: list) -> bytes:
 
 
 def write_wav(path: str, chunk: bytes, loop_seconds: int, channels: int) -> None:
-    """Grava o WAV repetindo o chunk de 1 s em lotes (RAM limitada a ~34 MB)."""
+    """Grava o WAV repetindo o chunk de 1 s em lotes (RAM limitada a ~34 MB).
+
+    6 canais (5.1) saem com header WAVE_FORMAT_EXTENSIBLE manual (máscara de
+canais + SubFormat GUID); demais seguem no PCM clássico do módulo wave.
+    """
+    if channels == 6:
+        _write_wav_extensible(path, chunk, loop_seconds)
+        return
     wf = wave.open(path, "wb")
     try:
         wf.setnchannels(channels)
@@ -156,13 +172,39 @@ def write_wav(path: str, chunk: bytes, loop_seconds: int, channels: int) -> None
         wf.close()
 
 
+def _write_wav_extensible(path: str, chunk: bytes, loop_seconds: int) -> None:
+    """WAVE_FORMAT_EXTENSIBLE 5.1 (A9/roadmap 3.2): fmt estendido com 22 B
+    extras (wValidBitsPerSample, dwChannelMask FL|FR|FC|LFE|BL|BR, SubFormat
+    GUID KSDATAFORMAT_SUBTYPE_PCM) — o layout 5.1 DECLARADO no próprio
+    arquivo, não só na documentação. Tamanhos fechados upfront (sem
+    seek/patch): determinístico e idempotente."""
+    n_data = loop_seconds * len(chunk)
+    block_align = 6 * 2
+    byte_rate = SAMPLE_RATE * block_align
+    fmt = (struct.pack("<HHIIHHHHI", WAVE_FORMAT_EXTENSIBLE, 6, SAMPLE_RATE,
+                       byte_rate, block_align, 16, 22, 16, CHANNEL_MASK_5_1)
+           + KSDATAFORMAT_SUBTYPE_PCM)
+    header = (b"RIFF" + struct.pack("<I", 4 + 8 + len(fmt) + 8 + n_data)
+              + b"WAVE" + b"fmt " + struct.pack("<I", len(fmt)) + fmt
+              + b"data" + struct.pack("<I", n_data))
+    with open(path, "wb") as fh:
+        fh.write(header)
+        batches, rest = divmod(loop_seconds, 64)
+        if batches:
+            fh.write(chunk * batches)
+        if rest:
+            fh.write(chunk * rest)
+
+
 # ----------------------------------------------------------------- geração
 def generate(out_dir: str, seed: int, channels: int, loops: int,
              loop_seconds: int, budget_mb: float | None = None) -> list:
     """Gera os loops em <out>/audio/ e escreve index.json + manifest.json."""
     names = channel_layout(channels)
     bands = channel_bands(names)
-    bytes_per_loop = WAV_HEADER_BYTES + loop_seconds * SAMPLE_RATE * channels * 2
+    header_bytes = (EXTENSIBLE_HEADER_BYTES if channels == 6
+                    else WAV_HEADER_BYTES)
+    bytes_per_loop = header_bytes + loop_seconds * SAMPLE_RATE * channels * 2
     if budget_mb is not None:
         target = int(round(budget_mb * MIB))
         loops = max(1, -(-target // bytes_per_loop))  # teto: >= orçamento
@@ -191,9 +233,12 @@ def write_indexes(out_dir: str, seed: int, names: list, artifacts: list,
              "bit_depth": 16, "channels": len(names), "channel_layout": names,
              "loop_seconds": loop_seconds, "size_budget_mb": budget_mb,
              "total_bytes": total,
-             "note": ("PCM classico do modulo wave (sem WAVE_FORMAT_EXTENSIBLE); "
-                      "chunk de 1 s sintetizado (fases/frequencias semeadas) e "
-                      "repetido ate loop_seconds — loops sao periodicos"),
+             "note": ("5.1 (6 canais) em WAVE_FORMAT_EXTENSIBLE com channel "
+                      "mask FL|FR|FC|LFE|BL|BR (0x3F) e SubFormat GUID PCM "
+                      "(header de 68 B); estéreo/mono em PCM clássico do módulo "
+                      "wave (44 B); chunk de 1 s sintetizado (fases/frequências "
+                      "semeadas) e repetido até loop_seconds — loops são "
+                      "periódicos"),
              "artifacts": artifacts}
     manifest = {"tool": TOOL, "seed": seed,
                 "artifacts": [{k: a[k] for k in ("path", "bytes", "sha256")}
@@ -207,7 +252,8 @@ def write_indexes(out_dir: str, seed: int, names: list, artifacts: list,
 
 # ----------------------------------------------------------------- selftest
 def selftest() -> int:
-    """1 s / 2 canais em /tmp: lê de volta via wave; e determinismo 2 execuções."""
+    """1 s / 2 canais + 1 s / 6 canais (EXTENSIBLE) em /tmp: lê de volta via
+    wave e valida o fmt estendido campo a campo; e determinismo 2 execuções."""
     tmp = tempfile.mkdtemp(prefix="apktester-audio-")
     try:
         probe_dir = os.path.join(tmp, "probe")
@@ -220,6 +266,44 @@ def selftest() -> int:
             assert wf.getframerate() == SAMPLE_RATE, "framerate != 48000"
             assert wf.getnframes() == 1 * SAMPLE_RATE, \
                 f"frames={wf.getnframes()} != {1 * SAMPLE_RATE}"
+
+        # 5.1: WAVE_FORMAT_EXTENSIBLE — lido de volta via wave E validado
+        # campo a campo no fmt estendido (A9/roadmap 3.2)
+        probe51 = os.path.join(tmp, "probe51")
+        generate(probe51, DEFAULT_SEED, channels=6, loops=1, loop_seconds=1)
+        wav51 = os.path.join(probe51, "audio", "loop_00001.wav")
+        with wave.open(wav51, "rb") as wf:
+            assert wf.getnchannels() == 6, f"canais={wf.getnchannels()} != 6"
+            assert wf.getsampwidth() == 2, "sampwidth != 16-bit"
+            assert wf.getframerate() == SAMPLE_RATE, "framerate != 48000"
+            assert wf.getnframes() == SAMPLE_RATE, "frames != 48000"
+        with open(wav51, "rb") as fh:
+            blob = fh.read(EXTENSIBLE_HEADER_BYTES)
+        assert blob[:4] == b"RIFF" and blob[8:12] == b"WAVE", "RIFF/WAVE"
+        assert blob[12:16] == b"fmt ", "sem chunk fmt"
+        fmt_len = struct.unpack_from("<I", blob, 16)[0]
+        assert fmt_len == 40, f"fmt de {fmt_len} B != 40 (EXTENSIBLE)"
+        (tag, nch, rate, byte_rate, block_align, bits, cb_size, valid_bits,
+         mask) = struct.unpack_from("<HHIIHHHHI", blob, 20)
+        assert tag == WAVE_FORMAT_EXTENSIBLE, f"wFormatTag={tag:#x} != 0xFFFE"
+        assert nch == 6 and rate == SAMPLE_RATE, "canais/rate divergem"
+        assert byte_rate == SAMPLE_RATE * 12 and block_align == 12, \
+            "byte_rate/block_align divergem (6ch x 16-bit)"
+        assert bits == 16 and cb_size == 22 and valid_bits == 16, \
+            "bits/cbSize/validBits divergem"
+        assert mask == CHANNEL_MASK_5_1, f"channelMask={mask:#x} != 0x3F"
+        sub_format = blob[20 + 24:20 + 24 + 16]
+        assert sub_format == KSDATAFORMAT_SUBTYPE_PCM, \
+            "SubFormat GUID != KSDATAFORMAT_SUBTYPE_PCM"
+        assert blob[60:64] == b"data", "sem chunk data no offset 60"
+        data_size = struct.unpack_from("<I", blob, 64)[0]
+        assert data_size == SAMPLE_RATE * 12, "data size != 1 s de 5.1"
+        file_size = os.path.getsize(wav51)
+        assert file_size == EXTENSIBLE_HEADER_BYTES + data_size, \
+            f"tamanho {file_size} != header+data"
+        riff_size = struct.unpack_from("<I", blob, 4)[0]
+        assert riff_size == file_size - 8, "riff size != filesize-8"
+
         hashes = []
         for run in ("a", "b"):
             run_dir = os.path.join(tmp, run)
@@ -234,8 +318,10 @@ def selftest() -> int:
         assert hashes[0] == hashes[1] and hashes[0], \
             "determinismo: as duas execuções divergem"
         print(f"[gen-audio] selftest OK: 1 s/2 ch lidos via wave "
-              f"({1 * SAMPLE_RATE} frames, 16-bit/48000 Hz); "
-              f"{len(hashes[0])} arquivos idênticos nas duas execuções")
+              f"({1 * SAMPLE_RATE} frames, 16-bit/48000 Hz); 5.1 "
+              f"EXTENSIBLE validado campo a campo (tag 0xFFFE, máscara "
+              f"0x3F, GUID PCM, blockAlign 12); {len(hashes[0])} arquivos "
+              f"idênticos nas duas execuções")
         return 0
     finally:
         shutil.rmtree(tmp, ignore_errors=True)

@@ -1308,6 +1308,7 @@
         </receiver>
         <provider android:name=".providers.BehemothProvider" android:authorities="dev.apktester.behemoth.provider" android:exported="true" android:grantUriPermissions="true"/>
         <provider android:name=".providers.GuardedProvider" android:authorities="dev.apktester.behemoth.guarded" android:exported="true" android:readPermission="dev.apktester.behemoth.permission.CUSTOM_SIGNATURE" android:writePermission="dev.apktester.behemoth.permission.CUSTOM_SIGNATURE"/>
+        <provider android:name=".providers.GuardedNormalProvider" android:authorities="dev.apktester.behemoth.guarded.normal" android:exported="true" android:readPermission="dev.apktester.behemoth.permission.CUSTOM_NORMAL"/>
     </application>
 
     <instrumentation android:name=".probe.BehemothInstrumentation" android:targetPackage="dev.apktester.behemoth" android:functionalTest="true" android:handleProfiling="false"/>

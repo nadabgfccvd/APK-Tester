@@ -48,7 +48,9 @@ CUSTOM_PERMS = [
         "name": "dev.apktester.behemoth.permission.CUSTOM_NORMAL",
         "protection_level": "normal",
         "kind": "permission",
-        "note": "permissao custom normal (definida e usada como readPermission de teste)",
+        "note": "permissao custom normal — guarda a LEITURA do GuardedNormalProvider "
+                "(exported; autoridade dev.apktester.behemoth.guarded.normal); "
+                "referenciada de verdade desde a A9 (roadmap 3.6)",
     },
     {
         "name": "dev.apktester.behemoth.permission.CUSTOM_SIGNATURE",
@@ -228,6 +230,14 @@ PROVIDERS = [
      "read_permission": "dev.apktester.behemoth.permission.CUSTOM_SIGNATURE",
      "write_permission": "dev.apktester.behemoth.permission.CUSTOM_SIGNATURE",
      "note": "provider com readPermission/writePermission guardados por permissao custom signature"},
+    {"class": ".providers.GuardedNormalProvider",
+     "authorities": "dev.apktester.behemoth.guarded.normal",
+     "exported": True, "grant_uri_permissions": False,
+     "read_permission": "dev.apktester.behemoth.permission.CUSTOM_NORMAL",
+     "write_permission": None,
+     "note": "provider guardado por permissao custom NORMAL (leitura) — "
+             "CUSTOM_NORMAL deixa de ser orfa (A9/roadmap 3.6): o par "
+             "normal/signature dos dois niveis custom fica exercitado"},
 ]
 
 WIDGETS = [
@@ -824,8 +834,9 @@ def build_manifest_audit(registry: dict) -> str:
             f"{prov_entry['write_permission'] or '—'} | {prov_entry['note']} |")
     add("")
     add("Nota do master prompt menciona FileProvider (androidx): entra no flavor")
-    add("modern junto do resto do androidx (A5/A6). Em A1 os 2 providers sao")
-    add("framework-only para o classic compilar limpo.")
+    add("modern junto do resto do androidx (A5/A6). Os 3 providers sao")
+    add("framework-only para o classic compilar limpo (GuardedNormalProvider")
+    add("entrou na A9/roadmap 3.6: CUSTOM_NORMAL deixou de ser orfa).")
     add("")
     add("## Widgets (2)")
     add("")

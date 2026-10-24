@@ -10,6 +10,66 @@ de compatibilidade verde).
 
 ## [Unreleased]
 
+### Corrigido (A9 — formatos de arquivo, roadmap W3)
+
+- `tools/gen-textures.py` + `tools/gen-bulk.py`: containers KTX2
+  spec-completos de verdade (auditoria A9/roadmap 3.1). O header real do
+  KTX 2.0 tem **80 B** (12 magic + 9 u32 + 4 u32 + 2 u64 sgd — os campos
+  sgd são u64, não u32; os dois geradores gravavam 72 B com o level index
+  deslocado, o que um parser spec lê como sgdByteLength corrompido);
+  level index imediatamente após o header; DFD obrigatório (o gen-bulk
+  gravava dfdByteLength=0); canal alpha do RGBSDA corrigido de 3 para 15;
+  vkFormat do gen-bulk corrigido de 65 (A2B10G10R10_SNORM_PACK32 — valor
+  errado) para **4** (VK_FORMAT_R5G6B5_UNORM_PACK16); stubs etc1/astc
+  ganham DFD de formato comprimido (modelos ETC2=161/ASTC=162, bloco
+  4x4, samples cosited) + payload de blocos de ruído no byte-count exato
+  (antes os stubs declaravam byteLength=0 e carregavam bytes RGBA não
+  declarados); mipPadding por formato (lcm(bytes do bloco, 4): 4/8/16).
+  Os 48 KTX2 do genTextures e os 3 do genBulk agora passam no validador
+  oficial **ktx2check 4.4.2** (KhronosGroup/KTX-Software) com zero
+  erros — validação integrada ao job flagship-skeleton do CI (download
+  pinado v4.4.2, `-q` para exit code) e selftests estruturais campo a
+  campo. BULK_SLACK documentado sobe de 128 para 512 B (container
+  ~260 B por arquivo).
+- `tools/gen-audio.py`: loops 5.1 (6 canais) agora saem em
+  **WAVE_FORMAT_EXTENSIBLE** (0xFFFE) com channel mask
+  FL|FR|FC|LFE|BL|BR (0x3F) e SubFormat GUID KSDATAFORMAT_SUBTYPE_PCM —
+  header manual de 68 B (fmt de 40 B). O fmt clássico de 44 B não
+  descreve layout 5.1 (roadmap 3.2). Estéreo/mono seguem clássicos
+  (layouts triviais); selftest valida o fmt estendido campo a campo e
+  lê de volta via módulo wave (suporta EXTENSIBLE desde o 3.12).
+- `tools/fixture-pack.py`: novo modo **multidex-8-full** (roadmap 3.3) —
+  o corpus-fonte COMPLETO do gen-dex-stress (650 classes x 101 rotinas
+  = 65.650 method refs, acima do limite 65.536 de um único dex)
+  atravessando o d8 de verdade, fatiado em 8 lotes contíguos. Verificado
+  end-to-end com toolchain real: APK com classes.dex..classes8.dex e
+  66.569 method_ids somados (dexdump). Modo registrado no nightly
+  (engines-nightly.yml) com a mesma prova de contagem — o CI de PR segue
+  com o modo reduzido. MODES agora tem 21 modos (12 parser-torture + 9
+  engines).
+- `tools/build-tier-a.py`: o módulo WASM do engine-30 é **instanciado de
+  verdade** no --verify-apk (roadmap 3.4) — antes o runtime wasmer só
+  era linkado. Validação estrutural stdlib (parser de seções WASM com
+  LEB128: magic/version/exports/data) + execução no WebAssembly do node
+  (add(2,3)==5, checksum()==20261022, memória[0:24] ==
+  "apktester-wasm/engine-30"). Selftest prova os checkers num módulo
+  válido construído à mão (sem wat2wasm) + negativos (magic/export/data
+  truncados nunca derrubam o parser).
+- `contracts/parser-torture/fixtures-audit.md`: a não-instalabilidade do
+  `zip64-65k.apk` vira decisão TESTADA e documentada (roadmap 3.5):
+  `apksigner sign --v2-only` sobre o APK com EOCD Zip64 falha com
+  "Unused space at the end of ZIP Central Directory" (apksig trata
+  EOCD64+locator como lixo) — assinar pós-augment não é viável sem
+  vendorizar apksig com patch; o padrão v1-antes-do-augment permanece e
+  também é um caso real de APK reempacotado.
+- `tools/gen-flagship-manifest.py`: `CUSTOM_NORMAL` deixa de ser permissão
+  orfa (roadmap 3.6) — novo terceiro provider
+  `.providers.GuardedNormalProvider` (exported, autoridade
+  `dev.apktester.behemoth.guarded.normal`) com
+  `android:readPermission=CUSTOM_NORMAL`; classe Java de fixture
+  correspondente. O par normal/signature dos dois níveis custom fica
+  exercitado no parser de permissões.
+
 ### Corrigido (auditoria ponta a ponta pós-1.0)
 
 - `bot/checks/size_drift.py`: a previsão de breach do size gate agora ajusta

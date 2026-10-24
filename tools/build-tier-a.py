@@ -1180,6 +1180,12 @@ def verify_apk(apk: str, engine: str) -> int:
                 so_paths = [n for n in names if n.endswith(".so")]
                 if not _elf_strings_hit(zf, marker, so_paths):
                     problems.append(f"elf-strings:{marker} ausente dos .so")
+        # A9/roadmap 3.4: engine-30 — o módulo WASM é INSTANCIADO de verdade
+        # (node preinstalado) e validado estruturalmente (magic/version/
+        # seções/exports/data). Antes o runtime wasmer só era linkado; a
+        # promessa do README de "validável em runtime" agora é prova.
+        if SPECS[engine]["kind"] == "wasm" and "assets/module.wasm" in names:
+            problems += _wasm_checks(zf.read("assets/module.wasm"))
     if problems:
         for p in problems:
             print(f"[{TOOL}] FALHA {engine} em {apk}: {p}", file=sys.stderr)
@@ -1187,6 +1193,204 @@ def verify_apk(apk: str, engine: str) -> int:
     print(f"[{TOOL}] ok {engine}: {len(artifacts)} artefatos de detecção "
           f"presentes no APK real ({apk})")
     return 0
+
+
+# ---------------------------------------------------------------------------
+# A9/roadmap 3.4 — validação REAL do módulo WASM do engine-30: o runtime
+# wasmer do APK só era LINKADO, nunca instanciado. Aqui o módulo é (1)
+# validado estruturalmente (parser de seções WASM em stdlib: magic/version,
+# export section decodificada com LEB128, data segment com o marcador) e
+# (2) INSTANCIADO de verdade pelo WebAssembly do node (preinstalado nos
+# runners do CI e no ambiente de dev): exports chamados com asserts de
+# resultado — add(2,3)==5, checksum()==20261022, memória[0:24] ==
+# "apktester-wasm/engine-30".
+# ---------------------------------------------------------------------------
+WASM_MARKER = b"apktester-wasm/engine-30"
+WASM_REQUIRED_EXPORTS = ("apktester_add", "apktester_checksum",
+                         "apktester_mem")
+
+_NODE_WASM_PROBE = (
+    "const fs = require('fs');\n"
+    "(async () => {\n"
+    "  const bytes = fs.readFileSync(process.argv[1]);\n"
+    "  const {instance} = await WebAssembly.instantiate(bytes, {});\n"
+    "  const e = instance.exports;\n"
+    "  if (e.apktester_add(2, 3) !== 5) process.exit(3);\n"
+    "  if (e.apktester_checksum() !== 20261022) process.exit(4);\n"
+    "  const mem = new Uint8Array(e.apktester_mem.buffer, 0, 24);\n"
+    "  if (Buffer.from(mem).toString('latin1') !==\n"
+    "      'apktester-wasm/engine-30') process.exit(5);\n"
+    "  process.exit(0);\n"
+    "})().catch(() => process.exit(2));\n"
+)
+
+
+def _leb_u32(value: int) -> bytes:
+    """Encode LEB128 sem sinal (u32)."""
+    out = bytearray()
+    while True:
+        b = value & 0x7F
+        value >>= 7
+        if value:
+            out.append(b | 0x80)
+        else:
+            out.append(b)
+            return bytes(out)
+
+
+def _sleb_i32(value: int) -> bytes:
+    """Encode LEB128 com sinal (i32) — p/ i32.const do offset do data."""
+    out = bytearray()
+    more = True
+    while more:
+        b = value & 0x7F
+        value >>= 7
+        if (value == 0 and not (b & 0x40)) or \
+                (value == -1 and (b & 0x40)):
+            more = False
+        else:
+            b |= 0x80
+        out.append(b)
+    return bytes(out)
+
+
+def _decode_leb_u32(buf: bytes, pos: int):
+    """(valor, novo_pos) — decode LEB128 sem sinal em buf[pos:]; devolve
+    (None, pos) em truncamento (bytes não confiáveis do APK nunca derrubam
+    o checker: o chamador trata None como seção truncada)."""
+    result, shift = 0, 0
+    while True:
+        if pos >= len(buf):
+            return None, pos
+        b = buf[pos]
+        pos += 1
+        result |= (b & 0x7F) << shift
+        if not (b & 0x80):
+            return result, pos
+        shift += 7
+
+
+def _wasm_structural_check(wasm: bytes) -> list:
+    """Validação estrutural stdlib do módulo: magic/version, seções com
+    tamanho coerente, export section decodificada (nomes + kinds), data
+    section carregando o marcador da suite."""
+    problems = []
+    if wasm[:4] != b"\x00asm":
+        problems.append("magic WASM inválido (esperado \\0asm)")
+        return problems
+    if wasm[4:8] != b"\x01\x00\x00\x00":
+        problems.append("versão WASM != 1")
+        return problems
+    pos, exports, data_payload = 8, [], b""
+    while pos < len(wasm):
+        sec_id = wasm[pos]
+        pos += 1
+        size, pos = _decode_leb_u32(wasm, pos)
+        if size is None:
+            problems.append("tamanho de seção truncado (LEB128 incompleto)")
+            return problems
+        payload = wasm[pos:pos + size]
+        if len(payload) != size:
+            problems.append(f"seção {sec_id} truncada "
+                            f"(declara {size} B, restam {len(payload)})")
+            return problems
+        if sec_id == 7:  # export
+            count, p = _decode_leb_u32(payload, 0)
+            if count is None:
+                problems.append("export section truncada")
+                return problems
+            for _ in range(count):
+                nlen, p = _decode_leb_u32(payload, p)
+                if nlen is None or p + nlen + 2 > len(payload):
+                    problems.append("export entry truncada")
+                    return problems
+                name = payload[p:p + nlen].decode("utf-8", "replace")
+                p += nlen
+                kind = payload[p]
+                p += 1
+                _idx, p = _decode_leb_u32(payload, p)
+                if _idx is None:
+                    problems.append("export index truncado")
+                    return problems
+                exports.append((name, kind))
+        elif sec_id == 11:  # data
+            data_payload = payload
+        pos += size
+    names = {name for name, _kind in exports}
+    for required in WASM_REQUIRED_EXPORTS:
+        if required not in names:
+            problems.append(f"export {required} ausente do módulo WASM")
+    if WASM_MARKER not in data_payload:
+        problems.append("data segment sem o marcador "
+                        "'apktester-wasm/engine-30'")
+    return problems
+
+
+def _wasm_runtime_check(wasm_path: str) -> list:
+    """Instancia o módulo de verdade no WebAssembly do node e confere os
+    resultados dos exports (provém a promessa 'validável em runtime').
+    Ambiente sem node: prova pulada (a estrutural cobre; o CI tem node)."""
+    node = shutil.which("node")
+    if not node:
+        return []
+    try:
+        proc = subprocess.run([node, "-e", _NODE_WASM_PROBE, wasm_path],
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE, timeout=60)
+    except (OSError, subprocess.TimeoutExpired):
+        return ["inicialização do node p/ WASM falhou (timeout/exec)"]
+    if proc.returncode != 0:
+        return [f"módulo WASM não instancia/executa no node "
+                f"(exit {proc.returncode})"]
+    return []
+
+
+def _wasm_checks(wasm: bytes) -> list:
+    """Estrutural + runtime (extrai p/ arquivo p/ o node ler)."""
+    problems = _wasm_structural_check(wasm)
+    if problems:
+        return problems  # sem estrutura não há o que instanciar
+    with tempfile.NamedTemporaryFile(prefix="apktester-wasm-",
+                                     suffix=".wasm", delete=False) as fh:
+        fh.write(wasm)
+        path = fh.name
+    try:
+        return _wasm_runtime_check(path)
+    finally:
+        os.unlink(path)
+
+
+def _wasm_selftest_module() -> bytes:
+    """Módulo WASM mínimo e VÁLIDO construído à mão (mesma forma do
+    module.wat do engine-30: 2 funções + memória + data), p/ provar os
+    checkers no selftest SEM depender do wat2wasm. Byte a byte:
+    header + type/function/memory/export/code/data sections com LEB128."""
+    def section(sid: int, payload: bytes) -> bytes:
+        return bytes((sid,)) + _leb_u32(len(payload)) + payload
+
+    type_sec = (_leb_u32(2)
+                + b"\x60\x02\x7f\x7f\x01\x7f"    # t0: (i32,i32)->i32
+                + b"\x60\x00\x01\x7f")            # t1: ()->i32
+    func_sec = _leb_u32(2) + b"\x00" + b"\x01"    # f0:t0, f1:t1
+    mem_sec = _leb_u32(1) + b"\x00" + _leb_u32(1)  # min 1 página
+    def export(name: str, kind: int, idx: int) -> bytes:
+        raw = name.encode("ascii")
+        return _leb_u32(len(raw)) + raw + bytes((kind,)) + _leb_u32(idx)
+    export_sec = (_leb_u32(3)
+                  + export("apktester_add", 0, 0)
+                  + export("apktester_checksum", 0, 1)
+                  + export("apktester_mem", 2, 0))
+    body_add = b"\x00" + b"\x20\x00" + b"\x20\x01" + b"\x6a" + b"\x0b"
+    body_cst = b"\x00" + b"\x41" + _sleb_i32(20261022) + b"\x0b"
+    code_sec = (_leb_u32(2)
+                + _leb_u32(len(body_add)) + body_add
+                + _leb_u32(len(body_cst)) + body_cst)
+    data_sec = (_leb_u32(1) + b"\x00" + b"\x41" + _sleb_i32(0) + b"\x0b"
+                + _leb_u32(len(WASM_MARKER)) + WASM_MARKER)
+    return (b"\x00asm\x01\x00\x00\x00"
+            + section(1, type_sec) + section(3, func_sec)
+            + section(5, mem_sec) + section(7, export_sec)
+            + section(10, code_sec) + section(11, data_sec))
 
 
 # ---------------------------------------------------------------------------
@@ -1291,6 +1495,28 @@ def selftest() -> int:
                 print(f"[{TOOL}] selftest FALHOU: sem fontes em "
                       f"suites/engines/{engine}/src/", file=sys.stderr)
                 return 1
+        # A9/roadmap 3.4: prova dos checkers WASM (estrutural + node) num
+        # módulo VÁLIDO construído à mão + negativos (magic/export/data)
+        good = _wasm_selftest_module()
+        assert not _wasm_structural_check(good), \
+            "checker estrutural reprovou módulo WASM válido"
+        assert not _wasm_checks(good), \
+            "checker WASM (estrutural+runtime) reprovou módulo válido"
+        bad_magic = b"\x00wsm\x01\x00\x00\x00" + good[8:]
+        assert _wasm_structural_check(bad_magic), \
+            "checker estrutural aceitou magic inválido"
+        bad_export = good.replace(b"apktester_add", b"apktester_sub")
+        assert _wasm_structural_check(bad_export), \
+            "checker estrutural aceitou export renomeado"
+        bad_data = good.replace(WASM_MARKER, b"outro-marcador-qualquer!\x00")
+        assert _wasm_structural_check(bad_data), \
+            "checker estrutural aceitou data sem o marcador"
+        node = shutil.which("node")
+        wasm_note = ("instanciado e executado no WebAssembly do node "
+                     "(add/checksum/memória conferidos)" if node else
+                     "prova runtime pulada (sem node no ambiente; estrutural ok)")
+        print(f"[{TOOL}] selftest extra: módulo WASM válido {wasm_note}; "
+              f"negativos (magic/export/data) reprovados")
         print(f"[{TOOL}] selftest OK: {len(ENGINE_IDS)} engines Tier A com "
               "plano parseável, zero drift do contrato, build.sh + README + "
               "fontes presentes")

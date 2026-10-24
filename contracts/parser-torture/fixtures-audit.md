@@ -48,6 +48,16 @@ Cada fixture ataca UMA suposição perigosa dos parsers do RustyDroid
   apksigner simula INSTALAÇÃO (API 24+ exige v2 "ou posterior") e
   estas fixtures são alvos de PARSER, não de instalação — v1-only
   se verifica contra 9..23, v2-only contra 24+, v3-only contra 28+.
+- `zip64-65k.apk` NÃO é instalável, por decisão TESTADA (A9/roadmap
+  3.5): as 65.600 entradas de dados são anexadas DEPOIS da assinatura
+  v1 (fora dos digests JAR). A alternativa — assinar pós-augment com
+  v2-only — foi experimentada e REJEITADA: o apksigner 35.0.0 não
+  assina APK com EOCD Zip64 ("Unused space at the end of ZIP Central
+  Directory" — o parser apksig trata EOCD64+locator como lixo;
+  reproduzível com `apksigner sign --v2-only` sobre o zip64-65k.apk).
+  Embutir (vendor) o apksig com patch zip64 está fora do escopo
+  stdlib; o padrão v1-antes-do-augment também é um caso REAL de APK
+  reempacotado/tampado que um parser deve tolerar.
 
 ## Contratos deste diretório
 

@@ -297,6 +297,26 @@ jobs:
           cd suites/flagship
           ./gradlew --no-daemon -PbulkPreset=quick :app:assembleClassicDebug :app:assembleModernDebug
 
+      # A9/roadmap 3.1: os 48 KTX2 do genTextures + os 3 do genBulk precisam
+      # passar no validador oficial da Khronos (ktx2check 4.4.2). O -q faz o
+      # exit code refletir validade (2 = erro estrutural).
+      - name: KTX2 spec-oficial (ktx2check sobre as texturas geradas)
+        run: |
+          set -euo pipefail
+          curl -sL --retry 3 -o /tmp/ktx.tar.bz2 \
+            "https://github.com/KhronosGroup/KTX-Software/releases/download/v4.4.2/KTX-Software-4.4.2-Linux-x86_64.tar.bz2"
+          tar -xjf /tmp/ktx.tar.bz2 -C /tmp
+          KTXCHECK=/tmp/KTX-Software-4.4.2-Linux-x86_64/bin/ktx2check
+          n=0
+          while IFS= read -r f; do
+            "${KTXCHECK}" -q "${f}"
+            n=$((n + 1))
+          done < <(find suites/flagship/app/build/gen -name '*.ktx2' | LC_ALL=C sort)
+          # 48 do genTextures (4 materiais x 4 mapas x 3 formatos) + 3 do
+          # genBulk (preset quick) = 51
+          test "${n}" -ge 51
+          echo "[A9] ktx2check: ${n} texturas KTX2 aprovadas (zero erros)"
+
       - name: Verificar permissoes no APK binario (aapt2)
         run: |
           AAPT2="${ANDROID_HOME}/build-tools/35.0.0/aapt2"

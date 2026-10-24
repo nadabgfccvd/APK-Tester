@@ -83,6 +83,24 @@ KS_ALIAS = "apktester"
 DEX_BATCHES = 8
 DEX_CORPUS_ARGS = ("--classes", "128", "--methods-per-class", "60",
                    "--strings", "2000", "--fields", "128")
+# multidex-8-full (A9/roadmap 3.3): o corpus INTEIRO no default do
+# gen-dex-stress — 650 classes x 101 rotinas = 65.650 method refs,
+# ACIMA do limite de 65.536 de um único dex — atravessando o d8 de
+# verdade (8 lotes contíguos, ~8.2k rotinas por dex). Custo: minutos de
+# geração + dexação; por isso o modo roda no NIGHTLY, não no PR CI.
+DEX_CORPUS_FULL_ARGS = ()  # args vazios = defaults 650 x 101 da ferramenta
+
+
+def is_multidex(mode: str) -> bool:
+    """Modos multidex (fatiamento do corpus gen-dex-stress em 8 dexes)."""
+    return mode in ("multidex-8", "multidex-8-full")
+
+
+def corpus_args(mode: str) -> tuple:
+    """Args do gen-dex-stress para o modo (reduzido p/ multidex-8; defaults
+    completos 650x101 p/ multidex-8-full)."""
+    return DEX_CORPUS_FULL_ARGS if mode == "multidex-8-full" \
+        else DEX_CORPUS_ARGS
 # huge-arsc: entradas do resources.arsc sintético (o passo do plano é
 # explícito para o plano JSON não depender do default da ferramenta).
 ARSC_ENTRIES = "10000"
@@ -130,6 +148,11 @@ MODES = {
     "multidex-8": _mode(21, 36,
         desc="8 arquivos classesN.dex (multidex nativo, minSdk 21) a partir "
              "do corpus gen-dex-stress"),
+    "multidex-8-full": _mode(21, 36,
+        desc="corpus gen-dex-stress COMPLETO (650 classes x 101 rotinas = "
+             "65.650 > 65.536) fatiado em 8 dexes — o limite de 64k methods "
+             "atravessado de verdade pelo d8 (modo pesado: nightly, não no "
+             "CI de PR; auditoria A9/roadmap 3.3)"),
     "exported-audit": _mode(26, 36, external_manifest=True,
         desc="armadilhas de manifesto intencionais (exported/permissoes mal "
              "declaradas) — auditoria documenta cada erro"),
@@ -339,7 +362,7 @@ def generate_tree(cfg: dict, mode: str, seed: int, work: str) -> list:
     # directory"): prepara o destino do dex base e, no multidex-8, os 8
     # subdiretórios dos lotes (o caminho de execução é exercitado no CI).
     os.makedirs(os.path.join(work, "dex"), exist_ok=True)
-    if mode == "multidex-8":
+    if is_multidex(mode):
         for i in range(1, DEX_BATCHES + 1):
             os.makedirs(os.path.join(work, "dex", str(i)), exist_ok=True)
     r_java = os.path.join(work, "gen", pkg.replace(".", "/"), "R.java")
@@ -440,15 +463,17 @@ def build_plan(args, cfg: dict, work: str, out_apk: str, tools: dict,
                         os.path.join(work, "engroot"), "--report",
                         os.path.join(work, "engine-payload-report.json"),
                         "--seed", str(args.seed)], "cwd": None})
-    if mode == "multidex-8":
+    if is_multidex(mode):
+        n_routines = (650 * 101 if mode == "multidex-8-full"
+                      else 128 * 60)
         steps.insert(0, {
             "id": "gen-dex-corpus",
-            "description": "corpus-fonte gen-dex-stress (7680 rotinas + "
-                           "strings + campos) p/ fatiar em 8 dexes",
+            "description": f"corpus-fonte gen-dex-stress ({n_routines} "
+                           f"rotinas + strings + campos) p/ fatiar em 8 dexes",
             "command": [sys.executable,
                         os.path.join(TOOLS_DIR, "gen-dex-stress.py"),
                         "--out", os.path.join(work, "dexsrc"), "--seed",
-                        str(args.seed)] + list(DEX_CORPUS_ARGS),
+                        str(args.seed)] + list(corpus_args(mode)),
             "cwd": None})
         # Pipeline multidex: fatia os .class em 8 lotes contíguos e dexa um
         # classes.dex por lote (multidex nativo, minSdk 21).
@@ -620,10 +645,14 @@ def build_plan(args, cfg: dict, work: str, out_apk: str, tools: dict,
             "--verify <resources.arsc> (gold standard; CI soma aapt2 dump "
             "resources como segunda opinião)",
         ]
-    if mode == "multidex-8":
-        notes.append(f"corpus gen-dex-stress fatiado em {DEX_BATCHES} lotes "
-                     "contíguos (work/dexplan.json): classes.dex..classes8.dex "
-                     "na raiz do APK — multidex nativo, minSdk 21")
+    if is_multidex(mode):
+        scope = ("corpus COMPLETO gen-dex-stress (650 x 101 = 65.650 "
+                 "rotinas, acima do limite 65.536) fatiado em 8 lotes "
+                 "contíguos" if mode == "multidex-8-full" else
+                 "corpus gen-dex-stress fatiado em 8 lotes contíguos")
+        notes.append(f"{scope} (work/dexplan.json): classes.dex.."
+                     "classes8.dex na raiz do APK — multidex nativo, "
+                     "minSdk 21")
     if cfg["external_manifest"]:
         notes.append("manifesto e Java vêm de tools/gen-trap-manifest.py "
                      "(fonte única da tabela TRAPS); 9 componentes (7 "
@@ -844,12 +873,12 @@ def ensure_trap_root(seed: int, work: str) -> str:
     return out
 
 
-def ensure_dex_corpus(seed: int, work: str) -> str:
+def ensure_dex_corpus(seed: int, work: str, mode: str = "multidex-8") -> str:
     """Gera o corpus gen-dex-stress (mesmos args do passo do plano); precisa
     existir no make_plan para o plano listar os .java do corpus."""
     out = os.path.join(work, "dexsrc")
     cmd = [sys.executable, os.path.join(TOOLS_DIR, "gen-dex-stress.py"),
-           "--out", out, "--seed", str(seed)] + list(DEX_CORPUS_ARGS)
+           "--out", out, "--seed", str(seed)] + list(corpus_args(mode))
     proc = subprocess.run(cmd, stdout=subprocess.PIPE,
                           stderr=subprocess.STDOUT)
     if proc.returncode != 0:
@@ -880,7 +909,7 @@ def execute(plan: dict) -> int:
 
 
 def selftest() -> int:
-    """--dry-run dos 20 modos parseia (com apk_name); --fixture nope sai 2."""
+    """--dry-run dos 21 modos parseia (com apk_name); --fixture nope sai 2."""
     tmp = tempfile.mkdtemp(prefix="apktester-fixturepack-selftest-")
     try:
         for mode in MODES:
@@ -901,7 +930,7 @@ def selftest() -> int:
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         assert proc.returncode == 2, \
             f"--fixture nope deveria sair 2, veio {proc.returncode}"
-        print("[fixture-pack] selftest OK: 20 modos (11 parser-torture + "
+        print("[fixture-pack] selftest OK: 21 modos (12 parser-torture + "
               "9 engines tier C) com plano parseável e apk_name; "
               "--fixture nope => exit 2")
         return 0
@@ -929,7 +958,7 @@ def parse_args(argv=None):
         ap.add_argument(f"--{name}", default=None,
                         help=f"caminho do {name} (padrão: shutil.which)")
     ap.add_argument("--selftest", action="store_true",
-                     help="valida planos dos 20 modos em tmp e sai")
+                     help="valida planos dos 21 modos em tmp e sai")
     ap.add_argument("--zip64-augment", action="store_true",
                     help=argparse.SUPPRESS)
     ap.add_argument("--into", default=None, help=argparse.SUPPRESS)
@@ -965,8 +994,8 @@ def make_plan(args) -> dict:
         java_files += sorted(glob.glob(
             os.path.join(work, "traproot", "src", "**", "*.java"),
             recursive=True))
-    if args.fixture == "multidex-8":
-        ensure_dex_corpus(args.seed, work)
+    if is_multidex(args.fixture):
+        ensure_dex_corpus(args.seed, work, mode=args.fixture)
         java_files += sorted(glob.glob(
             os.path.join(work, "dexsrc", "java", "**", "*.java"),
             recursive=True))

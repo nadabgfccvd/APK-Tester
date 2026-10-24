@@ -128,10 +128,12 @@ systemExempted diverge da permissao FOREGROUND_SERVICE_SYSTEM_EXPERIMENTS
 |--------|-------------|----------|----------------|-----------------|------|
 | .providers.BehemothProvider | dev.apktester.behemoth.provider | true | — | — | CRUD proprio sobre SQLite (probe CORE-PV-001) |
 | .providers.GuardedProvider | dev.apktester.behemoth.guarded | true | dev.apktester.behemoth.permission.CUSTOM_SIGNATURE | dev.apktester.behemoth.permission.CUSTOM_SIGNATURE | provider com readPermission/writePermission guardados por permissao custom signature |
+| .providers.GuardedNormalProvider | dev.apktester.behemoth.guarded.normal | true | dev.apktester.behemoth.permission.CUSTOM_NORMAL | — | provider guardado por permissao custom NORMAL (leitura) — CUSTOM_NORMAL deixa de ser orfa (A9/roadmap 3.6): o par normal/signature dos dois niveis custom fica exercitado |
 
 Nota do master prompt menciona FileProvider (androidx): entra no flavor
-modern junto do resto do androidx (A5/A6). Em A1 os 2 providers sao
-framework-only para o classic compilar limpo.
+modern junto do resto do androidx (A5/A6). Os 3 providers sao
+framework-only para o classic compilar limpo (GuardedNormalProvider
+entrou na A9/roadmap 3.6: CUSTOM_NORMAL deixou de ser orfa).
 
 ## Widgets (2)
 

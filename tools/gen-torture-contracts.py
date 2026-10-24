@@ -177,6 +177,16 @@ def build_fixtures_audit() -> str:
     add("  apksigner simula INSTALAÇÃO (API 24+ exige v2 \"ou posterior\") e")
     add("  estas fixtures são alvos de PARSER, não de instalação — v1-only")
     add("  se verifica contra 9..23, v2-only contra 24+, v3-only contra 28+.")
+    add("- `zip64-65k.apk` NÃO é instalável, por decisão TESTADA (A9/roadmap")
+    add("  3.5): as 65.600 entradas de dados são anexadas DEPOIS da assinatura")
+    add("  v1 (fora dos digests JAR). A alternativa — assinar pós-augment com")
+    add("  v2-only — foi experimentada e REJEITADA: o apksigner 35.0.0 não")
+    add("  assina APK com EOCD Zip64 (\"Unused space at the end of ZIP Central")
+    add("  Directory\" — o parser apksig trata EOCD64+locator como lixo;")
+    add("  reproduzível com `apksigner sign --v2-only` sobre o zip64-65k.apk).")
+    add("  Embutir (vendor) o apksig com patch zip64 está fora do escopo")
+    add("  stdlib; o padrão v1-antes-do-augment também é um caso REAL de APK")
+    add("  reempacotado/tampado que um parser deve tolerar.")
     add("")
     add("## Contratos deste diretório")
     add("")
@@ -236,8 +246,9 @@ def generate(out_dir: Path) -> dict:
 
 
 def selftest() -> int:
-    """Renderiza em tmp 2x, valida JSONs, ledger e a tabela MODES (20 modos
-    desde a A3: 11 parser-torture + 9 engines tier C)."""
+    """Renderiza em tmp 2x, valida JSONs, ledger e a tabela MODES (21 modos
+    desde a A9: 12 parser-torture + 9 engines tier C; multidex-8-full é modo
+    de build nightly-only, fora do fragmento TORTURE_ORDER)."""
     try:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -305,10 +316,15 @@ def selftest() -> int:
                     f"sha256 diverge em {entry['path']}"
 
         # A3: fixture-pack ganhou os 9 modos engine-* (Tier C); o fragmento
-        # parser-torture continua amarrado aos 11 modos de TORTURE_ORDER.
-        assert len(fixture_pack.MODES) == 11 + 9, \
-            f"MODES deveria ter 20 modos (11 parser-torture + 9 engines " \
+        # parser-torture continua amarrado aos 10 modos de TORTURE_ORDER.
+        # A9: +multidex-8-full (corpus 65k completo; build-only/nightly).
+        assert len(fixture_pack.MODES) == 12 + 9, \
+            f"MODES deveria ter 21 modos (12 parser-torture + 9 engines " \
             f"tier C), tem {len(fixture_pack.MODES)}"
+        assert "multidex-8-full" in fixture_pack.MODES and \
+            fixture_pack.is_multidex("multidex-8-full") and \
+            fixture_pack.corpus_args("multidex-8-full") == (), \
+            "modo multidex-8-full ausente/sem corpus completo"
         assert "engine-05-clojure" in fixture_pack.MODES and \
             fixture_pack.MODES["engine-05-clojure"]["engine"], \
             "modos engine-* ausentes/sem flag engine no fixture-pack"

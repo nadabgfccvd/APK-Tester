@@ -96,7 +96,7 @@ master prompt).
 
 | name | protectionLevel | papel |
 |------|-----------------|-------|
-| dev.apktester.behemoth.permission.CUSTOM_NORMAL | normal | permissao custom normal (definida e usada como readPermission de teste) |
+| dev.apktester.behemoth.permission.CUSTOM_NORMAL | normal | permissao custom normal — guarda a LEITURA do GuardedNormalProvider (exported; autoridade dev.apktester.behemoth.guarded.normal); referenciada de verdade desde a A9 (roadmap 3.6) |
 | dev.apktester.behemoth.permission.CUSTOM_SIGNATURE | signature | permissao custom signature — guarda o GuardedProvider (leitura e escrita) |
 | dev.apktester.behemoth.permission-group.BEHEMOTH | permission-group | agrupamento custom |
 | dev.apktester.behemoth.permission-tree.DYNAMIC | permission-tree | arvore de permissoes dinamicas |

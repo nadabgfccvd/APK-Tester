@@ -113,10 +113,52 @@ jobs:
             "platforms;android-36" "build-tools;${BT}" > /dev/null
           echo "ANDROID_HOME=${ANDROID_HOME}" >> "${GITHUB_ENV}"
 
-      - name: Selftests (empacotador 20 modos + gerador Tier C)
+      - name: Selftests (empacotador 21 modos + gerador Tier C)
         run: |
           python3 tools/fixture-pack.py --selftest
           python3 tools/gen-engine-fixtures.py --selftest
+
+      # A9/roadmap 3.3: o corpus-fonte COMPLETO do gen-dex-stress (650
+      # classes x 101 rotinas = 65.650 method refs, acima do limite 65.536
+      # de um dex) atravessando o d8 DE VERDADE — 8 lotes contíguos, um
+      # classesN.dex por lote. ~1 min no runner; PR CI segue com o modo
+      # reduzido (multidex-8, 7.680 rotinas).
+      - name: Multidex-8-full (corpus 65k completo pelo d8 real)
+        run: |
+          set -euo pipefail
+          BT_DIR="${ANDROID_HOME}/build-tools/${BT}"
+          mkdir -p /tmp/mdf
+          python3 tools/fixture-pack.py --fixture multidex-8-full \
+            --out /tmp/mdf \
+            --aapt2 "${BT_DIR}/aapt2" --d8 "${BT_DIR}/d8" \
+            --apksigner "${BT_DIR}/apksigner" --zipalign "${BT_DIR}/zipalign"
+          python3 - "${BT_DIR}" <<'PY'
+          import os, subprocess, sys, tempfile, zipfile
+          from pathlib import Path
+          bt = Path(sys.argv[1])
+          apk = Path("/tmp/mdf/multidex-8-full.apk")
+          with zipfile.ZipFile(apk) as zf:
+              dexes = sorted(n for n in zf.namelist()
+                             if n.startswith("classes") and n.endswith(".dex"))
+          expected = ["classes.dex"] + [f"classes{i}.dex" for i in range(2, 9)]
+          assert dexes == expected, f"dexes divergem: {dexes}"
+          total = 0
+          with tempfile.TemporaryDirectory() as td:
+              with zipfile.ZipFile(apk) as zf:
+                  zf.extractall(td)
+              for name in dexes:
+                  out = subprocess.run([str(bt / "dexdump"), "-f",
+                                        os.path.join(td, name)],
+                                      capture_output=True, text=True).stdout
+                  n = int(next(l.split(":")[1] for l in out.splitlines()
+                               if l.startswith("method_ids_size")))
+                  print(f"[A9] {name}: {n} method_ids")
+                  total += n
+          assert total >= 65536 + 1024, \
+              f"total de method_ids ({total}) abaixo do esperado p/ corpus 65k"
+          print(f"[A9] multidex-8-full OK: 8 dexes, {total} method_ids no "
+                f"total (corpus 65.650 rotinas atravessou o d8 real)")
+          PY
 
       - name: Empacotar as 9 fixtures Tier C
         run: |

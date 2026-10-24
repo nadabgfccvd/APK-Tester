@@ -13,20 +13,27 @@ para o selftest. O A6 integra a árvore gerada em assets/bulk/ do APK.
 HONESTIDADE (lei do repo): todo payload é ruído determinístico — o keystream
 hashlib.shake_256(f"{seed}:{categoria}:{ordinal}") gravado em fatias de
 1 MiB. Os containers têm cabeçalhos estruturalmente válidos (KTX2 com
-vkFormat real, PLY binary_little_endian parseável, WAV PCM16 canônico de 44 B
-e APKT-BULK1 com metadados JSON), porém NÃO há conteúdo real capturado — é
-ruído declarado, e o bulk/manifest.json de cada árvore afirma isso em
-português claro. APLY leva a nota no próprio comentário do header; KTX2 e
-WAV não têm campo de comentário no formato — o manifest responde por eles.
+vkFormat real e container spec-completo, PLY binary_little_endian
+parseável, WAV PCM16 canônico de 44 B e APKT-BULK1 com metadados JSON),
+porém NÃO há conteúdo real capturado — é ruído declarado, e o
+bulk/manifest.json de cada árvore afirma isso em português claro. A PLY
+leva a nota no próprio comentário do header; o KTX2 carrega a nota na
+chave KVD KTXwriter; WAV não tem campo de comentário no formato — o
+manifest responde por ele.
 
 FOLGA DE CABEÇALHO (header slack): os nominais por arquivo (NOMINAL_PRESETS)
 são alvos; o tamanho FINAL exato de cada arquivo é o que o manifest registra,
 e é ele a fonte da verdade (o plano pede: constantes = tamanho final, payload
-derivado). Desvios por arquivo, todos documentados e <= BULK_SLACK (128 B):
-  - KTX2: o cabeçalho REAL do formato tem 72 B (12 magic + 15 u32); o plano
-    citava 80. As dimensões de pixel fecham MiB exato de pixels (4096x4096
-    RGB565 = 32 MiB; 1024x512 = 1 MiB), logo o final fica +72 B acima do
-    nominal — "header + pixels exatos" é a regra declarada do formato.
+derivado). Desvios por arquivo, todos documentados e <= BULK_SLACK (512 B):
+  - KTX2: container spec-completo (correção da auditoria A9/roadmap 3.1):
+    header de 80 B (12 magic + 9 u32 + 4 u32 + 2 u64 sgd — NÃO 72; os campos
+    sgd são u64), level index de 24 B (1 entrada), DFD de 76 B (RGB565:
+    3 samples 5/6/5 bits) e KVD com a nota KTXwriter — total fixo de ~260 B.
+    As dimensões de pixel fecham MiB exato de pixels (4096x4096 RGB565 =
+    32 MiB; 1024x512 = 1 MiB), logo o final fica ~+260 B acima do nominal —
+    "container + pixels exatos" é a regra declarada do formato. O vkFormat
+    é VK_FORMAT_R5G6B5_UNORM_PACK16 = 4 (correção A9: era 65, que é
+    A2B10G10R10_SNORM_PACK32 — valor errado na tabela local).
   - PLY: o cabeçalho depende da contagem de vértices; fecha o MAIOR N cujo
     cabeçalho+payload cabe no nominal (folga < 12 B por arquivo).
   - WAV: 44 B canônicos + 2*samples; nominal par => final == nominal.
@@ -72,15 +79,23 @@ CHUNK = 1 << 20  # 1 MiB: o payload é gravado em fatias do digest já pronto
 
 # ------------------------------------------------------------------ formatos
 KTX2_MAGIC = b"\xabKTX 20\xbb\r\n\x1a\n"
-VK_FORMAT_R5G6B5_UNORM_PACK16 = 65
-KTX2_HEADER_LEN = 72  # 12 magic + 15 u32 — cabeçalho real do KTX2
+VK_FORMAT_R5G6B5_UNORM_PACK16 = 4  # vulkan_core.h (correção A9: 65 é
+#                                   # VK_FORMAT_A2B10G10R10_SNORM_PACK32)
+KTX2_HEADER_LEN = 80   # 12 magic + 9 u32 + 4 u32 + 2 u64 (sgd) — spec KTX 2.0
+KTX2_LEVELINDEX_LEN = 24  # 1 level x 3 u64 (offset, byteLength, uncompressed)
+KTX2_DFD_LEN = 76      # 4 (total) + 24 (bloco básico) + 3 samples x 16 B
+KTX2_WRITER_NOTE = (b"APK-Tester gen-bulk.py: textura sintetica RGB565 "
+                    b"(keystream shake_256, nao-imagem; ver "
+                    b"bulk/manifest.json)\x00")  # NUL final: terminacao
+                    # encorajada pelo ktx2check
 PLY_NOTE = ("APK-Tester: malha sintetica deterministica; "
             "coordenadas = ruido do keystream, declarado no manifest")
 WAV_HEADER_LEN = 44  # RIFF+fmt+data canônico
 WAV_RATE = 8000      # PCM16 mono => byte_rate 16000, block_align 2
 BULK_MAGIC = b"APKT-BULK1\n"
 BULK_HEADER_LEN = 128  # magic 11 + linha JSON + padding '\n' (desvio do plano)
-BULK_SLACK = 128       # folga máxima documentada por arquivo vs nominal
+BULK_SLACK = 512       # folga máxima documentada por arquivo vs nominal
+                      # (KTX2 spec-completo: 80+24+76+KVD ≈ 260 B; teto 512)
 
 # ------------------------------------------------------------------ categorias
 CATEGORY_ORDER = ("textures", "meshes", "audio", "data")
@@ -101,43 +116,80 @@ NOMINAL_PRESETS = {
 }
 
 # Dimensões RGB565 que fecham MiB exato de pixels (2*w*h): 4096x4096 = 32 MiB,
-# 1024x512 = 1 MiB. O tamanho final do KTX2 é header (72 B) + pixels exatos.
+# 1024x512 = 1 MiB. O tamanho final do KTX2 é o container spec-completo
+# (~260 B: header 80 + levelIndex 24 + DFD 76 + KVD) + pixels exatos.
 TEXTURE_DIMS = {"full": (4096, 4096), "quick": (1024, 512)}
 
 MANIFEST_NOTE = (
     "Conteúdo 100% sintético e determinístico: cada payload é o keystream "
     "shake_256(seed:categoria:ordinal) gravado em fatias de 1 MiB; os "
-    "containers têm cabeçalhos estruturalmente válidos (KTX2, PLY "
+    "containers têm cabeçalhos estruturalmente válidos e spec-completos "
+    "(KTX2 com header 80 B + levelIndex + DFD RGB565 + KVD, PLY "
     "binary_little_endian, WAV PCM16, APKT-BULK1) mas não há conteúdo real "
     "capturado. Os tamanhos finais exatos registrados aqui prevalecem sobre "
-    "os nominais (folga de cabeçalho <= 128 B por arquivo: KTX2 = 72 B de "
-    "cabeçalho real + pixels exatos; PLY fecha o maior número de vértices "
-    "cujo cabeçalho+payload cabe no nominal, folga < 12 B; WAV e .bulk "
-    "fecham exatos). Sem timestamps, sem rede, sem aleatoriedade além da "
-    "seed."
+    "os nominais (folga de cabeçalho <= 512 B por arquivo: KTX2 = container "
+    "spec-completo de ~260 B + pixels exatos; PLY fecha o maior número de "
+    "vértices cujo cabeçalho+payload cabe no nominal, folga < 12 B; WAV e "
+    ".bulk fecham exatos). Sem timestamps, sem rede, sem aleatoriedade além "
+    "da seed."
 )
 
 
 # ------------------------------------------------------------------ headers
-def build_ktx2_header(width: int, height: int) -> bytes:
-    """Cabeçalho KTX2 real (12 magic + 15 u32) para textura RGB565 2D.
+def _kvd_entry(key: bytes, value: bytes) -> bytes:
+    """Entrada KVD: keyAndValueByteLength (u32, inclui o NUL da key) +
+    key NUL-terminada + value + padding de 4 B (spec KTX2)."""
+    raw = struct.pack("<I", len(key) + len(value)) + key + value
+    return raw + b"\0" * ((-len(raw)) % 4)
 
-    vkFormat 65 (R5G6B5_UNORM_PACK16), typeSize 2, 1 level/face/layer,
-    sem depth e sem dfd/kvd/sgd (offsets/lengths zerados). O payload que
-    segue o header é o keystream — largura*altura*2 bytes exatos.
+
+def build_ktx2_container(width: int, height: int, payload_len: int) -> bytes:
+    """Container KTX2 2.0 spec-completo para textura RGB565 2D de 1 level.
+
+    Correção da auditoria A9 (roadmap 3.1): o header real tem 80 B (12 magic
+    + 9 u32 + 4 u32 offsets + 2 u64 sgd — os campos sgd são u64, não u32),
+    o level index (1 entrada x 3 u64) vem logo após, e o DFD é OBRIGATÓRIO
+    (dfdByteLength != 0). DFD KHR_DF básico para RGB565: modelo RGBSDA,
+    primárias BT709, transferência linear, alpha straight, bloco 1x1,
+    bytesPlane0=2, 3 samples (R 5 bits @0, G 6 bits @5, B 5 bits @11 —
+    bitLength gravado = bits-1; canais R=0/G=1/B=2). KVD com a nota
+    KTXwriter declarando a natureza sintética (valor NUL-terminado —
+    terminação encorajada pelo ktx2check). vkFormat = 4
+    (VK_FORMAT_R5G6B5_UNORM_PACK16; correção A9: era 65). O payload
+    (keystream) segue no offset do level index, alinhado a
+    lcm(bytes do bloco de teixel, 4) = 4 (RGB565 = 2 B/teixel; exigência
+    do ktx2check: mipPadding) — aprovado pelo ktx2check 4.4.2 com zero
+    erros.
     """
-    fields = (
-        VK_FORMAT_R5G6B5_UNORM_PACK16,  # vkFormat
-        2,                              # typeSize (R5G6B5 = 2 bytes)
-        width, height,                  # pixelWidth, pixelHeight
-        0,                              # pixelDepth
-        1,                              # layerCount
-        1,                              # faceCount
-        1,                              # levelCount
-        0,                              # supercompressionScheme
-        0, 0, 0, 0, 0, 0,               # dfd/kvd/sgd byteOffset+byteLength
-    )
-    return KTX2_MAGIC + struct.pack("<15I", *fields)
+    kvd = _kvd_entry(b"KTXwriter\x00", KTX2_WRITER_NOTE)
+    dfd_off = KTX2_HEADER_LEN + KTX2_LEVELINDEX_LEN
+    kvd_off = dfd_off + KTX2_DFD_LEN
+    payload_off = (kvd_off + len(kvd) + 3) // 4 * 4  # alinhado a 4 B
+    padding = b"\0" * (payload_off - (kvd_off + len(kvd)))
+    samples = b"".join(
+        struct.pack("<HBB4BII", bit_off, bits - 1, chan, 0, 0, 0, 0,
+                    0, (1 << bits) - 1)
+        for bit_off, bits, chan in ((0, 5, 0), (5, 6, 1), (11, 5, 2)))
+    dfd = (struct.pack("<I", 4 + 24 + len(samples))   # dfdTotalSize
+           + struct.pack("<I", 0)                     # vendor Khronos/type basic
+           + struct.pack("<HH", 2, 24 + len(samples))  # versão 2, blockSize
+           + bytes((1, 1, 1, 0))           # RGBSDA/BT709/linear/straight
+           + bytes((0, 0, 0, 0))           # texelBlockDimension 1x1x1x1
+           + bytes((2, 0, 0, 0, 0, 0, 0, 0))   # bytesPlane0=2 (RGB565)
+           + samples)
+    assert len(dfd) == KTX2_DFD_LEN, "DFD RGB565 deveria ter 76 B"
+    header = (KTX2_MAGIC
+              + struct.pack("<9I", VK_FORMAT_R5G6B5_UNORM_PACK16, 2,
+                            width, height, 0, 0, 1, 1, 0)
+              + struct.pack("<4I", dfd_off, len(dfd), kvd_off, len(kvd))
+              + struct.pack("<2Q", 0, 0)
+              + struct.pack("<QQQ", payload_off, payload_len, payload_len))
+    return header + dfd + kvd + padding
+
+
+# Comprimento fixo do prefixo do container (independente de dims/payload:
+# header+levelIndex+DFD+KVD são todos de tamanho constante).
+KTX2_CONTAINER_LEN = len(build_ktx2_container(4, 4, 32))
 
 
 def ply_header(vertex_count: int) -> bytes:
@@ -205,7 +257,7 @@ def resolve_plan(preset: str) -> dict:
         count, per_file = nominal[cat]
         if cat == "textures":
             width, height = TEXTURE_DIMS[preset]
-            header_len = KTX2_HEADER_LEN
+            header_len = KTX2_CONTAINER_LEN
             payload_len = width * height * 2   # 2 bytes por pixel RGB565
             final = header_len + payload_len
             extra = {"dims": (width, height)}
@@ -259,7 +311,7 @@ def build_header(entry: dict, seed: str, plan: dict) -> bytes:
     info = plan["categories"][cat]
     if cat == "textures":
         width, height = info["dims"]
-        return build_ktx2_header(width, height)
+        return build_ktx2_container(width, height, info["payload_len"])
     if cat == "meshes":
         return ply_header(info["vertices"])
     if cat == "audio":
@@ -492,6 +544,64 @@ def selftest() -> int:
                 if e["category"] == "audio":
                     assert head[8:12] == b"WAVE"
             ok("magics conferidos (KTX2 / ply / RIFF+WAVE / APKT-BULK1)")
+
+            # (b2) container KTX2 spec-completo campo a campo (A9/roadmap 3.1)
+            for e in man_a["files"]:
+                if e["category"] != "textures":
+                    continue
+                full = os.path.join(bulk_a, e["path"])
+                size = os.path.getsize(full)
+                with open(full, "rb") as fh:
+                    blob = fh.read(KTX2_HEADER_LEN + KTX2_LEVELINDEX_LEN
+                                   + KTX2_DFD_LEN)
+                (vk, tsize, w, h, depth, layers, faces, levels,
+                 scheme) = struct.unpack_from("<9I", blob, 12)
+                assert vk == VK_FORMAT_R5G6B5_UNORM_PACK16 and tsize == 2, \
+                    f"{e['path']}: vkFormat={vk} typeSize={tsize}"
+                assert (depth, layers, faces, levels, scheme) == (0, 0, 1, 1, 0)
+                dfd_off, dfd_len, kvd_off, kvd_len = \
+                    struct.unpack_from("<4I", blob, 48)
+                sgd_off, sgd_len = struct.unpack_from("<2Q", blob, 64)
+                assert (sgd_off, sgd_len) == (0, 0), "sgd deveria ser 0"
+                assert dfd_off == KTX2_HEADER_LEN + KTX2_LEVELINDEX_LEN, \
+                    f"{e['path']}: dfdByteOffset={dfd_off}"
+                assert dfd_len == KTX2_DFD_LEN, \
+                    f"{e['path']}: dfdByteLength={dfd_len} != {KTX2_DFD_LEN}"
+                assert kvd_off == dfd_off + dfd_len and kvd_len % 4 == 0
+                lvl_off, lvl_len, lvl_uncomp = \
+                    struct.unpack_from("<QQQ", blob, KTX2_HEADER_LEN)
+                payload_len = w * h * 2
+                assert lvl_len == payload_len == lvl_uncomp, \
+                    f"{e['path']}: level sizes divergem ({lvl_len})"
+                assert lvl_off == kvd_off + kvd_len and lvl_off % 4 == 0, \
+                    f"{e['path']}: payload offset/alinha divergem"
+                assert size == lvl_off + lvl_len, \
+                    f"{e['path']}: tamanho {size} != container+payload"
+                dfd_total = struct.unpack_from("<I", blob, dfd_off)[0]
+                assert dfd_total == dfd_len, "dfdTotalSize != dfdByteLength"
+                with open(full, "rb") as fh:
+                    fh.seek(dfd_off)
+                    dfd_blob = fh.read(dfd_len)
+                model, primaries, transfer, flags = \
+                    struct.unpack_from("<4B", dfd_blob, 12)
+                assert (model, primaries, transfer, flags) == (1, 1, 1, 0), \
+                    f"{e['path']}: DFD word2 diverge"
+                bytes_plane = dfd_blob[20]
+                assert bytes_plane == 2, f"{e['path']}: bytesPlane0 != 2"
+                for i, (bit_off, bits, chan) in enumerate(
+                        ((0, 5, 0), (5, 6, 1), (11, 5, 2))):
+                    s_bit, s_len, s_chan = \
+                        struct.unpack_from("<HBB", dfd_blob, 4 + 24 + 16 * i)
+                    assert (s_bit, s_len + 1, s_chan) == (bit_off, bits, chan), \
+                        f"{e['path']}: sample {i} diverge"
+                with open(full, "rb") as fh:
+                    fh.seek(kvd_off)
+                    kvd_blob = fh.read(kvd_len)
+                assert b"KTXwriter" in kvd_blob, \
+                    f"{e['path']}: KVD sem a nota KTXwriter"
+            ok("containers KTX2 spec-completos: header 80 B (sgd u64), "
+               "levelIndex, DFD RGB565 (3 samples 5/6/5), KVD com nota, "
+               "vkFormat=4, payload 4-alinhado do tamanho exato")
 
             # (c) header WAV são (riff/data coerentes com o tamanho)
             for e in man_a["files"]:
