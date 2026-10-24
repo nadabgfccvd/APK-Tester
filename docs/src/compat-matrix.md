@@ -1,10 +1,11 @@
 # Matriz de compatibilidade — APK Tester x RustyDroid
 
-Esta página é **regenerada a cada execução do [`engines-nightly.yml`]
-(.github/workflows/engines-nightly.yml)** pelo
-[`scripts/compat-nightly.sh`](../scripts/compat-nightly.sh) contra o answer
-key `contracts/engines/expected-engines.json`, e publicada aqui no GH Pages
-junto com o site mdBook.
+Esta página é **regenerada a cada execução do
+[`engines-nightly.yml`](https://github.com/nadabgfccvd/APK-Tester/blob/main/.github/workflows/engines-nightly.yml)**
+pelo
+[`scripts/compat-nightly.sh`](https://github.com/nadabgfccvd/APK-Tester/blob/main/scripts/compat-nightly.sh)
+contra o answer key `contracts/engines/expected-engines.json`, e publicada
+aqui no GH Pages junto com o site mdBook.
 
 ## Ver agora
 

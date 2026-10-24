@@ -5,7 +5,7 @@
       "local_names_count": 32,
       "named_rows": 0,
       "names": [],
-      "registry_sha": "21f2c7d259423dc0123e70b48bc5827aebbb8f4d1f6200281a14f02e3591133b",
+      "registry_sha": "d63720e81d0a5527fed289a2e5060d2aa0a6ea47c6ff5c71d458cd8530704ebd",
       "source_path": "README.md"
     },
     "determinism": {
@@ -3654,21 +3654,7 @@
     }
   },
   "bot": "apkbot",
-  "confirmations": {
-    "answerkey_drift:eb52b9cc92374f77e57d1c54bc056c6e92f16fa41b228912c6bca6026c1dd86d": {
-      "check": "answerkey_drift",
-      "first_seen": "2026-10-24T00:44:01Z",
-      "payload": {
-        "confident": false,
-        "local_names_count": 32,
-        "named_rows": 0,
-        "names": [],
-        "registry_sha": "d63720e81d0a5527fed289a2e5060d2aa0a6ea47c6ff5c71d458cd8530704ebd",
-        "source_path": "README.md"
-      },
-      "runs_seen": 1
-    }
-  },
+  "confirmations": {},
   "flap_history": {
     "answerkey_drift:registry:arquivo-mudou": {
       "count": 2,

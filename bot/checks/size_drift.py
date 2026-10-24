@@ -27,11 +27,15 @@ Comportamento:
   * gate: total fora de cfg.size_gate_mb [850, 1000] MB => Finding
     "regression" ...:total:fora-do-gate (o CI já reprova; o bot reafirma);
   * PREVISÃO (o que o CI não faz): com >= cfg.size_forecast_min_samples
-    (padrão 5) amostras datadas de total_bytes, ajuste linear por mínimos
-    quadrados (dias ordinais vs bytes, stdlib statistics) e projeção de
-    10 execuções à frente; se a projeção cruzar qualquer borda do gate =>
-    Finding "drift" ...:total:previsao-breach com slope MB/execução, run e
-    data previstas do breach e ação sugerida (engenharia de tamanho em A6).
+    (padrão 5) amostras datadas de total_bytes DE BUILDS REAIS (amostras
+    placeholder do esqueleto A0 — total < SKELETON_TOTAL_BYTES — NÃO
+    entram no ajuste: misturar as duas eras numa reta só fabrica slope
+    artificialmente enorme e previsão de breach falsa), ajuste linear
+    por mínimos quadrados (dias ordinais vs bytes, stdlib statistics) e
+    projeção de 10 execuções à frente; se a projeção cruzar qualquer
+    borda do gate => Finding "drift" ...:total:previsao-breach com slope
+    MB/execução, run e data previstas do breach e ação sugerida
+    (engenharia de tamanho em A6).
 
 ``learn`` devolve {"samples": [história + amostra de hoje]} — o dispatcher
 consolida em state.baselines.size_drift.samples com learn_mode "immediate"
@@ -292,8 +296,18 @@ def run(ctx) -> CheckResult:
                 fingerprint=f"{CHECK_ID}:total:fora-do-gate"))
 
     # 3) Previsão de breach (o que o CI NÃO faz).
-    series = hist + [(_ordinal(ctx.now) or 0, float(total))]
-    series = [(d, t) for d, t in series if d > 0]
+    # Ajuste SOMENTE sobre amostras de build real: placeholders do esqueleto
+    # A0 (total < SKELETON_TOTAL_BYTES) não são builds — misturar as duas
+    # eras na mesma reta fabrica slope artificialmente enorme (12 amostras
+    # ~0 bytes + builds de ~916 MiB => previsão-breach falso que nunca
+    # converge) e viola o contrato do docstring: era placeholder recebe
+    # "mesmo tratamento do total == 0" (nenhuma lógica de previsão roda).
+    if total >= SKELETON_TOTAL_BYTES:
+        series = [(d, t) for d, t in hist if t >= SKELETON_TOTAL_BYTES]
+        series.append((_ordinal(ctx.now) or 0, float(total)))
+        series = [(d, t) for d, t in series if d > 0]
+    else:
+        series = []
     if len(series) >= min_samples:
         xs = [d for d, _ in series]
         ys = [t for _, t in series]
@@ -345,7 +359,8 @@ def run(ctx) -> CheckResult:
                     fingerprint=f"{CHECK_ID}:total:previsao-breach"))
 
     notes = (f"total={_fmt_int(total)} bytes em {len(categories)} categorias; "
-             f"série histórica: {len(series)} amostras válidas")
+             f"série histórica: {len(series)} amostra(s) de build real "
+             f"(placeholders do esqueleto A0 fora do ajuste)")
     # "immediate": a amostra de hoje é fato do commit corrente (o CSV é
     # determinístico) — a série é carregada para frente pelo próprio check;
     # confirmação por igualdade de payload nunca convergiria.

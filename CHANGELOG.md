@@ -10,8 +10,28 @@ de compatibilidade verde).
 
 ## [Unreleased]
 
-Nada ainda — o desenvolvimento pós-1.0 entra aqui (SemVer estrito a partir
-de agora, ver [GOVERNANCE.md](GOVERNANCE.md)).
+### Corrigido (auditoria ponta a ponta pós-1.0)
+
+- `bot/checks/size_drift.py`: a previsão de breach do size gate agora ajusta
+  a reta SOMENTE sobre amostras de build real (total >= 1 MiB) e não roda
+  na era placeholder do esqueleto A0. Antes, as 12 amostras ~0 bytes da era
+  A0 misturadas aos builds reais de ~916 MiB fabricavam slope artificial
+  (aumentando a cada execução: +398, +422 MB/execução) e previsão de breach
+  falsa que nunca convergia sozinha — o fingerprint
+  `size_drift:total:previsao-breach` disparava em toda execução mesmo com
+  a série real perfeitamente plana e dentro do gate (issue #4).
+- `docs/src/compat-matrix.md`: dois links quebrados corrigidos — o link do
+  `compat-nightly.sh` apontava para `../scripts/` (inexistente a partir de
+  `docs/src/`) e o link do workflow era um constructo markdown inválido
+  (quebra de linha entre `]` e `(` não é link no CommonMark — renderizava
+  como texto cru); ambos viram URLs absolutas do repositório, na convenção
+  já usada por `docs/src/compat-nightly.md` (issue #18).
+- `bot/state/bot-state.json`: baseline do check `answerkey_drift` atualizada
+  para o sha256 atual do README do RustyDroid (`d63720e8…`) com o
+  alinhamento humano executado: `data/engines.toml` do irmão não muda desde
+  2026-10-20 (antes do nightly verde) e o Engines Nightly #9 validou os 32
+  fixtures contra exatamente este registro de 28 engines — a mudança do
+  README é de documentação (Apêndice C/status), não de detecção (issue #19).
 
 ## [1.0.0] - 2026-10-23
 
