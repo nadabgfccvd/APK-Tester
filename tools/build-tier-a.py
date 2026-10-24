@@ -1184,7 +1184,11 @@ def verify_apk(apk: str, engine: str) -> int:
         # (node preinstalado) e validado estruturalmente (magic/version/
         # seções/exports/data). Antes o runtime wasmer só era linkado; a
         # promessa do README de "validável em runtime" agora é prova.
-        if SPECS[engine]["kind"] == "wasm" and "assets/module.wasm" in names:
+        # Guard com .get: o --verify-apk também verifica APKs Tier B, e o
+        # SPECS aqui é só do Tier A — engine de outro tier não pode levantar
+        # KeyError (regressão vista no nightly, run 40076184463).
+        spec = SPECS.get(engine, {})
+        if spec.get("kind") == "wasm" and "assets/module.wasm" in names:
             problems += _wasm_checks(zf.read("assets/module.wasm"))
     if problems:
         for p in problems:
