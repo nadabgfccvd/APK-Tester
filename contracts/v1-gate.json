@@ -178,7 +178,7 @@
         "bot_dir": true,
         "files_missing": [],
         "files_required": 35,
-        "mdbook_chapters": 12,
+        "mdbook_chapters": 13,
         "mdbook_chapters_min": 10,
         "milestones_and_release": "milestones A0-A8 no GitHub + tag v1.0.0 + release publicada — dinamico",
         "workflows": [
