@@ -150,3 +150,85 @@ em clone temporário raso eliminaria a única cobertura honesta que falta ao
 cheque local — custo moderado, benefício direto para a estabilidade do
 nightly. Alternativa: ampliar `answerkey_drift` para diffar o conteúdo dos
 Apêndices do RustyDroid e não apenas o sha do README.
+
+---
+
+## Iteração 3 — 2026-10-24 — AUDIT_ROADMAP_V2 executado (R0–R4)
+
+**Escopo:** roadmap completo da re-auditoria independente (AUDIT_ROADMAP_V2.md
+do dono): R0 desbloqueio, R1 compat real, R2 substância do flagship, R3
+observabilidade, R4 reconciliação.
+
+### Executado e verificado
+
+- **R0.1** `tools/build-tier-a.py`: guard `SPECS.get(engine, {})` no
+  `--verify-apk` (commit 3bdd73f). KeyError do engine-04-scala nos 9 builds
+  Tier B (run 40076184463) eliminado; aceite provado localmente
+  (verify_apk sem exceção p/ Tier B) e no nightly 12/12 verde
+  (runs 40095992749 e 40099290907).
+- **R0.2** `engines-nightly.yml`: job `notify-failure` (R0.2/R3.1) — auto-issue
+  label `ci` em falha de build/infra, exclusivo do compat (que tem fixture_gap
+  próprio). Mecânica validada com canary em branch de teste: issue #22 aberta
+  automaticamente com run/commit no corpo, fechada e removida (run 40095928776).
+  Fix descoberto pelo canary: `gh issue create` sem checkout exige `--repo`.
+- **R0.3** Release **v1.0.1 CORTADA e PÚBLICA em construção** (tag na
+  853553a, run 40100387156): `release.yml` com `draft: false` + extração
+  dinâmica de notas da seção da própria tag (awk com casamento exato do
+  cabeçalho — `[1.0.1]` não pega `[1.0.10]`); CHANGELOG ganhou `[1.0.1]`.
+  A v1.0.0 draft pré-fix segue NÃO publicada.
+- **R1.1** `.github/workflows/rustydroid-snapshot.yml`: builda o CLI `rd` da
+  FONTE pinada (`RD_COMMIT=89bbe8f…` main do irmão em 2026-10-24; CI do irmão
+  vermelho SÓ em clippy de teste — MSRV verde) e publica asset fixo no
+  release `rustydroid-cli-snapshot` com sha256+proveniência. PAT sem escrita
+  no repo irmão (403 verificado) — o "asset fixo" do roadmap. sha256
+  5ff10a9e4b49… (rustc 1.99.1) baixável anonimamente (testado).
+- **R1.2** `scripts/compat-nightly.sh`: bootstrap do snapshot pinado (cache
+  ~/.cache com sha256 validado SEMPRE); download/integridade falhando = FAIL
+  explícito; binário único `rd` (o nome `rustydroid` nunca existiu como
+  binário); status SKIP sai da matriz.
+- **R1.3** Matriz completa: novos jobs `build-ladder`/`build-torture`/
+  `build-flagship-classic` no nightly; compat baixa também os 14 Tier A do
+  último ci.yml verde. Aceite SUPERADO: `install: OK (sha256 5ff10a9e4b49…)`
+  + `resumo: OK=42 FAIL=0 SKIP=0 SEM_APK=14` (run 40099290907); com Tier A o
+  alvo contratual vira OK=56/SEM_APK=0 (próximo run).
+- **R1.3-drift** O answer key `rustydroid_engines` era ASPIRACIONAL e
+  divergia do registro real em 9 entradas (maui-xamarin→dotnet-maui,
+  lua-defold→lua-engines, avalonia-dotnet→avalonia, python-kivy-beeware→
+  python-engines, + kmp/c/cpp/rust/go/objc/zig). Alguns "passavam" por
+  substring do nome de pacote (engine04scala continha "scala"). Commit
+  879041c: answer key = conjunto EMITIDO real do detector, verificado contra
+  os 32 APKs dos artefatos CI; matcher ancorado em linhas row-start; GAPs do
+  detector documentados por entrada (tauri não dispara, libdmengine.so vs
+  libdefold.so, twa-pwa sem asset_statements, scala/clojure/groovy/b4x sem
+  registro). Issue #23 documentada e fechada.
+- **R2.1** 32 sondas `.engines.Engine<NN>*Activity` (framework-only minSdk 9)
+  + base `EngineProbeActivity` no :app; manifest-audit regenerado: **39
+  activities, alvo >= 30 ATINGIDO**; cheque novo
+  `bot/checks/activity_coverage.py` (engine-sem-sonda, sonda-sem-engine,
+  SONDAS FANTOMAS — classe Java ausente; alvo contratual vigiado). Bot local:
+  32x32 OK.
+- **R2.2** Módulos reais: `:native` (libnative_probe.so, CMake/NDK
+  27.2.12479018, 1 JNI C puro), `:rust` (librust_probe.so, cargo-ndk,
+  zero deps), `:compose` (1 tela Compose real, modern-only via
+  `modernImplementation`, Kotlin 2.0.20 + BOM 2024.10.01). CI: setup pinnado
+  NDK+cmake+rust+cargo-ndk nos 3 jobs de flagship. Correção de percurso:
+  cargo-ndk 3.5.7 YANKED no crates.io → repin 4.1.2.
+- **R2.3** `gen-strings.py` emite `assets/locales/<tag>/strings.properties`
+  (12 locales) e as sondas LEEM em runtime (fallback pt-BR→pt→en, UTF-8,
+  framework-only): a categoria "locales" do size-report passa a ter bytes
+  REAIS e usados. Saída 12→24 artefatos, selftest atualizado, determinismo 2x.
+- **R3.2** Badge do nightly já existia nos dois READMEs (verificado — nada a
+  fazer). **R3.3** size-gate abre issue `ci` em falha (mesma mecânica R0.2).
+- **R4.2** READMEs PT+EN reconciliados: seção "Re-auditoria (AUDIT_ROADMAP_V2)"
+  com fatos de CI, 10 checks do APKBot, 6 workflows, comandos `rd` reais.
+
+### Pendências honestas (próxima iteração)
+
+1. **Re-baseline do size-report.csv** pelo artefato do primeiro size-gate
+   verde com os módulos (padrão A9: medido, nunca estimado).
+2. **v1.0.1**: confirmar release pública + download anônimo do flagship
+   (aceite: `GET /releases` >= 1 public; `curl -L` sem token → 200).
+3. **Matriz compat com Tier A**: confirmar OK=56/SEM_APK=0 no próximo nightly.
+4. Renomear título da draft v1.0.0 para marcar "superada" (dono decide).
+5. GAPs do detector documentados virarem issues NO repo irmão (sem acesso de
+   escrita via PAT — doar pelo dono).
