@@ -159,35 +159,6 @@ Every phase ends compiling green. Detailed exit criteria in
 | A7 | Tier B nightly jobs + `compat-nightly` + docs site (mdBook) | delivered |
 | **A8** | v1.0 gate: full matrix green, deterministic build proven, v1.0.0 release | **delivered (A8)** — `tools/v1-gate.py` evaluates the 10 Definition of Done criteria (contract `contracts/v1-gate.json`, zero-drift in CI); the `Release` workflow builds all 6 families (flagship classic+modern, Tier A 14, Tier B 9 re-verified from the green nightly, Tier C 9, ladder 12, torture 11 = 57 APKs), proves determinism with TWO consecutive modern release builds (`gradlew clean` in between, `verify-deterministic.sh --mode apk`), runs the gate with dynamic evidence and publishes the v1.0.0 release with APKs + contracts attached |
 
-## Independent re-audit (AUDIT_ROADMAP_V2, 2026-10-24)
-
-Full execution of waves R0–R4, with CI-verified facts:
-
-- **R0 — unblock:** `SPECS.get()` guard in the Tier A `--verify-apk`
-  (KeyError on the 9 Tier B builds, run 40076184463 → nightly 12/12
-  green); auto-issue on nightly BUILD failures (canary-verified);
-  **public v1.0.1 release** (non-draft) with maxSdk (W0), formats (W3)
-  and R0.1 — the pre-fix v1.0.0 draft stays unpublished.
-- **R1 — REAL compat:** `rd` CLI snapshot built from the pinned source
-  and published as a fixed asset (`rustydroid-cli-snapshot`, sha256
-  pinned in the script, ADR 0004); bootstrap in `compat-nightly.sh`
-  (download/integrity failure = FAIL, never SKIP); matrix covers **32
-  engines + ladder 12 + torture 11 + flagship classic** (the 14 Tier A
-  APKs come from the last green ci.yml run) — `resumo: OK=56 FAIL=0
-  SKIP=0 SEM_APK=0`; the answer key was rewritten to the detector's
-  REAL emitted set, verified against all 32 APKs (9 entries diverged —
-  issue #23).
-- **R2 — flagship substance:** real `:native`/`:rust`/`:compose`
-  modules (1 JNI .so + cargo-ndk + 1 Compose screen) — **all
-  modern-only**: the NDK 27 floor is API 21 (CXX1110) and the classic
-  (minSdk 9) stays framework-only, NO native code;
-  **one real activity per engine** (32 `.engines.*` probes, 39
-  activities, contract target >= 30 met) with the new `activity_coverage`
-  bot check; locales as runtime-USED assets (12 `assets/locales/`
-  files); size-report re-baselined from CI measurement.
-- **R3 — observability:** generalized nightly auto-issue
-  (`notify-failure`), nightly badge in the README, size-gate
-  out-of-window auto-issue.
 
 ## APKBot — anti-regression bot
 
