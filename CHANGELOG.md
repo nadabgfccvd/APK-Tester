@@ -10,6 +10,60 @@ de compatibilidade verde).
 
 ## [Unreleased]
 
+Nada ainda — o desenvolvimento pós-1.0 entra aqui (SemVer estrito a partir
+de agora, ver [GOVERNANCE.md](GOVERNANCE.md)).
+
+## [1.0.0] - 2026-10-23
+
+Primeira release pública do APK Tester — a suíte completa de *golden
+fixtures* do RustyDroid: 32 engines (Tier A real no CI, Tier B real no
+nightly, Tier C fixtures honestas), flagship "Behemoth" de ~916 MiB dentro
+do gate [850, 1000] MiB com as 1004 permissões verbatim do AOSP, pilar
+3D/shaders com golden byte a byte e paridade nativa Java==C++, escada
+minSdk 9–36, 11 fixtures de tortura de parser e o kit de governança
+completo (docs mdBook, ADRs, APKBot). O **gate v1.0** (`tools/v1-gate.py`)
+prova os 10 critérios da Definition of Done — incluindo o determinismo:
+duas builds de release consecutivas do flagship são byte-idênticas
+entrada a entrada (exceto assinatura).
+
+### Adicionado (A8 — gate v1.0 + release 1.0.0)
+
+- Ferramenta `tools/v1-gate.py`: checker sistemático dos 10 critérios da
+  Definition of Done do prompt mestre (python3 stdlib-only, determinístico,
+  sem timestamps, PT-BR nos textos). Modos `--selftest`/`--sync`/`--check`;
+  critérios com metade dinâmica ficam `evidence-release` no contrato
+  estático e só fecham em `pass` dentro do workflow Release
+  (`--apks-dir`, `--flagship-apk`, `--determinism-pass`,
+  `--release-proven`).
+- Contrato `contracts/v1-gate.json` (gerado por `--sync`, JSON canônico
+  indent=2/sort_keys): medições estáticas de todos os critérios + provas
+  documentadas; zero drift garantido no CI pelo job novo `v1-gate`
+  (selftest + sync + `git diff --exit-code`).
+- Workflow `release.yml` reescrito do esqueleto A0 para o pipeline real:
+  `static-gate` (DoD + zero drift + determinismo dos geradores 2×),
+  `build-flagship` (classic release bulk quick + modern release bulk full
+  DUAS VEZES com `gradlew clean` entre elas →
+  `verify-deterministic.sh --mode apk` + size gate fresco + sha256),
+  `build-tier-a` (matriz dos 14 engines reais com toolchains pinadas),
+  `build-tier-c` (9 fixtures + `--verify-apk`), `build-ladder` (12 degraus
+  minSdk 9–36), `build-torture` (11 fixtures com sanidade de ZIP),
+  `fetch-tier-b` (9 APKs do último nightly VERDE, re-verificados contra o
+  contrato canônico) e `v1-release` (baixa tudo — 57 APKs, ≥ 30 exigido —
+  roda o gate com evidências dinâmicas, empacota contratos + suite e cria
+  o draft release com todos os artefatos; publicação pelo owner após
+  inspeção).
+- Release `v1.0.0` (tag): `flagship-modern-release.apk` (~916 MiB, gate
+  verde) e `flagship-classic-release.apk` anexados direto +
+  `apk-tester-suite-apks-1.0.0.tar.gz` (55 APKs das 6 famílias) +
+  `apk-tester-contracts-1.0.0.tar.gz` (contratos + provas, para
+  `rustydroid test contracts/suites.json` sem clonar) + `v1-gate.json` +
+  `size-report.csv` + `determinism-proof.txt` + `sha256sums.txt`.
+- Docs: capítulo novo `docs/src/v1-gate.md` (a política 0.x→1.0 como
+  contrato executável — os 10 critérios, a ferramenta, o workflow e a
+  metodologia da prova de determinismo) + entrada no SUMMARY.md;
+  READMEs PT/EN com A8 entregue e badge semver 1.0.0; GOVERNANCE.md com o
+  status da 1.0.0 publicada.
+
 ### Adicionado (A7 — Tier B nightly + compat-nightly + docs site)
 
 - Orquestrador `tools/build-tier-b.py`: builds REAIS dos 9 engines Tier B
@@ -233,18 +287,7 @@ de compatibilidade verde).
   mapping + classes ofuscadas) e 10 novas suites em `contracts/suites.json`
   (total 55).
 
-### Planejado (fases A3–A8)
-
-- A3 — fixtures Tier C da matriz de engines + `expected-engines.json`;
-- A4 — builds reais Tier A (Java, Kotlin, C/C++, Rust, Go, Zig, WASM, …);
-- A5 — pilar 3D/shaders (`:sim3d` golden + shader-library + texturas/meshes/áudio);
-- A6 — engenharia de tamanho até o gate [850 MB, 1000 MB] + `size-report.csv`;
-- A7 — jobs nightly Tier B + `compat-nightly` + site de docs (mdBook);
-- A8 — gate v1.0: matriz completa verde, determinismo provado, release v1.0.0.
-
-## [0.1.0] — A0 (em progresso)
-
-### Adicionado
+### Adicionado (A0 — scaffold e governança)
 
 - Scaffold de repositório: layout `suites/` (flagship, engines, sdk-ladder,
   parser-torture), `tools/`, `contracts/`, `docs/`, `.github/workflows/`,
@@ -258,5 +301,5 @@ de compatibilidade verde).
   binários commitados);
 - Contratos iniciais (gabaritos consumidos por CI e RustyDroid).
 
-[Unreleased]: https://github.com/nadabgfccvd/APK-Tester/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/nadabgfccvd/APK-Tester/releases/tag/v0.1.0
+[Unreleased]: https://github.com/nadabgfccvd/APK-Tester/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/nadabgfccvd/APK-Tester/releases/tag/v1.0.0

@@ -16,6 +16,8 @@
 
 [Compatibilidade nightly (RustyDroid x fixtures)](compat-nightly.md)
 
+[Gate v1.0 (Definition of Done como contrato)](v1-gate.md)
+
 [Integração RustyDroid](rustydroid-integration.md)
 
 ---

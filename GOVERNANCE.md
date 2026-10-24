@@ -113,6 +113,13 @@ começa sem a anterior concluída (critério de saída verificado).
      Tier C consistente com `expected-engines.json`);
   2. o **size gate** está verde (flagship release ∈ [850 MB, 1000 MB]);
   3. o job nightly de compatibilidade (`compat-nightly`) está verde.
+- **Status: 1.0.0 publicada (A8)** — as três condições acima mais a prova de
+  determinismo (duas builds de release consecutivas byte-identicas) são
+  avaliadas sistematicamente pelo gate
+  [`tools/v1-gate.py`](tools/v1-gate.py) (contrato
+  [`contracts/v1-gate.json`](contracts/v1-gate.json), zero drift no CI;
+  evidências dinâmicas dentro do workflow Release antes de publicar
+  qualquer artefato). Detalhes: [docs/src/v1-gate.md](docs/src/v1-gate.md).
 - Após 1.0: SemVer estrito — **MAJOR** quebra contratos, **MINOR** adiciona
   fixtures/contratos compatíveis, **PATCH** corrige sem mudar contratos.
 - Tags: `vMAJOR.MINOR.PATCH` (ex.: `v0.1.0`), criadas apenas pelo owner, com

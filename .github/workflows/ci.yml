@@ -219,6 +219,25 @@ jobs:
           print('suites.json: schema_version == 1 ok,', len(suites.get('suites', [])), 'suites')
           "
 
+  # A8: gate v1.0 — criterios estaticos da Definition of Done + zero drift
+  # do contrato commitado (a parte dinamica e lei do workflow Release).
+  v1-gate:
+    name: "Gate v1.0 (A8): DoD estatico + zero drift do contrato"
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Selftest do gate (10 criterios do DoD)
+        run: python3 tools/v1-gate.py --selftest
+
+      - name: Zero drift do contrato do gate (sync + diff)
+        run: |
+          python3 tools/v1-gate.py --sync
+          git diff --exit-code -- contracts/v1-gate.json
+          echo "[A8] zero drift: contracts/v1-gate.json regenerado == commitado"
+
   # A1: build real do flagship "Behemoth" (Gradle, flavors classic/modern).
   # O gerador de manifesto/auditorias roda de novo e o git diff prova zero drift.
   flagship-skeleton:

@@ -1,68 +1,614 @@
-# esqueleto A0 — Release: build de tudo, prova de determinismo e GitHub Release.
-# A4+ liga o build real das suites; A8 fecha o gate v1.0 (matriz verde + determinismo).
+# Release (A8 — gate v1.0): build de TODAS as suites, prova de determinismo
+# das duas builds de release consecutivas, gate v1.0 com evidencias dinamicas
+# (tools/v1-gate.py) e draft release com APKs + contratos anexados.
+#
+# Arquitetura (espelha os jobs verdes do ci.yml e do engines-nightly.yml):
+#   static-gate    — gate estatico + zero drift do contrato + determinismo
+#                    dos geradores (falha rapida, sem toolchain pesada);
+#   build-flagship — classic (quick) + modern (full) release; a build do
+#                    modern roda DUAS vezes com clean entre elas e as duas
+#                    saidas sao comparadas entrada a entrada (META-INF
+#                    ignorado — verify-deterministic.sh --mode apk);
+#   build-tier-a   — matriz dos 14 engines reais (toolchains pinadas);
+#   build-tier-c   — as 9 fixtures honestas (toolchain real do SDK);
+#   build-ladder   — os 12 degraus minSdk 9..36;
+#   build-torture  — as 11 fixtures de tortura de parser;
+#   fetch-tier-b   — os 9 APKs Tier B do ULTIMO nightly verde (a build
+#                    pesada e lei do nightly; o release reutiliza os
+#                    artefatos verdes e os re-verifica contra o contrato);
+#   v1-release     — baixa tudo, roda o gate com evidencias dinamicas,
+#                    empacota e cria o draft release (somente em tag v*).
 name: Release
 
 on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
 
 permissions:
   contents: write
+  actions: read
 
 jobs:
-  release:
-    name: Build, determinismo e release (esqueleto A0)
+  # ------------------------------------------------------------------
+  # Gate estatico: criterios da Definition of Done provaveis da arvore +
+  # zero drift do contrato commitado + determinismo de TODOS os geradores.
+  # ------------------------------------------------------------------
+  static-gate:
+    name: "Gate estatico (A8): DoD + zero drift + geradores 2x"
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # A4+: build real via tools/build-variants.sh --all
-      # (Tier A no CI; Tier B via artefatos do nightly; Tier C via tools/fixture-pack.py).
-      - name: Build de todas as suites (placeholder A4+)
-        run: |
-          mkdir -p dist
-          echo "[esqueleto A0] placeholder de build — APKs reais chegam em A4/A6/A7"
+      - name: Selftest do gate v1.0 (10 criterios do DoD)
+        run: python3 tools/v1-gate.py --selftest
 
-      - name: Prova de determinismo (tools/verify-deterministic.sh)
+      - name: Zero drift do contrato do gate (sync + diff)
         run: |
-          # Duas builds consecutivas devem ser byte-idênticas exceto a assinatura.
-          if [ -x tools/verify-deterministic.sh ]; then
-            tools/verify-deterministic.sh
-          else
-            echo "[esqueleto A0] tools/verify-deterministic.sh ainda não existe (A4/A8)"
+          python3 tools/v1-gate.py --sync
+          git diff --exit-code -- contracts/v1-gate.json
+          echo "[A8] zero drift: contracts/v1-gate.json regenerado == commitado"
+
+      - name: Determinismo dos geradores (duas passadas, turbo args)
+        run: |
+          tools/verify-deterministic.sh --mode generators
+          echo "[A8] todos os tools/gen-*.py: byte a byte identicos em duas passadas"
+
+  # ------------------------------------------------------------------
+  # Flagship: duas builds de release consecutivas do modern (proof do DoD)
+  # + classic release + size gate fresco.
+  # ------------------------------------------------------------------
+  build-flagship:
+    name: "Flagship release x2 (determinismo) + size gate (A8)"
+    runs-on: ubuntu-latest
+    needs: static-gate
+    timeout-minutes: 150
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Componentes Android SDK (platform 36 + build-tools 35.0.0)
+        run: |
+          yes | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" \
+            "platforms;android-36" "build-tools;35.0.0" > /dev/null
+          echo "ANDROID_HOME=${ANDROID_HOME}" >> "${GITHUB_ENV}"
+
+      - name: Build 1 — classic release (bulk quick) + modern release (bulk full)
+        run: |
+          cd suites/flagship
+          # classic: variante de execução minSdk 9 (BELOW_FLOOR no RustyDroid);
+          # o size gate do DoD é lei do flavor modern — o classic usa o preset
+          # quick para não dobrar ~1 GB de carga sem exigência contratual.
+          ./gradlew --no-daemon -PbulkPreset=quick :app:assembleClassicRelease
+          ./gradlew --no-daemon :app:assembleModernRelease
+
+      - name: Guardar as saídas da build 1
+        run: |
+          mkdir -p dist/build1 dist/apks
+          cp suites/flagship/app/build/outputs/apk/classic/release/app-classic-release.apk \
+             dist/build1/flagship-classic-release.apk
+          cp suites/flagship/app/build/outputs/apk/modern/release/app-modern-release.apk \
+             dist/build1/flagship-modern-release.apk
+          ls -l dist/build1
+
+      - name: Build 2 — modern release independente (clean + rebuild)
+        run: |
+          cd suites/flagship
+          ./gradlew --no-daemon clean
+          ./gradlew --no-daemon :app:assembleModernRelease
+
+      - name: Prova de determinismo (duas builds byte a byte)
+        run: |
+          bash tools/verify-deterministic.sh --mode apk \
+            --apk1 dist/build1/flagship-modern-release.apk \
+            --apk2 suites/flagship/app/build/outputs/apk/modern/release/app-modern-release.apk \
+            | tee dist/determinism-proof.txt
+          echo "[A8] DoD: duas builds de release consecutivas byte-identicas (exceto META-INF)"
+
+      - name: Size gate fresco ([850, 1000] MiB + drift ±2%)
+        run: |
+          APK="suites/flagship/app/build/outputs/apk/modern/release/app-modern-release.apk"
+          test -f "${APK}"
+          tools/size-budget.sh --apk "${APK}" \
+            --baseline contracts/flagship/size-report.csv \
+            --report dist/size-report.csv \
+            --min-mb 850 --max-mb 1000
+          ls -l "${APK}"
+
+      - name: Renomear e coletar os APKs de release
+        run: |
+          cp suites/flagship/app/build/outputs/apk/modern/release/app-modern-release.apk \
+             dist/apks/flagship-modern-release.apk
+          cp dist/build1/flagship-classic-release.apk \
+             dist/apks/flagship-classic-release.apk
+          (cd dist/apks && sha256sum flagship-modern-release.apk flagship-classic-release.apk) \
+            | tee dist/flagship-release.sha256
+          ls -l dist/apks
+
+      - name: Upload dos APKs + provas (artefato de CI)
+        uses: actions/upload-artifact@v4
+        with:
+          name: flagship-release-apks
+          path: |
+            dist/apks/flagship-modern-release.apk
+            dist/apks/flagship-classic-release.apk
+            dist/size-report.csv
+            dist/flagship-release.sha256
+            dist/determinism-proof.txt
+          if-no-files-found: error
+
+  # ------------------------------------------------------------------
+  # Tier A: os 14 engines reais (mesma receita verde do job tier-a-engines
+  # do ci.yml — toolchains pinadas por tools/setup-tier-a-toolchain.sh).
+  # ------------------------------------------------------------------
+  build-tier-a:
+    name: "Tier A (A4): ${{ matrix.engine }}"
+    runs-on: ubuntu-latest
+    needs: static-gate
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        engine:
+          - engine-01-java
+          - engine-02-kotlin
+          - engine-03-kmp
+          - engine-06-groovy
+          - engine-07-c-ndk
+          - engine-08-cpp-ndk
+          - engine-09-rust
+          - engine-10-go
+          - engine-12-zig
+          - engine-16-tauri
+          - engine-24-haxe
+          - engine-25-python-chaquopy
+          - engine-30-wasm-in-app
+          - engine-31-hybrid
+        include:
+          - { engine: engine-09-rust, need_rust: true }
+          - { engine: engine-16-tauri, need_rust: true }
+          - { engine: engine-30-wasm-in-app, need_rust: true }
+          - { engine: engine-31-hybrid, need_rust: true }
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Componentes Android SDK (platform 36 + build-tools 35.0.0)
+        run: |
+          yes | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" \
+            "platforms;android-36" "build-tools;35.0.0" > /dev/null
+          echo "ANDROID_HOME=${ANDROID_HOME}" >> "${GITHUB_ENV}"
+
+      - name: Rust stable (para engines com crate nativo)
+        if: matrix.need_rust
+        run: |
+          if ! command -v cargo >/dev/null 2>&1; then
+            curl -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
+            export PATH="${HOME}/.cargo/bin:${PATH}"
+            echo "${HOME}/.cargo/bin" >> "${GITHUB_PATH}"
           fi
+          rustup update stable
+          rustc --version
 
-      - name: Empacotar contracts/ + APKs de suites/**/dist
+      - name: Toolchain real + build do engine
         run: |
-          mkdir -p dist/release/apks
-          cp -r contracts dist/release/contracts
-          found=0
-          while IFS= read -r -d '' apk; do
-            cp "$apk" dist/release/apks/
-            found=$((found + 1))
-          done < <(find suites -type f -path '*/dist/*.apk' -print0 2>/dev/null || true)
-          tar -czf dist/apk-tester-release.tar.gz -C dist/release .
-          echo "empacotado: contracts/ + ${found} APK(s)"
+          source tools/setup-tier-a-toolchain.sh "${{ matrix.engine }}"
+          BT="${ANDROID_HOME}/build-tools/35.0.0"
+          mkdir -p dist
+          python3 tools/build-tier-a.py \
+            --engine "${{ matrix.engine }}" \
+            --out dist \
+            --aapt2 "${BT}/aapt2" --d8 "${BT}/d8" \
+            --apksigner "${BT}/apksigner" --zipalign "${BT}/zipalign"
+
+      - name: Verificar o APK contra o contrato (artefatos do detector)
+        run: |
+          python3 tools/build-tier-a.py \
+            --verify-apk "dist/${{ matrix.engine }}.apk" \
+            --engine "${{ matrix.engine }}"
+
+      - name: Upload do APK (artefato de CI)
+        uses: actions/upload-artifact@v4
+        with:
+          name: tier-a-rel-${{ matrix.engine }}
+          path: dist/${{ matrix.engine }}.apk
+          if-no-files-found: error
+
+  # ------------------------------------------------------------------
+  # Tier C: as 9 fixtures honestas empacotadas pela toolchain real.
+  # ------------------------------------------------------------------
+  build-tier-c:
+    name: "Tier C (A3): 9 fixtures de detecção"
+    runs-on: ubuntu-latest
+    needs: static-gate
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Componentes Android SDK (platform 36 + build-tools 35.0.0)
+        run: |
+          yes | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" \
+            "platforms;android-36" "build-tools;35.0.0" > /dev/null
+          echo "ANDROID_HOME=${ANDROID_HOME}" >> "${GITHUB_ENV}"
+
+      - name: Empacotar as 9 fixtures Tier C (toolchain real do SDK)
+        run: |
+          python3 tools/fixture-pack.py --selftest
+          BT="${ANDROID_HOME}/build-tools/35.0.0"
+          mkdir -p dist
+          for e in engine-05-clojure engine-11-objc engine-18-maui-xamarin \
+                   engine-19-unity-mono engine-20-unity-il2cpp \
+                   engine-21-unreal engine-27-b4x-appinventor \
+                   engine-29-python-kivy-beeware engine-32-twa-pwa; do
+            python3 tools/fixture-pack.py --fixture "$e" --out dist \
+              --aapt2 "${BT}/aapt2" --d8 "${BT}/d8" \
+              --apksigner "${BT}/apksigner" --zipalign "${BT}/zipalign"
+          done
+          ls -l dist/
+
+      - name: Verificar cada APK contra o contrato (artefatos + sha256)
+        run: |
+          for e in engine-05-clojure engine-11-objc engine-18-maui-xamarin \
+                   engine-19-unity-mono engine-20-unity-il2cpp \
+                   engine-21-unreal engine-27-b4x-appinventor \
+                   engine-29-python-kivy-beeware engine-32-twa-pwa; do
+            python3 tools/gen-engine-fixtures.py \
+              --verify-apk "dist/${e}.apk" --engine "$e"
+          done
+
+      - name: Upload dos APKs Tier C (artefato de CI)
+        uses: actions/upload-artifact@v4
+        with:
+          name: tier-c-rel
+          path: dist/*.apk
+          if-no-files-found: error
+
+  # ------------------------------------------------------------------
+  # Escada minSdk 9..36: os 12 degraus (Gradle real, flavors minsdkNN).
+  # ------------------------------------------------------------------
+  build-ladder:
+    name: "SDK Ladder (A2): 12 degraus minSdk 9-36"
+    runs-on: ubuntu-latest
+    needs: static-gate
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Componentes Android SDK (platform 36 + build-tools 35.0.0)
+        run: |
+          yes | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" \
+            "platforms;android-36" "build-tools;35.0.0" > /dev/null
+          echo "ANDROID_HOME=${ANDROID_HOME}" >> "${GITHUB_ENV}"
+
+      - name: Build (Gradle, 12 flavors debug em uma invocação)
+        run: |
+          cd suites/sdk-ladder
+          ./gradlew --no-daemon :app:assembleDebug
+
+      - name: Coletar e renomear os 12 APKs (ladder-minsdk-NN.apk)
+        run: |
+          mkdir -p dist/apks
+          n=0
+          for d in 09 12 14 16 19 21 23 26 29 33 35 36; do
+            src="suites/sdk-ladder/app/build/outputs/apk/minsdk${d}/debug/app-minsdk${d}-debug.apk"
+            test -f "${src}"
+            cp "${src}" "dist/apks/ladder-minsdk-${d}.apk"
+            n=$((n + 1))
+          done
+          echo "degraus coletados: ${n}"
+          test "${n}" -eq 12
+          ls -l dist/apks
+
+      - name: Upload dos APKs da escada (artefato de CI)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ladder-rel
+          path: dist/apks/*.apk
+          if-no-files-found: error
+
+  # ------------------------------------------------------------------
+  # Parser torture: as 11 fixtures (inclui minSdk9) empacotadas com a
+  # toolchain real; a validação profunda por fixture é lei do job
+  # parser-torture do ci.yml — aqui o foco são os artefatos do release.
+  # ------------------------------------------------------------------
+  build-torture:
+    name: "Parser Torture (A2): 11 fixtures"
+    runs-on: ubuntu-latest
+    needs: static-gate
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Componentes Android SDK (platform 36 + build-tools 35.0.0)
+        run: |
+          yes | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" \
+            "platforms;android-36" "build-tools;35.0.0" > /dev/null
+          echo "ANDROID_HOME=${ANDROID_HOME}" >> "${GITHUB_ENV}"
+
+      - name: Empacotar as 11 fixtures (toolchain real do SDK)
+        run: |
+          python3 tools/fixture-pack.py --selftest
+          BT="${ANDROID_HOME}/build-tools/35.0.0"
+          mkdir -p dist/apks
+          for f in minSdk9 sig-v1-only sig-v2-only sig-v3-only unaligned zip64 \
+                   huge-arsc multidex-8 unknown-perms exported-audit obfuscated; do
+            python3 tools/fixture-pack.py --fixture "$f" --out dist \
+              --aapt2 "${BT}/aapt2" --d8 "${BT}/d8" \
+              --apksigner "${BT}/apksigner" --zipalign "${BT}/zipalign"
+          done
+          # renomeia com o prefixo torture- (nomes únicos no release)
+          for f in minSdk9 sig-v1-only sig-v2-only sig-v3-only unaligned zip64 \
+                   huge-arsc multidex-8 unknown-perms exported-audit obfuscated; do
+            cp "dist/${f}.apk" "dist/apks/torture-$(echo "${f}" | tr 'A-Z' 'a-z').apk"
+          done
+          ls -l dist/apks
+          test "$(ls dist/apks/*.apk | wc -l)" -eq 11
+
+      - name: Sanidade de ZIP (manifest presente em cada fixture)
+        run: |
+          python3 - <<'PY'
+          import zipfile
+          from pathlib import Path
+          apks = sorted(Path("dist/apks").glob("torture-*.apk"))
+          assert len(apks) == 11, f"esperava 11 fixtures, achei {len(apks)}"
+          for apk in apks:
+              with zipfile.ZipFile(apk) as zf:
+                  names = zf.namelist()
+                  assert "AndroidManifest.xml" in names, f"sem manifesto: {apk}"
+                  assert any(n.startswith("classes") for n in names), \
+                      f"sem dex: {apk}"
+              print(f"[A8] fixture ok: {apk.name}")
+          PY
+
+      - name: Upload das fixtures (artefato de CI)
+        uses: actions/upload-artifact@v4
+        with:
+          name: torture-rel
+          path: dist/apks/*.apk
+          if-no-files-found: error
+
+  # ------------------------------------------------------------------
+  # Tier B: os 9 APKs reais do ÚLTIMO nightly verde (a build pesada com
+  # toolchains pinadas é lei do engines-nightly.yml; o release reutiliza
+  # os artefatos verdes e os re-verifica contra o contrato canônico).
+  # ------------------------------------------------------------------
+  fetch-tier-b:
+    name: "Tier B (A7): APKs do último nightly verde"
+    runs-on: ubuntu-latest
+    needs: static-gate
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolver o último run verde do Engines Nightly
+        id: nightly
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          RUN_ID="$(gh api \
+            'repos/${{ github.repository }}/actions/workflows/engines-nightly.yml/runs?status=success&per_page=1' \
+            --jq '.workflow_runs[0].id')"
+          echo "nightly verde: run ${RUN_ID}"
+          echo "run_id=${RUN_ID}" >> "${GITHUB_OUTPUT}"
+
+      - name: Baixar os artefatos tier-b-* do nightly
+        uses: actions/download-artifact@v4
+        with:
+          pattern: tier-b-*
+          run-id: ${{ steps.nightly.outputs.run_id }}
+          github-token: ${{ github.token }}
+          path: tier-b-staging
+          merge-multiple: false
+
+      - name: Coletar e re-verificar os 9 APKs Tier B
+        run: |
+          mkdir -p dist/apks
+          find tier-b-staging -type f -name '*.apk' | while read -r apk; do
+            cp "$apk" dist/apks/
+          done
+          ls -l dist/apks
+          test "$(ls dist/apks/*.apk | wc -l)" -eq 9
+          for apk in dist/apks/*.apk; do
+            engine="$(basename "$apk" .apk)"
+            python3 tools/build-tier-b.py --verify-apk "$apk" --engine "$engine"
+          done
+          echo "[A8] Tier B: 9 APKs do nightly verde re-verificados contra o contrato"
+
+      - name: Upload dos APKs Tier B (artefato de CI)
+        uses: actions/upload-artifact@v4
+        with:
+          name: tier-b-rel
+          path: dist/apks/*.apk
+          if-no-files-found: error
+
+  # ------------------------------------------------------------------
+  # Gate v1.0 final: baixa tudo, roda o gate com as evidências dinâmicas,
+  # empacota contratos + APKs e cria o draft release (somente em tag v*).
+  # ------------------------------------------------------------------
+  v1-release:
+    name: "Gate v1.0 final + draft release (A8)"
+    runs-on: ubuntu-latest
+    needs:
+      - build-flagship
+      - build-tier-a
+      - build-tier-c
+      - build-ladder
+      - build-torture
+      - fetch-tier-b
+    if: ${{ always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Baixar os APKs do flagship + provas
+        uses: actions/download-artifact@v4
+        with:
+          name: flagship-release-apks
+          path: flagship-staging
+
+      - name: Baixar os APKs Tier A (matriz de 14 engines)
+        uses: actions/download-artifact@v4
+        with:
+          pattern: tier-a-rel-*
+          path: dist/apks
+          merge-multiple: true
+
+      - name: Baixar os APKs Tier B (nightly)
+        uses: actions/download-artifact@v4
+        with:
+          name: tier-b-rel
+          path: dist/apks
+          merge-multiple: true
+
+      - name: Baixar os APKs Tier C (fixtures)
+        uses: actions/download-artifact@v4
+        with:
+          name: tier-c-rel
+          path: dist/apks
+          merge-multiple: true
+
+      - name: Baixar escada
+        uses: actions/download-artifact@v4
+        with:
+          name: ladder-rel
+          path: dist/apks
+          merge-multiple: true
+
+      - name: Baixar tortura
+        uses: actions/download-artifact@v4
+        with:
+          name: torture-rel
+          path: dist/apks
+          merge-multiple: true
+
+      - name: Montar o diretório de APKs do release
+        run: |
+          mkdir -p dist/apks
+          # o artefato do flagship preserva a árvore a partir de dist/:
+          # os APKs chegam em flagship-staging/apks/, as provas na raiz.
+          find flagship-staging -name 'flagship-modern-release.apk' -exec cp {} dist/apks/ \;
+          find flagship-staging -name 'flagship-classic-release.apk' -exec cp {} dist/apks/ \;
+          find flagship-staging -name 'size-report.csv' -exec cp {} dist/size-report.csv \;
+          find flagship-staging -name 'determinism-proof.txt' -exec cp {} dist/determinism-proof.txt \;
+          N="$(ls dist/apks/*.apk | wc -l)"
+          echo "APKs coletados: ${N}"
+          # 2 flagship + 14 Tier A + 9 Tier B + 9 Tier C + 12 escada + 11 tortura
+          test "${N}" -ge 30
+          (cd dist/apks && sha256sum ./*.apk | sed 's|\./||') > dist/sha256sums.txt
+          cat dist/sha256sums.txt
+
+      - name: Gate v1.0 com evidências dinâmicas (tools/v1-gate.py)
+        run: |
+          # --determinism-pass é legítimo: o need build-flagship (verde) provou
+          # as duas builds consecutivas byte a byte neste mesmo run.
+          # --release-proven somente em tag v* (o draft release é o passo final).
+          EXTRA=()
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            EXTRA+=("--release-proven")
+          fi
+          python3 tools/v1-gate.py --check \
+            --apks-dir dist/apks \
+            --flagship-apk dist/apks/flagship-modern-release.apk \
+            --determinism-pass \
+            "${EXTRA[@]}" \
+            --out dist/v1-gate.json
+          cat dist/v1-gate.json
+          # o gate result deve ser pass (em tag) — em dispatch sem tag o
+          # criterio de governanca fica evidence-release e isso NAO reprova.
+
+      - name: Empacotar contratos + suite de APKs
+        run: |
+          VERSION="dev"
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          fi
+          echo "VERSION=${VERSION}" >> "${GITHUB_ENV}"
+          # contratos + gate + provas (pequeno, para `rustydroid test` diffar)
+          tar -czf "dist/apk-tester-contracts-${VERSION}.tar.gz" \
+            -C . contracts \
+            -C dist v1-gate.json size-report.csv determinism-proof.txt sha256sums.txt
+          # suite completa sem o flagship modern (anexado direto)
+          mkdir -p dist/suite-apks
+          find dist/apks -maxdepth 1 -name '*.apk' \
+            ! -name 'flagship-modern-release.apk' -exec cp {} dist/suite-apks/ \;
+          tar -czf "dist/apk-tester-suite-apks-${VERSION}.tar.gz" \
+            -C dist/suite-apks .
+          ls -l dist/*.tar.gz
 
       - name: Rascunhar notas de release a partir do CHANGELOG.md
         run: |
-          if [ -f CHANGELOG.md ]; then
-            # extrai a primeira seção "## [x.y.z]" do Keep a Changelog
-            awk '/^## /{if (seen) exit; seen=1; next} seen{print}' CHANGELOG.md > release-notes.md
-            if [ ! -s release-notes.md ]; then
-              head -n 40 CHANGELOG.md > release-notes.md
-            fi
-          else
-            echo "Notas de release: ver CHANGELOG.md do repositório." > release-notes.md
+          # extrai a seção [1.0.0] do Keep a Changelog
+          awk '/^## \[1\.0\.0\]/{seen=1; next} /^## /{if (seen) exit} seen{print}' \
+            CHANGELOG.md > release-notes.md
+          if [ ! -s release-notes.md ]; then
+            head -n 60 CHANGELOG.md > release-notes.md
           fi
-          cat release-notes.md
+          head -n 20 release-notes.md
 
       - name: Criar draft release com artefatos
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           draft: true
           body_path: release-notes.md
-          # A8: adicionar também "dist/release/apks/*.apk" quando as suites buildarem.
-          files: dist/apk-tester-release.tar.gz
+          files: |
+            dist/apks/flagship-modern-release.apk
+            dist/apks/flagship-classic-release.apk
+            dist/apk-tester-suite-apks-${{ env.VERSION }}.tar.gz
+            dist/apk-tester-contracts-${{ env.VERSION }}.tar.gz
+            dist/v1-gate.json
+            dist/size-report.csv
+            dist/determinism-proof.txt
+            dist/sha256sums.txt
+
+      - name: Upload do gate + pacotes (artefato de CI)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v1-gate-report
+          path: |
+            dist/v1-gate.json
+            dist/size-report.csv
+            dist/determinism-proof.txt
+            dist/sha256sums.txt
+            dist/*.tar.gz
+          if-no-files-found: warn

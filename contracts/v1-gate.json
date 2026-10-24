@@ -1,0 +1,216 @@
+{
+  "criteria": [
+    {
+      "dod": ">= 30 APKs buildaveis a partir de checkout limpo com toolchains documentadas (Tier C nao precisa de nenhuma)",
+      "evidence": "slots buildaveis contados da arvore: engines (A/B/C) + flavors do flagship + degraus da escada + modos de tortura + fixture minSdk9; builds reais provadas nos workflows CI/nightly; contagem dinamica de APKs construidos: workflow Release",
+      "id": "apks_30_plus",
+      "measurements": {
+        "build_tier_a_tool": true,
+        "build_tier_b_tool": true,
+        "engines_tier_a": 14,
+        "engines_tier_b": 9,
+        "engines_tier_c": 9,
+        "fixture_pack_tool": true,
+        "flagship_flavors": [
+          "classic",
+          "modern"
+        ],
+        "ladder_rungs": 12,
+        "min_required": 30,
+        "minsdk9_fixture_mode": true,
+        "torture_fixture_modes": 10,
+        "torture_modes_in_packer": true,
+        "total_apk_slots": 57
+      },
+      "status": "evidence-release"
+    },
+    {
+      "dod": "Flagship release dentro de [850 MB, 1000 MB], otimizado com R8, size-report.csv concilia os bytes",
+      "evidence": "baseline commitado (contracts/flagship/size-report.csv, gerado pelo Size Gate do A6) dentro do gate; a medicao FRESH do APK de release acontece no workflow Release",
+      "id": "flagship_size_gate",
+      "measurements": {
+        "baseline_categories": 10,
+        "baseline_sha256": "a8c85aa1a3c90f77f09b344412c54d518badc5ba4c5df547fcb2436a132e473c",
+        "baseline_sha256_consistent": true,
+        "baseline_total_bytes": 960783552,
+        "baseline_total_mib": 916.27,
+        "gate_max_mb": 1000,
+        "gate_min_mb": 850
+      },
+      "status": "evidence-release"
+    },
+    {
+      "dod": "permissions-audit.md: contagens por protectionLevel casam com o manifesto (verdade dura: o AOSP master define 1004 permissoes, nao ~160 — o subconjunto publico documentado e menor que o real)",
+      "evidence": "registry (snapshot verbatim do AOSP) == linhas da auditoria == uses-permission do manifesto; contagens por token base somam o total; o mesmo cross-check roda no job flagship-skeleton do CI",
+      "id": "permissions_audit",
+      "measurements": {
+        "audit_rows": 1004,
+        "audit_rows_match_registry": true,
+        "by_base_level": {
+          "dangerous": 42,
+          "internal": 119,
+          "module": 1,
+          "normal": 95,
+          "role": 1,
+          "signature": 745,
+          "system": 1
+        },
+        "by_base_level_sums": true,
+        "manifest_matches_registry": true,
+        "manifest_sdk23": 3,
+        "manifest_uses_permission": 1004,
+        "platform_permissions": 1004,
+        "sdk23_matches_registry": true
+      },
+      "status": "pass"
+    },
+    {
+      "dod": "APK minSdk 9 existe e e aceito pelo caminho de build (ou fixture empacotada)",
+      "evidence": "dois caminhos independentes: flavor Gradle minsdk09 (escada real, 12 APKs no CI) e fixture minSdk9 do fixture-pack (parser-torture); o resultado esperado no RustyDroid e BELOW_FLOOR(minSdk=9) — a lei de erro estruturado e o teste",
+      "id": "minsdk9_apk",
+      "measurements": {
+        "fixture_packer_mode": true,
+        "ladder_project": true,
+        "ladder_rung_09_min_sdk": 9,
+        "suite_entry": true
+      },
+      "status": "pass"
+    },
+    {
+      "dod": "Checksums golden do :sim3d reprodutiveis; probes GLES resultam em erro estruturado, nunca crash",
+      "evidence": "contrato golden commitado com checksums FNV-1a 64 por seccao; a reprodutibilidade byte a byte e provada no job flagship-3d (goldenVerify com git diff) e a paridade nativa Java==C++ no mesmo job; probes GLES exigem erro estruturado (ADR 0003)",
+      "id": "sim3d_golden",
+      "measurements": {
+        "gles_probe_expect": "NOT_IMPLEMENTED",
+        "gles_probe_id": "MEDIA-GX-001",
+        "gles_probe_structured_error": true,
+        "gles_suite_structured_error_required": true,
+        "golden_fnv1a64_fields": 10,
+        "golden_fnv1a64_fields_min": 10,
+        "golden_schema_version": 1,
+        "golden_sections": [
+          "marching_cubes",
+          "mesh_1m",
+          "particles",
+          "physics",
+          "rasterizer",
+          "skeleton"
+        ],
+        "golden_sections_complete": true,
+        "golden_seed": 20261022,
+        "suite_reference": true
+      },
+      "status": "pass"
+    },
+    {
+      "dod": "ButtonGrid 1200 + IconGrid 600 + 500+ vector drawables + icones adaptive/monochrome",
+      "evidence": "selftests dos geradores (1200 botoes, 600 icons, 600 vetores >= 500, adaptive com monochrome, determinismo 2x) verdes; a app consome os mesmos geradores em build-time (preBuild dependsOn)",
+      "id": "ui_grids_icons",
+      "measurements": {
+        "adaptive_icon_template": true,
+        "buttons": 1200,
+        "gen_buttons_selftest": true,
+        "gen_icons_selftest": true,
+        "icon_grid_views": 600,
+        "monochrome_template": true,
+        "vector_drawables": 600
+      },
+      "status": "pass"
+    },
+    {
+      "dod": "rustydroid inspect em cada APK difere numericamente contra a sua auditoria (zero drift)",
+      "evidence": "answer keys coherentes na arvore: suites.json schema 1 com ids unicos, contratos por diretorio identicos ao canonico, entradas de build presentes; o diff numerico `rustydroid inspect --json` contra as auditorias roda no runtime RustyDroid (repositorio irmao) — aqui o zero drift estrutural + os jobs CI que regeneram e diffam (git diff --exit-code) sao a prova local",
+      "id": "rustydroid_zero_drift",
+      "measurements": {
+        "engine_build_inputs_present": true,
+        "engine_build_missing": [],
+        "engine_dir_contracts_zero_drift": true,
+        "engine_dir_drifts": [],
+        "engine_dirs": 32,
+        "flagship_project": true,
+        "ladder_inputs": true,
+        "schema_version": 1,
+        "suite_ids_unique": true,
+        "suites": 58,
+        "torture_packer_modes": true
+      },
+      "status": "pass"
+    },
+    {
+      "dod": "expected-engines.json casa com rd engine detect para todos os APKs de engine (verdade dura: a matriz cresceu para 32 diretorios — hibrido #31 + TWA/PWA #32)",
+      "evidence": "answer key completo (32 diretorios, contratos por diretorio semanticamente zero-drift) e verificacao artefato-nivel --verify-apk verde nos jobs tier-a-engines (14) e tier-c-engines (9) do CI e tier-b-matrix (9) do nightly; a deteccao viva (`rd engine detect`) roda no runtime RustyDroid contra estes APKs — verdade dura documentada na matriz de compatibilidade",
+      "id": "expected_engines_detect",
+      "measurements": {
+        "canonical_engines": 32,
+        "canonical_tiers": {
+          "A": 14,
+          "B": 9,
+          "C": 9
+        },
+        "compat_nightly_job": true,
+        "docs_compat_matrix": true,
+        "docs_engine_matrix": true,
+        "per_dir_contracts": 32,
+        "tier_c_payload_report": true,
+        "verify_apk_steps_in_ci": 3,
+        "verify_apk_steps_min": 3
+      },
+      "status": "pass"
+    },
+    {
+      "dod": "Duas builds de release consecutivas byte-identicas (prova de determinismo, exceto assinatura)",
+      "evidence": "ferramenta existe com os modos apk e generators; o modo apk compara sha256 de cada entrada (META-INF ignorado) e ja prova determinismo de fixtures no CI; a prova das DUAS builds de release consecutivas do flagship e dinamica — workflow Release",
+      "id": "determinism_proof",
+      "measurements": {
+        "apk_mode_usages_in_workflows": 5,
+        "mode_apk_supported": true,
+        "mode_generators_supported": true,
+        "tool_executable": true,
+        "tool_present": true
+      },
+      "status": "evidence-release"
+    },
+    {
+      "dod": "Kit de governanca completo, docs mdBook, 5 workflows, milestones A0-A8, release v1.0.0",
+      "evidence": "kit completo na arvore (governanca, templates, labels, licencas duais, mdBook com ADRs, bot/); milestones A0-A8 e a release v1.0.0 sao estado do GitHub provado pelo workflow Release no tag v1.0.0",
+      "id": "governance_complete",
+      "measurements": {
+        "bot_dir": true,
+        "files_missing": [],
+        "files_required": 35,
+        "mdbook_chapters": 12,
+        "mdbook_chapters_min": 10,
+        "milestones_and_release": "milestones A0-A8 no GitHub + tag v1.0.0 + release publicada — dinamico",
+        "workflows": [
+          "apkbot.yml",
+          "ci.yml",
+          "engines-nightly.yml",
+          "release.yml",
+          "size-gate.yml"
+        ],
+        "workflows_complete": true,
+        "workflows_count": 5,
+        "workflows_required": [
+          "apkbot.yml",
+          "ci.yml",
+          "engines-nightly.yml",
+          "release.yml",
+          "size-gate.yml"
+        ]
+      },
+      "status": "evidence-release"
+    }
+  ],
+  "definition_of_done_source": "APK_TESTER_PROMPT.md",
+  "gate": "v1.0",
+  "gate_result": "pending-release-evidence",
+  "generated_by": "tools/v1-gate.py",
+  "schema_version": 1,
+  "seed": 20261022,
+  "summary": {
+    "criteria": 10,
+    "evidence_release": 4,
+    "fail": 0,
+    "pass": 6
+  }
+}

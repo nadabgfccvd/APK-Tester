@@ -10,7 +10,7 @@
   <a href=".github/workflows/engines-nightly.yml"><img alt="Engines Nightly" src="https://github.com/nadabgfccvd/APK-Tester/actions/workflows/engines-nightly.yml/badge.svg"></a>
   <a href=".github/workflows/apkbot.yml"><img alt="APKBot" src="https://github.com/nadabgfccvd/APK-Tester/actions/workflows/apkbot.yml/badge.svg"></a>
   <a href="LICENSE-MIT"><img alt="Licenca: MIT OR Apache-2.0" src="https://img.shields.io/badge/licen%C3%A7a-MIT%20OR%20Apache--2.0-blue"></a>
-  <a href="GOVERNANCE.md"><img alt="SemVer 0.x para 1.0" src="https://img.shields.io/badge/semver-0.x%20%E2%86%92%201.0-orange"></a>
+  <a href="GOVERNANCE.md"><img alt="SemVer 1.0.0" src="https://img.shields.io/badge/semver-1.0.0-brightgreen"></a>
 </p>
 
 > **The objective is to test any program that uses APK to its absolute limits.**
@@ -160,7 +160,7 @@ Cada fase termina compilando verde. Critérios de saída detalhados em
 | **A5** | Pilar 3D/shaders (`:sim3d` golden + shader-library + texturas/meshes/áudio) | **entregue (A5)** — motor `:sim3d` 100% Q16 inteiro (rasterizador perspectiva-correto, física 10k, partículas 100k, marching cubes, esqueleto) com golden byte a byte (`contracts/flagship/sim3d-golden.json`), paridade nativa Java==C++ provada no CI, shader-library de 239 programas GLSL ES 3.1 (215 gráficos + 24 compute) validados por glslang, texturas PBR KTX2 + malhas (teapot/terreno 1024²/crowd 50k) + áudio 5.1 empacotados no APK (CI `flagship-3d`) |
 | **A6** | Engenharia de tamanho até o gate [850 MB, 1000 MB] + `size-report.csv` | **entregue (A6)** — release `modern` "fully optimized" (R8 full, resource shrinking com keep.xml das 1.800 famílias por `getIdentifier`, vcsInfo off, assinatura determinística via keystore de fixture b64) + carga determinística `gen-bulk.py` de 768 MiB em `assets/bulk/` (KTX2/PLY/WAV válidos + `APKT-BULK1`, manifest com sha256/synthetic, presets full/quick) e gate real [850, 1000] MiB com drift ±2% por categoria (`size-budget.sh --baseline`, workflow Size Gate) |
 | A7 | Jobs nightly Tier B + `compat-nightly` + site de docs (mdBook) | **entregue** |
-| A8 | Gate v1.0: matriz completa verde, build determinístico provado, release v1.0.0 | planejado |
+| A8 | Gate v1.0: matriz completa verde, build determinístico provado, release v1.0.0 | **entregue (A8)** — `tools/v1-gate.py` avalia os 10 critérios da Definition of Done (contrato `contracts/v1-gate.json` com zero drift no CI); o workflow `Release` constrói as 6 famílias (flagship classic+modern, Tier A 14, Tier B 9 re-verificados do nightly verde, Tier C 9, escada 12, tortura 11 = 57 APKs), prova o determinismo com DUAS builds de release consecutivas do modern (`gradlew clean` entre elas, `verify-deterministic.sh --mode apk`), roda o gate com evidências dinâmicas e publica a release v1.0.0 com APKs + contratos anexados |
 
 ## APKBot — bot anti-regressão
 
