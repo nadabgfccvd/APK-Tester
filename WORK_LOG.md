@@ -232,3 +232,33 @@ observabilidade, R4 reconciliação.
 4. Renomear título da draft v1.0.0 para marcar "superada" (dono decide).
 5. GAPs do detector documentados virarem issues NO repo irmão (sem acesso de
    escrita via PAT — doar pelo dono).
+
+### Fechamento da iteração 3 (mesmo dia, 2026-10-24) — tudo verde
+
+- **v1.0.1 PUBLICA** (release run 40104034422, tag re-cortada duas vezes até
+  o estado correto — o zero-drift do CI pegou o v1-gate.json velho e o
+  flagship antigo pegou o drift de dex; padrão A9 seguido à risca): 8 assets
+  (flagship modern 819 MB + classic 70 MB anexados), `draft: false`, download
+  anônimo provado (`curl -L` sem token → 200, magic PK), notas extraídas da
+  seção `[1.0.1]`, `contracts/determinism-baseline.txt` commitado pelo
+  workflow (2fe4119). A draft v1.0.0 renomeada "[ARQUIVADA] — não publicar".
+- **Canário do size-gate pegou 3 problemas reais antes do release** (o motivo
+  de existir): cargo-ndk 3.5.7 YANKED → repin 4.1.2; piso do NDK 27 = API 21
+  (CXX1110) → módulos :native/:rust/:compose modern-only; rustup target add
+  para os alvos android (E0463). Todos documentados e corrigidos.
+- **R2.2/R2.3 verificados em CI**: size-gate verde com os módulos
+  (`so` 977.960 B/8 arquivos, `locales` 9.130 B/12, dex 1.089.440 B com
+  Compose, total 912.18 MB PASS na janela [850,1000]); re-baseline medido
+  commitado (padrão A9); issue #34 do size-gate (R3.3 funcionando) aberta e
+  fechada com o diagnóstico.
+- **R1.3 aceito no SUPERALVO**: nightly 40105414707 — 15 jobs verdes,
+  `APKs de engine na árvore: 32`, `install: OK (sha256 5ff10a9e4b49…)`,
+  **`resumo: OK=56 FAIL=0 SKIP=0 SEM_APK=0`** (meta do roadmap era OK>=54;
+  32 engines + 12 escada + 11 tortura + 1 flagship, TODAS as linhas
+  exercitadas de verdade pelo snapshot pinado).
+- **ci.yml** verde com os jobs flagship do CI também buildando os módulos
+  (setup de NDK/CMake/cargo-ndk adicionado aos 2 jobs flagship do CI — o
+  terceiro lugar que empacota o flagship, além do nightly e do release).
+- **R4.3** SUPPORT.md linka M10-M12 do irmão + GAPs documentados.
+- Pendência restante (dono): publicar as issues dos GAPs de detecção NO repo
+  irmão (sem acesso de escrita via PAT) — tudo documentado no answer key.
