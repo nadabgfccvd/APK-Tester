@@ -45,7 +45,39 @@ Answer key detalhado: contracts/flagship/permissions-audit.md.
 | .Sim3dActivity | Sim3D Headless (pilar 3D) | true | 0 filter(s): — | A1 |
 | .GlesProbeActivity | GLES 3.1 Probes (shader-library) | true | 0 filter(s): — | A1 |
 | .ProbeReportActivity | @string/probe_report_title | true | 6 filter(s): android.intent.action.VIEW; android.intent.action.VIEW; android.intent.action.VIEW; android.intent.action.VIEW; android.intent.action.VIEW; android.intent.action.VIEW | A1 |
-**atual: 7 — alvo: >= 30 (uma por dominio, incl. telas 3D/Shaders/GLES em A5/A6)**
+| .engines.Engine01JavaActivity | Sonda engine-01 (A) | true | 0 filter(s): — | A1 |
+| .engines.Engine02KotlinActivity | Sonda engine-02 (A) | true | 0 filter(s): — | A1 |
+| .engines.Engine03KmpActivity | Sonda engine-03 (A) | true | 0 filter(s): — | A1 |
+| .engines.Engine04ScalaActivity | Sonda engine-04 (B) | true | 0 filter(s): — | A1 |
+| .engines.Engine05ClojureActivity | Sonda engine-05 (C) | true | 0 filter(s): — | A1 |
+| .engines.Engine06GroovyActivity | Sonda engine-06 (A) | true | 0 filter(s): — | A1 |
+| .engines.Engine07CNdkActivity | Sonda engine-07 (A) | true | 0 filter(s): — | A1 |
+| .engines.Engine08CppNdkActivity | Sonda engine-08 (A) | true | 0 filter(s): — | A1 |
+| .engines.Engine09RustActivity | Sonda engine-09 (A) | true | 0 filter(s): — | A1 |
+| .engines.Engine10GoActivity | Sonda engine-10 (A) | true | 0 filter(s): — | A1 |
+| .engines.Engine11ObjcActivity | Sonda engine-11 (C) | true | 0 filter(s): — | A1 |
+| .engines.Engine12ZigActivity | Sonda engine-12 (A) | true | 0 filter(s): — | A1 |
+| .engines.Engine13FlutterActivity | Sonda engine-13 (B) | true | 0 filter(s): — | A1 |
+| .engines.Engine14ReactNativeActivity | Sonda engine-14 (B) | true | 0 filter(s): — | A1 |
+| .engines.Engine15CordovaActivity | Sonda engine-15 (B) | true | 0 filter(s): — | A1 |
+| .engines.Engine16TauriActivity | Sonda engine-16 (A) | true | 0 filter(s): — | A1 |
+| .engines.Engine17NativescriptActivity | Sonda engine-17 (B) | true | 0 filter(s): — | A1 |
+| .engines.Engine18MauiXamarinActivity | Sonda engine-18 (C) | true | 0 filter(s): — | A1 |
+| .engines.Engine19UnityMonoActivity | Sonda engine-19 (C) | true | 0 filter(s): — | A1 |
+| .engines.Engine20UnityIl2cppActivity | Sonda engine-20 (C) | true | 0 filter(s): — | A1 |
+| .engines.Engine21UnrealActivity | Sonda engine-21 (C) | true | 0 filter(s): — | A1 |
+| .engines.Engine22LuaDefoldActivity | Sonda engine-22 (B) | true | 0 filter(s): — | A1 |
+| .engines.Engine23GodotActivity | Sonda engine-23 (B) | true | 0 filter(s): — | A1 |
+| .engines.Engine24HaxeActivity | Sonda engine-24 (A) | true | 0 filter(s): — | A1 |
+| .engines.Engine25PythonChaquopyActivity | Sonda engine-25 (A) | true | 0 filter(s): — | A1 |
+| .engines.Engine26QtQmlActivity | Sonda engine-26 (B) | true | 0 filter(s): — | A1 |
+| .engines.Engine27B4xAppinventorActivity | Sonda engine-27 (C) | true | 0 filter(s): — | A1 |
+| .engines.Engine28AvaloniaDotnetActivity | Sonda engine-28 (B) | true | 0 filter(s): — | A1 |
+| .engines.Engine29PythonKivyBeewareActivity | Sonda engine-29 (C) | true | 0 filter(s): — | A1 |
+| .engines.Engine30WasmInAppActivity | Sonda engine-30 (A) | true | 0 filter(s): — | A1 |
+| .engines.Engine31HybridActivity | Sonda engine-31 (A) | true | 0 filter(s): — | A1 |
+| .engines.Engine32TwaPwaActivity | Sonda engine-32 (C) | true | 0 filter(s): — | A1 |
+**atual: 39 — alvo: >= 30 ATINGIDO (R2.1 do AUDIT_ROADMAP_V2: sonda por engine, 32 em .engines.*, + os 7 domínios A1/A5/A6)**
 
 ### Activity-aliases (2)
 

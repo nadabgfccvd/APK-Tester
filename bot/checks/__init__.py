@@ -18,6 +18,7 @@ CHECK_MODULES = [
     "size_drift",
     "governance",
     "locale_sync",
+    "activity_coverage",
 ]
 
 

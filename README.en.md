@@ -22,7 +22,7 @@ parses and executes real APKs on Linux x86_64, no VM, headless and
 a 28-language engine registry in its Apêndice G, permission engine as data, and
 manifest-as-truth CORE-12). The suite produces dozens of deterministic APKs,
 each with a machine-checkable *answer key*, so that
-`rustydroid inspect --json` can be numerically diffed against the contracts.
+`rd inspect --json` can be numerically diffed against the contracts.
 
 These APKs stress every layer of RustyDroid: ZIP/AXML/ARSc/DEX/ELF parsers,
 the Dalvik VM, the permission engine, the component registry, the engine
@@ -40,7 +40,7 @@ Portuguese documentation: [README.md](README.md) · Documentation site (mdBook):
 - one APK per language engine (a 32-entry matrix), a minSdk 9→36 ladder, a
   *parser-torture* pack, and the 850 MB–1 GB flagship "Behemoth";
 - machine-checkable answer keys in `contracts/` for numeric diffing against
-  `rustydroid inspect --json`, engine detection, and scenario suites;
+  `rd inspect --json`, engine detection, and scenario suites;
 - professional repository governance on par with RustyDroid itself
   (CI, size gate, nightly compat job, mdBook docs, ADRs, templates, releases).
 
@@ -186,7 +186,7 @@ how to disable it: [GOVERNANCE.md](GOVERNANCE.md); operation:
 
 ```bash
 # 1) Structural audit: numeric diff of inspect against the fixture answer key
-rustydroid inspect --json suites/flagship/behemoth.apk > /tmp/behemoth.json
+rd inspect --json suites/flagship/behemoth.apk > /tmp/behemoth.json
 diff /tmp/behemoth.json contracts/flagship/manifest-audit.md
 
 # 2) Engine detector: the result MUST match the expected engine ids

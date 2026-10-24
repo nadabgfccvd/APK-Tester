@@ -150,6 +150,134 @@ ACTIVITIES = [
           "categories": ["android.intent.category.DEFAULT",
                          "android.intent.category.BROWSABLE"]},
      ]},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine01JavaActivity.java.
+    {"class": ".engines.Engine01JavaActivity", "label": "Sonda engine-01 (A)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine02KotlinActivity.java.
+    {"class": ".engines.Engine02KotlinActivity", "label": "Sonda engine-02 (A)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine03KmpActivity.java.
+    {"class": ".engines.Engine03KmpActivity", "label": "Sonda engine-03 (A)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine04ScalaActivity.java.
+    {"class": ".engines.Engine04ScalaActivity", "label": "Sonda engine-04 (B)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine05ClojureActivity.java.
+    {"class": ".engines.Engine05ClojureActivity", "label": "Sonda engine-05 (C)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine06GroovyActivity.java.
+    {"class": ".engines.Engine06GroovyActivity", "label": "Sonda engine-06 (A)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine07CNdkActivity.java.
+    {"class": ".engines.Engine07CNdkActivity", "label": "Sonda engine-07 (A)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine08CppNdkActivity.java.
+    {"class": ".engines.Engine08CppNdkActivity", "label": "Sonda engine-08 (A)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine09RustActivity.java.
+    {"class": ".engines.Engine09RustActivity", "label": "Sonda engine-09 (A)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine10GoActivity.java.
+    {"class": ".engines.Engine10GoActivity", "label": "Sonda engine-10 (A)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine11ObjcActivity.java.
+    {"class": ".engines.Engine11ObjcActivity", "label": "Sonda engine-11 (C)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine12ZigActivity.java.
+    {"class": ".engines.Engine12ZigActivity", "label": "Sonda engine-12 (A)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine13FlutterActivity.java.
+    {"class": ".engines.Engine13FlutterActivity", "label": "Sonda engine-13 (B)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine14ReactNativeActivity.java.
+    {"class": ".engines.Engine14ReactNativeActivity", "label": "Sonda engine-14 (B)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine15CordovaActivity.java.
+    {"class": ".engines.Engine15CordovaActivity", "label": "Sonda engine-15 (B)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine16TauriActivity.java.
+    {"class": ".engines.Engine16TauriActivity", "label": "Sonda engine-16 (A)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine17NativescriptActivity.java.
+    {"class": ".engines.Engine17NativescriptActivity", "label": "Sonda engine-17 (B)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine18MauiXamarinActivity.java.
+    {"class": ".engines.Engine18MauiXamarinActivity", "label": "Sonda engine-18 (C)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine19UnityMonoActivity.java.
+    {"class": ".engines.Engine19UnityMonoActivity", "label": "Sonda engine-19 (C)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine20UnityIl2cppActivity.java.
+    {"class": ".engines.Engine20UnityIl2cppActivity", "label": "Sonda engine-20 (C)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine21UnrealActivity.java.
+    {"class": ".engines.Engine21UnrealActivity", "label": "Sonda engine-21 (C)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine22LuaDefoldActivity.java.
+    {"class": ".engines.Engine22LuaDefoldActivity", "label": "Sonda engine-22 (B)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine23GodotActivity.java.
+    {"class": ".engines.Engine23GodotActivity", "label": "Sonda engine-23 (B)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine24HaxeActivity.java.
+    {"class": ".engines.Engine24HaxeActivity", "label": "Sonda engine-24 (A)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine25PythonChaquopyActivity.java.
+    {"class": ".engines.Engine25PythonChaquopyActivity", "label": "Sonda engine-25 (A)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine26QtQmlActivity.java.
+    {"class": ".engines.Engine26QtQmlActivity", "label": "Sonda engine-26 (B)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine27B4xAppinventorActivity.java.
+    {"class": ".engines.Engine27B4xAppinventorActivity", "label": "Sonda engine-27 (C)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine28AvaloniaDotnetActivity.java.
+    {"class": ".engines.Engine28AvaloniaDotnetActivity", "label": "Sonda engine-28 (B)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine29PythonKivyBeewareActivity.java.
+    {"class": ".engines.Engine29PythonKivyBeewareActivity", "label": "Sonda engine-29 (C)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine30WasmInAppActivity.java.
+    {"class": ".engines.Engine30WasmInAppActivity", "label": "Sonda engine-30 (A)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine31HybridActivity.java.
+    {"class": ".engines.Engine31HybridActivity", "label": "Sonda engine-31 (A)",
+     "exported": True, "filters": []},
+    # R2.1 (AUDIT_ROADMAP_V2): uma activity por engine — sonda real,
+    # framework-only (minSdk 9), classe em app/.../engines/Engine32TwaPwaActivity.java.
+    {"class": ".engines.Engine32TwaPwaActivity", "label": "Sonda engine-32 (C)",
+     "exported": True, "filters": []},
 ]
 
 ACTIVITY_ALIASES = [
@@ -761,7 +889,7 @@ def build_manifest_audit(registry: dict) -> str:
         extra = " (https autoVerify)" if any(f.get("auto_verify") for f in act["filters"]) else ""
         add(f"| {act['class']} | {act['label']} | {str(act['exported']).lower()} | "
             f"{len(act['filters'])} filter(s){extra}: {filters} | A1 |")
-    add(f"**atual: {len(ACTIVITIES)} — alvo: >= 30 (uma por dominio, incl. telas 3D/Shaders/GLES em A5/A6)**")
+    add(f"**atual: {len(ACTIVITIES)} — alvo: >= 30 ATINGIDO (R2.1 do AUDIT_ROADMAP_V2: sonda por engine, 32 em .engines.*, + os 7 domínios A1/A5/A6)**")
     add("")
     add("### Activity-aliases (2)")
     add("")

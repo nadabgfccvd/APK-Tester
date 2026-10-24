@@ -1157,6 +1157,70 @@
                                                     <category android:name="android.intent.category.BROWSABLE"/>
                                                 </intent-filter>
         </activity>
+        <activity android:name=".engines.Engine01JavaActivity" android:label="Sonda engine-01 (A)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine02KotlinActivity" android:label="Sonda engine-02 (A)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine03KmpActivity" android:label="Sonda engine-03 (A)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine04ScalaActivity" android:label="Sonda engine-04 (B)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine05ClojureActivity" android:label="Sonda engine-05 (C)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine06GroovyActivity" android:label="Sonda engine-06 (A)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine07CNdkActivity" android:label="Sonda engine-07 (A)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine08CppNdkActivity" android:label="Sonda engine-08 (A)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine09RustActivity" android:label="Sonda engine-09 (A)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine10GoActivity" android:label="Sonda engine-10 (A)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine11ObjcActivity" android:label="Sonda engine-11 (C)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine12ZigActivity" android:label="Sonda engine-12 (A)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine13FlutterActivity" android:label="Sonda engine-13 (B)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine14ReactNativeActivity" android:label="Sonda engine-14 (B)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine15CordovaActivity" android:label="Sonda engine-15 (B)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine16TauriActivity" android:label="Sonda engine-16 (A)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine17NativescriptActivity" android:label="Sonda engine-17 (B)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine18MauiXamarinActivity" android:label="Sonda engine-18 (C)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine19UnityMonoActivity" android:label="Sonda engine-19 (C)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine20UnityIl2cppActivity" android:label="Sonda engine-20 (C)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine21UnrealActivity" android:label="Sonda engine-21 (C)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine22LuaDefoldActivity" android:label="Sonda engine-22 (B)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine23GodotActivity" android:label="Sonda engine-23 (B)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine24HaxeActivity" android:label="Sonda engine-24 (A)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine25PythonChaquopyActivity" android:label="Sonda engine-25 (A)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine26QtQmlActivity" android:label="Sonda engine-26 (B)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine27B4xAppinventorActivity" android:label="Sonda engine-27 (C)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine28AvaloniaDotnetActivity" android:label="Sonda engine-28 (B)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine29PythonKivyBeewareActivity" android:label="Sonda engine-29 (C)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine30WasmInAppActivity" android:label="Sonda engine-30 (A)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine31HybridActivity" android:label="Sonda engine-31 (A)" android:exported="true">
+        </activity>
+        <activity android:name=".engines.Engine32TwaPwaActivity" android:label="Sonda engine-32 (C)" android:exported="true">
+        </activity>
         <activity-alias android:name=".MainActivityLauncherAlias1" android:targetActivity=".MainActivity" android:label="@string/app_name" android:icon="@drawable/ic_launcher_r1" android:enabled="true" android:exported="true">
                                                 <intent-filter>
                                                     <action android:name="android.intent.action.MAIN"/>

@@ -35,6 +35,22 @@ de compatibilidade verde).
   40076184463). Mecânica validada com canary (issue de teste #22 aberta e
   fechada; job removido após a prova).
 
+### Adicionado (AUDIT_ROADMAP_V2 — R2: substância do flagship)
+
+- `tools/gen-flagship-manifest.py` + 33 classes Java (R2.1): UMA activity
+  real por engine — 32 sondas `.engines.Engine<NN>*Activity` (uma por
+  entrada da answer key, `exported` auditado, framework-only minSdk 9,
+  tela real programática) + base `EngineProbeActivity`. Superfície
+  contratual ATINGIDA: 39 activities declaradas (alvo >= 30);
+  manifesto e `manifest-audit.md` regenerados juntos (zero drift por
+  construção).
+- `bot/checks/activity_coverage.py` (novo cheque, padrão `locale_sync`):
+  todo engine da answer key tem activity declarada no manifesto do
+  flagship; sonda sem engine, engine sem sonda e SONDAS FANTOMAS
+  (manifesto apontando para classe Java inexistente — lei A1
+  manifest-as-truth) viram Finding `regression`; alvo contratual
+  (activities >= 30) vigiado como `drift`.
+
 ### Corrigido (AUDIT_ROADMAP_V2 — R0/R1)
 
 - `tools/build-tier-a.py` (R0.1): guard `SPECS.get(engine, {})` no
