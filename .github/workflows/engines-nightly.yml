@@ -303,3 +303,74 @@ jobs:
       - name: Deploy no GH Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  # ------------------------------------------------------------------
+  # R0.2/R3.1 (AUDIT_ROADMAP_V2): auto-issue em QUALQUER falha do nightly
+  # que não seja de compat (o compat-nightly já abre a issue fixture_gap
+  # própria, com conteúdo específico). Antes, a falha de build (Tier B/
+  # Tier C/docs) vivia só no log: o PR pode ficar verde com o nightly
+  # vermelho há dias — aconteceu de verdade (KeyError do engine-04-scala,
+  # run 40076184463, visível só no nightly).
+  # ------------------------------------------------------------------
+  notify-failure:
+    name: Auto-issue em falha do nightly (R0.2/R3.1)
+    needs: [tier-b-matrix, tier-c-fixtures, compat-nightly, docs-pages]
+    if: >-
+      ${{
+        always() && !cancelled() &&
+        contains(needs.*.result, 'failure') &&
+        needs.compat-nightly.result != 'failure'
+      }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Abrir issue com run/commit e jobs falhos
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          COMMIT: ${{ github.sha }}
+          RES_TIER_B: ${{ needs.tier-b-matrix.result }}
+          RES_TIER_C: ${{ needs.tier-c-fixtures.result }}
+          RES_COMPAT: ${{ needs.compat-nightly.result }}
+          RES_DOCS: ${{ needs.docs-pages.result }}
+        run: |
+          set -euo pipefail
+          failed=""
+          for pair in \
+            "tier-b-matrix:${RES_TIER_B}" \
+            "tier-c-fixtures:${RES_TIER_C}" \
+            "compat-nightly:${RES_COMPAT}" \
+            "docs-pages:${RES_DOCS}"; do
+            job="${pair%%:*}"
+            res="${pair#*:}"
+            if [ "$res" = "failure" ]; then
+              failed="${failed}- \`${job}\`: ${res}"$'\n'
+            fi
+          done
+          if [ -z "$failed" ]; then
+            echo "nenhum job falhou; nada a reportar"
+            exit 0
+          fi
+          {
+            echo '## Falha no Engines Nightly (build/infra)'
+            echo ''
+            echo 'O nightly falhou em job(s) de BUILD/INFRA (fora do compat,'
+            echo 'que abre issue `fixture_gap` própria). O PR pode estar verde —'
+            echo 'este é o alarme dedicado ao nightly (R0.2/R3.1 do roadmap V2).'
+            echo ''
+            echo '### Jobs falhos'
+            echo ''
+            echo "$failed"
+            echo '### Evidências'
+            echo ''
+            echo "- Run: ${RUN_URL}"
+            echo "- Commit: ${COMMIT}"
+            echo ''
+            echo '## Próximos passos'
+            echo '1. Abrir o run e inspecionar o job falho (log completo).'
+            echo '2. Reproduzir localmente o passo correspondente.'
+            echo '3. Corrigir e re-disparar (`workflow_dispatch`).'
+          } > /tmp/issue-body.md
+          gh issue create --repo "$GITHUB_REPOSITORY" \
+            --label ci \
+            --title "ci: falha no Engines Nightly — build/infra (run ${{ github.run_id }})" \
+            --body-file /tmp/issue-body.md

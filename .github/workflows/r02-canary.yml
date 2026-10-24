@@ -43,7 +43,7 @@ jobs:
             echo '- Run: '"${RUN_URL}"
             echo '- Commit: '"${COMMIT}"
           } > /tmp/issue-body.md
-          gh issue create \
+          gh issue create --repo "$GITHUB_REPOSITORY" \
             --label ci \
             --title "test: canary R0.2 auto-issue (run ${{ github.run_id }})" \
             --body-file /tmp/issue-body.md
