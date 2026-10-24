@@ -31,6 +31,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   size-gate:
@@ -92,3 +93,32 @@ jobs:
             dist/size-report.csv
             dist/flagship-release.sha256
           if-no-files-found: warn
+      # R3.3 (AUDIT_ROADMAP_V2): o gate de tamanho fora da janela não pode
+      # depender de alguém olhar o run — falha abre issue `ci` automática
+      # com o run/commit (mesma mecânica do notify-failure do nightly).
+      - name: Abrir issue em falha do gate (R3.3)
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          COMMIT: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          {
+            echo '## Size Gate fora da janela (drift ou total)'
+            echo ''
+            echo 'O gate [850, 1000] MiB / drift ±2% por categoria falhou.'
+            echo 'Relatório fresco no artefato `size-report` deste run.'
+            echo ''
+            echo "- Run: ${RUN_URL}"
+            echo "- Commit: ${COMMIT}"
+            echo ''
+            echo '## Próximos passos'
+            echo '1. Comparar dist/size-report.csv com contracts/flagship/size-report.csv.'
+            echo '2. Crescimento intencional: re-baseline medido no CI (padrão A9), nunca estimado à mão.'
+            echo '3. Crescimento acidental: investigar o delta por categoria antes do re-baseline.'
+          } > /tmp/size-issue-body.md
+          gh issue create --repo "$GITHUB_REPOSITORY" \
+            --label ci \
+            --title "size-gate: flagship fora da janela/drift (run ${{ github.run_id }})" \
+            --body-file /tmp/size-issue-body.md
