@@ -6,7 +6,7 @@
   },
   {
    "path": "contracts/parser-torture/fixtures-audit.md",
-   "sha256": "d0b4a1a28340b83f1ce8cfa924b83b9bb967d56ce34d8481f781b7008b41078d"
+   "sha256": "1c9b7b1ec904357c95db5aca941206b810f7085490a6ed6ef932ca8807ef2634"
   },
   {
    "path": "contracts/parser-torture/huge-arsc-audit.md",
@@ -14,7 +14,7 @@
   },
   {
    "path": "contracts/parser-torture/suites-fragment.json",
-   "sha256": "7df493d86320db1e30e59b75eb0771289c89b36d3f65e9c0b8940fcecfcd7519"
+   "sha256": "7fd77eb51a05110cdbc9f0491c57578006192a0aff3e1d94e09aa476f141cf41"
   },
   {
    "path": "suites/parser-torture/exported-audit/AndroidManifest.xml",

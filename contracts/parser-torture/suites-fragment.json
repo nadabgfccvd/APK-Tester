@@ -131,6 +131,84 @@
       },
       "id": "torture-obfuscated",
       "scenario": "install+inspect"
+    },
+    {
+      "apk": "suites/parser-torture/zip-slip",
+      "expects": {
+        "below_floor_allowed": false,
+        "expected_result": "entradas de traversal detectadas/classificadas — extração confinada, nunca crash",
+        "min_sdk": 26,
+        "rustydroid_engines": [
+          "java"
+        ]
+      },
+      "id": "torture-zip-slip",
+      "scenario": "install+inspect"
+    },
+    {
+      "apk": "suites/parser-torture/duplicate-entries",
+      "expects": {
+        "below_floor_allowed": false,
+        "expected_result": "duplicatas detectadas (primeira entrada vence com trilha da divergência) — nunca crash",
+        "min_sdk": 26,
+        "rustydroid_engines": [
+          "java"
+        ]
+      },
+      "id": "torture-duplicate-entries",
+      "scenario": "install+inspect"
+    },
+    {
+      "apk": "suites/parser-torture/axml-truncated",
+      "expects": {
+        "below_floor_allowed": false,
+        "expected_result": "AXML truncado reprovado com erro estruturado — nunca crash",
+        "min_sdk": 26,
+        "rustydroid_engines": [
+          "java"
+        ]
+      },
+      "id": "torture-axml-truncated",
+      "scenario": "install+inspect"
+    },
+    {
+      "apk": "suites/parser-torture/arsc-type-collision",
+      "expects": {
+        "below_floor_allowed": false,
+        "expected_result": "colisão de tipos reprovada com erro estruturado — nunca crash",
+        "min_sdk": 26,
+        "rustydroid_engines": [
+          "java"
+        ]
+      },
+      "id": "torture-arsc-type-collision",
+      "scenario": "install+inspect"
+    },
+    {
+      "apk": "suites/parser-torture/dex-corrupted",
+      "expects": {
+        "below_floor_allowed": false,
+        "expected_result": "DEX mentiroso reprovado com erro estruturado — nunca crash",
+        "min_sdk": 26,
+        "rustydroid_engines": [
+          "java"
+        ]
+      },
+      "id": "torture-dex-corrupted",
+      "scenario": "install+inspect"
+    },
+    {
+      "apk": "suites/parser-torture/v3-rotation-lineage",
+      "expects": {
+        "below_floor_allowed": false,
+        "expected_result": "parser lê a v3 e o lineage da rotação A->B (certificado novo + histórico provável)",
+        "min_sdk": 28,
+        "rustydroid_engines": [
+          "java"
+        ]
+      },
+      "id": "torture-v3-rotation-lineage",
+      "scenario": "install+inspect"
     }
   ]
 }

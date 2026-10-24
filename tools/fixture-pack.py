@@ -116,12 +116,14 @@ FAKE_PERMS = (
 # do parser-torture (zip64/fake_perms/obfuscated/huge-arsc/multidex/traps).
 def _mode(min_sdk, target_sdk, v1=True, v2=True, v3=False, zipalign=True,
           zip64=False, entries=0, fake_perms=False, obfuscated=False,
-          external_manifest=False, engine=False, desc=""):
+          external_manifest=False, engine=False, sign=True, malformed=None,
+          desc=""):
     return {"min_sdk": min_sdk, "target_sdk": target_sdk, "v1": v1, "v2": v2,
             "v3": v3, "zipalign": zipalign, "zip64": zip64,
             "zip64_entries": entries, "fake_perms": fake_perms,
             "obfuscated": obfuscated, "external_manifest": external_manifest,
-            "engine": engine, "description": desc}
+            "engine": engine, "sign": sign, "malformed": malformed,
+            "description": desc}
 
 
 MODES = {
@@ -156,6 +158,29 @@ MODES = {
     "exported-audit": _mode(26, 36, external_manifest=True,
         desc="armadilhas de manifesto intencionais (exported/permissoes mal "
              "declaradas) — auditoria documenta cada erro"),
+    # --- Malformed corpus (D4): adversarial-malformed, alvo de PARSER.
+    # Unsigned de proposito (a patologia e estrutural, nao de assinatura);
+    # a mutacao e pos-build, deterministica por seed (stdlib only).
+    "zip-slip": _mode(26, 36, sign=False, malformed="zip-slip",
+        desc="entradas com traversal '../../' no Central Directory "
+             "(zip-slip de extracao)"),
+    "duplicate-entries": _mode(26, 36, sign=False,
+        malformed="duplicate-entries",
+        desc="mesmo nome de entrada DUAS VEZES com conteudo divergente "
+             "(AndroidManifest.xml e assets/dup.txt)"),
+    "axml-truncated": _mode(26, 36, sign=False, malformed="axml-truncated",
+        desc="AndroidManifest.xml (AXML) truncado no meio de um chunk — "
+             "tamanhos declarados > bytes reais"),
+    "arsc-type-collision": _mode(26, 36, sign=False,
+        malformed="arsc-type-collision",
+        desc="resources.arsc sintetico com COLISAO de tipos: dois chunks de "
+             "tipo com ids diferentes e o MESMO nome (string)"),
+    "dex-corrupted": _mode(26, 36, sign=False, malformed="dex-corrupted",
+        desc="classes.dex com checksum adler32 zerado e map_off "
+             "invalidado (0xFFFFFFFF) — header mentiroso"),
+    "v3-rotation-lineage": _mode(28, 36, v1=False, v2=False, v3=True,
+        desc="assinatura v3 com PROOF-OF-ROTATION real: chave A rotacionada "
+             "para chave B via apksigner rotate + --lineage"),
     # --- Tier C (A3): fixtures de detecção, payload NÃO executável (ADR 0003).
     # Specced em tools/gen-engine-fixtures.py (fonte única); o selftest dele
     # cruza estas chaves com o contrato canônico expected-engines.json.
@@ -415,6 +440,8 @@ def build_plan(args, cfg: dict, work: str, out_apk: str, tools: dict,
     manifest_src = (os.path.join(work, "traproot", "AndroidManifest.xml")
                     if cfg["external_manifest"]
                     else os.path.join(work, "AndroidManifest.xml"))
+    keystore_b = os.path.join(work, "rotate-b.keystore")
+    lineage = os.path.join(work, "rotation-lineage.bin")
     steps = [
         {"id": "keystore",
          "description": "keystore de debug para as fixtures (skip se já existe)",
@@ -425,6 +452,24 @@ def build_plan(args, cfg: dict, work: str, out_apk: str, tools: dict,
                      "CN=APK Tester Fixture, OU=Fixtures, O=apktester, "
                      "L=Recife, S=PE, C=BR"],
          "cwd": None, "skip_if": "keystore_existe"},
+        {"id": "keystore-b",
+         "description": "segunda keystore da rotacao D4 (chave B; skip se "
+                        "existe)",
+         "command": [kt, "-genkeypair", "-keystore", keystore_b,
+                     "-storetype", "PKCS12", "-storepass", "apktester",
+                     "-keypass", "apktester", "-alias", KS_ALIAS,
+                     "-keyalg", "RSA", "-keysize", "2048", "-validity",
+                     "10000", "-dname", "CN=APK Tester Rotation B, "
+                     "OU=Fixtures, O=apktester, L=Recife, S=PE, C=BR"],
+         "cwd": None, "skip_if": "keystore_b_existe"},
+        {"id": "apksigner-rotate",
+         "description": "gera o lineage proof-of-rotation A -> B "
+                        "(apksigner rotate; exige as duas keystores)",
+         "command": [signer, "rotate", "--in-old-keystore", keystore,
+                     "--in-new-keystore", keystore_b, "--ks-pass", KS_PASS,
+                     "--ks-key-alias", KS_ALIAS,
+                     "--out-lineage", lineage], "cwd": None,
+         "skip_if": "mode_nao_e_v3_rotation"},
         {"id": "aapt2-compile", "description": "compila res/ em res.zip (flat)",
          "command": [a2, "compile", "--dir", os.path.join(work, "res"), "-o",
                      os.path.join(work, "res.zip")], "cwd": None},
@@ -582,17 +627,47 @@ def build_plan(args, cfg: dict, work: str, out_apk: str, tools: dict,
         steps.append({
             "id": "zipalign", "description": "alinhamento de 4 bytes (-p p/ .so)",
             "command": [za, "-f", "-p", "4", unsigned, aligned], "cwd": None})
-    steps.append({
-        "id": "apksigner",
-        "description": f"assina com v1={cfg['v1']} v2={cfg['v2']} "
-                       f"v3={cfg['v3']} e grava em --out",
-        "command": [signer, "sign", "--ks", keystore, "--ks-pass", KS_PASS,
-                    "--ks-key-alias", KS_ALIAS, "--key-pass", KS_PASS,
-                    "--min-sdk-version", str(cfg["min_sdk"]),
-                    "--v1-signing-enabled", str(cfg["v1"]).lower(),
-                    "--v2-signing-enabled", str(cfg["v2"]).lower(),
-                    "--v3-signing-enabled", str(cfg["v3"]).lower(),
-                    "--out", out_apk, aligned], "cwd": None})
+    if cfg.get("sign", True) is False:
+        # Malformed corpus (D4): sem assinatura (a patologia e estrutural);
+        # o passo final e a MUTACAO deterministica que grava o --out.
+        steps.append({
+            "id": "malformed-mutate",
+            "description": f"mutacao deterministica '{cfg['malformed']}' "
+                           "(stdlib only, mtimes 1980) gravando o APK final",
+            "command": [sys.executable, os.path.abspath(__file__),
+                        "--malformed-mutate", cfg["malformed"],
+                        "--src", aligned, "--out", out_apk,
+                        "--seed", str(args.seed)],
+            "cwd": None})
+    else:
+        steps.append({
+            "id": "apksigner",
+            "description": f"assina com v1={cfg['v1']} v2={cfg['v2']} "
+                           f"v3={cfg['v3']} e grava em --out",
+            "command": [signer, "sign", "--ks", keystore, "--ks-pass",
+                        KS_PASS, "--ks-key-alias", KS_ALIAS,
+                        "--key-pass", KS_PASS,
+                        "--min-sdk-version", str(cfg["min_sdk"]),
+                        "--v1-signing-enabled", str(cfg["v1"]).lower(),
+                        "--v2-signing-enabled", str(cfg["v2"]).lower(),
+                        "--v3-signing-enabled", str(cfg["v3"]).lower(),
+                        "--out", out_apk, aligned], "cwd": None})
+    if mode == "v3-rotation-lineage":
+        # D4: proof-of-rotation REAL — a chave B assina com o lineage que
+        # prova a rotacao A -> B (apksigner rotate consome os dois keystores).
+        steps.append({
+            "id": "sign-with-lineage",
+            "description": "re-assina o APK final com a chave B + --lineage "
+                           "(proof-of-rotation A->B na v3 block)",
+            "command": [signer, "sign", "--ks", keystore_b, "--ks-pass",
+                        KS_PASS, "--ks-key-alias", KS_ALIAS,
+                        "--key-pass", KS_PASS,
+                        "--lineage", lineage, "--lineage-min-sdk-version",
+                        "28", "--min-sdk-version", "28",
+                        "--v1-signing-enabled", "false",
+                        "--v2-signing-enabled", "false",
+                        "--v3-signing-enabled", "true",
+                        "--out", out_apk, out_apk], "cwd": None})
     if cfg["zip64"]:
         steps.append({
             "id": "zip64-augment",
@@ -675,7 +750,8 @@ def build_plan(args, cfg: dict, work: str, out_apk: str, tools: dict,
         "min_sdk": cfg["min_sdk"], "target_sdk": cfg["target_sdk"],
         "components": component_kinds(cfg),
         "work": work, "out_apk": out_apk, "android_jar": android_jar,
-        "keystore": keystore, "tools": tools, "notes": notes, "steps": steps,
+        "keystore": keystore, "keystore_b": keystore_b, "lineage": lineage,
+        "tools": tools, "notes": notes, "steps": steps,
         "all_tools_available": all(t["available"] for t in tools.values()),
     }
 
@@ -774,6 +850,215 @@ def zip_strip_entry(zip_path: str, entry: str) -> int:
                 zout.writestr(ni, data)
     os.replace(tmp, zip_path)
     return removed
+
+
+def u8(v: int) -> bytes:
+    return v.to_bytes(1, "little")
+
+
+def u16(v: int) -> bytes:
+    return v.to_bytes(2, "little")
+
+
+def u32(v: int) -> bytes:
+    return v.to_bytes(4, "little")
+
+
+def _utf8_pool(strings: list) -> bytes:
+    """Chunk ResStringPool UTF-8 (structurally honest, stdlib only).
+
+    Layout: header 28 (type 0x0001, headerSize 28, size, stringCount,
+    styleCount=0, flags=UTF8_FLAG, stringsStart, stylesStart=0) + offsets
+    (u32 por string) + dados ([u8 u16len][u8 u8len][bytes][NUL] — varints
+    de 1 byte, pois todas as strings tem < 128 unidades).
+    """
+    data = b""
+    offsets = []
+    for s in strings:
+        encoded = s.encode("utf-8")
+        offsets.append(len(data))
+        data += u8(len(s)) + u8(len(encoded)) + encoded + b"\x00"
+    strings_start = 28 + 4 * len(strings)
+    body = (u32(len(strings)) + u32(0) + u32(1 << 8)
+            + u32(strings_start) + u32(0)
+            + b"".join(u32(o) for o in offsets)  # relativos a stringsStart
+            + data)
+    total = 8 + len(body)  # size = chunk header (8) + todo o resto
+    return u16(0x0001) + u16(28) + u32(total) + body
+
+
+def craft_arsc_collision(seed: int) -> bytes:
+    """resources.arsc sintetico com COLISAO de tipos (D4).
+
+    Estrutura honesta de chunks — Table (0x0002) com 1 package (0x0200),
+    tres pools (valores globais, chaves, tipos), 2 TypeSpec (0x0202) e
+    2 Type (0x0201). A patologia: os DOIS chunks de tipo tem ids DIFERENTES
+    (1 e 2) e apontam para o MESMO nome no pool de tipos ("string") —
+    colisao que parsers exigentes devem rejeitar com erro estruturado
+    (nunca crash). Bytes deterministicos por seed.
+    """
+    key_name = f"maxprobe_collision_{seed % 100000}"
+    type_name = "string"
+
+    value_pool = _utf8_pool([f"colisao-A-{seed % 100000}",
+                             f"colisao-B-{seed % 100000}"])
+
+    # Package: id 0x7F, nome em 128 u16, offsets para os pools de chave e
+    # tipo (relativos ao inicio do chunk do package), contadores publicos.
+    package_name = "dev.apktester.malformed"
+    name_buf = package_name.encode("utf-16-le")[:256].ljust(256, b"\x00")
+
+    key_pool = _utf8_pool([key_name])
+    type_pool = _utf8_pool([type_name])
+
+    # header do package: 8 (chunk) + 4 (id) + 256 (nome) + 4*4 (offsets e
+    # contadores) = 284; os pools e os types vem depois, na ordem abaixo.
+    fixed = 284
+    key_strings_off = fixed
+    type_strings_off = key_strings_off + len(key_pool)
+    types_start = type_strings_off + len(type_pool)
+
+    def type_spec(type_id: int) -> bytes:
+        # ResTable_typeSpec: header 16 (8 do chunk + id/flags/reserved)
+        # + mask u32; size = 8 + corpo apos o header do chunk.
+        body = u32(1 << 0)  # entryMask da entry 0
+        return (u16(0x0202) + u16(16) + u32(8 + 4 + len(body))
+                + u8(type_id) + u8(0) + u16(0) + body)
+
+    def type_chunk(type_id: int, value_index: int) -> bytes:
+        # ResTable_type: header 20 + offsets (entryCount u32) + entries.
+        entry = (u16(8) + u16(0) + u32(0)          # key index 0
+                 + u16(8) + u8(0) + u8(0x0003 & 0xFF)  # datatype STRING
+                 + u32(value_index))
+        offsets = u32(0)  # offset relativo a entriesStart da entry 0
+        entries_start = 20 + 4
+        body = (u8(type_id) + u8(0) + u16(0)
+                + u32(1)                 # entryCount
+                + u32(entries_start)
+                + offsets + entry)
+        total = 8 + len(body)  # header do ResTable_type e 20 (8 do chunk)
+        return u16(0x0201) + u16(20) + u32(total) + body
+
+    types_and_specs = (type_spec(1) + type_spec(2)
+                       + type_chunk(1, 0) + type_chunk(2, 1))
+    package_body = (u32(0x7F) + name_buf
+                    + u32(type_strings_off) + u32(2)   # lastPublicType = 2
+                    + u32(key_strings_off) + u32(1)    # lastPublicKey = 1
+                    + key_pool + type_pool + types_and_specs)
+    # Chunk do package: 8 (type/hs/size) + corpo a partir do id.
+    package_total = 8 + len(package_body)
+    package = (u16(0x0200) + u16(284) + u32(package_total) + package_body)
+
+    # Table: header 12 (type/hs/size + packageCount) + POOL DE VALORES
+    # (global) + package. O packageCount vem ANTES do pool (header de 12).
+    table_total = 12 + len(value_pool) + len(package)
+    return (u16(0x0002) + u16(12) + u32(table_total)
+            + u32(1) + value_pool + package)
+
+
+def dex_corrupt(dex_bytes: bytes) -> bytes:
+    """Corrompe o DEX de forma comprovavel: checksum adler32 zerado +
+    map_off invalidado (0xFFFFFFFF). A magia 'dex\n' permanece — o parser
+    identifica, tenta e deve reprovar com erro estruturado (nunca crash)."""
+    body = bytearray(dex_bytes)
+    if len(body) < 64 or bytes(body[:4]) != b"dex\n":
+        raise ValueError("classes.dex inesperado (magia ausente)")
+    body[8:12] = b"\x00\x00\x00\x00"      # checksum adler32 -> 0
+    body[52:56] = b"\xff\xff\xff\xff"    # map_off invalido
+    return bytes(body)
+
+
+def _fixed_zip_payload(zip_path: str):
+    """Le o payload [(info, bytes)] do zip (ordem do Central Directory)."""
+    with zipfile.ZipFile(zip_path) as zf:
+        return [(i, zf.read(i.filename)) for i in zf.infolist()]
+
+
+def _write_fixed_zip(tmp_path: str, payload, extra=None, replace=None):
+    """Reescreve o zip com mtimes fixos (1980) — deterministico.
+
+    extra: entradas adicionais [(nome, bytes, compress_type)] no FIM.
+    replace: {nome: novos_bytes} — a PRIMEIRA ocorrencia do nome e
+    substituida (as demais mantem os bytes originais: e assim que a
+    patologia de entrada duplicada se constroi).
+    """
+    replace = dict(replace or {})
+    with zipfile.ZipFile(tmp_path, "w", allowZip64=True) as zout:
+        for info, data in payload:
+            ni = zipfile.ZipInfo(info.filename,
+                                 date_time=(1980, 1, 1, 0, 0, 0))
+            ni.compress_type = info.compress_type
+            ni.external_attr = info.external_attr
+            ni.internal_attr = info.internal_attr
+            ni.create_system = info.create_system
+            if info.filename in replace:
+                data = replace.pop(info.filename)
+            zout.writestr(ni, data)
+        for nome, dados, compress in (extra or []):
+            ni = zipfile.ZipInfo(nome, date_time=(1980, 1, 1, 0, 0, 0))
+            ni.compress_type = compress
+            ni.external_attr = 0o600 << 16
+            zout.writestr(ni, dados)
+
+
+def _marker(seed: int, tag: str, size: int = 96) -> bytes:
+    """Blob deterministico por seed/tag (mesma familia do dealign/zip64)."""
+    return (f"apktester-malformed/{tag}/".encode("ascii")
+            + hashlib.sha256(
+                f"{seed}:{tag}".encode("ascii")).digest() * 4)[:size]
+
+
+def malformed_mutate(kind: str, src_zip: str, out_zip: str, seed: int) -> None:
+    """Aplica a mutacao D4 deterministica e grava o APK final.
+
+    Todas as mutacoes reescrevem o zip com mtimes fixos (1980) e preservam
+    compress_type/attrs — o conteudo mutado e funcao deterministica da
+    seed e do conteudo de entrada.
+    """
+    payload = _fixed_zip_payload(src_zip)
+
+    def one(name: str) -> bytes:
+        for info, data in payload:
+            if info.filename == name:
+                return data
+        raise ValueError(f"entrada ausente no APK base: {name}")
+
+    if kind == "zip-slip":
+        extra = [
+            ("../../apktester-zipslip-evil.txt", _marker(seed, "zipslip-1"),
+             zipfile.ZIP_DEFLATED),
+            ("assets/../../apktester-zipslip-escape2.txt",
+             _marker(seed, "zipslip-2"), zipfile.ZIP_STORED),
+        ]
+        _write_fixed_zip(out_zip, payload, extra=extra)
+        return
+    if kind == "duplicate-entries":
+        manifest = one("AndroidManifest.xml")
+        extra = [
+            # MESMO nome da entrada real, com conteudo divergente:
+            ("AndroidManifest.xml", manifest[::-1], zipfile.ZIP_DEFLATED),
+            ("assets/dup.txt", _marker(seed, "dup-1"), zipfile.ZIP_DEFLATED),
+            ("assets/dup.txt", _marker(seed, "dup-2"), zipfile.ZIP_STORED),
+        ]
+        _write_fixed_zip(out_zip, payload, extra=extra)
+        return
+    if kind == "axml-truncated":
+        manifest = one("AndroidManifest.xml")
+        cut = max(8, (len(manifest) * 55) // 100)
+        _write_fixed_zip(out_zip, payload,
+                         replace={"AndroidManifest.xml": manifest[:cut]})
+        return
+    if kind == "arsc-type-collision":
+        _write_fixed_zip(out_zip, payload,
+                         replace={"resources.arsc":
+                                  craft_arsc_collision(seed)})
+        return
+    if kind == "dex-corrupted":
+        _write_fixed_zip(out_zip, payload,
+                         replace={"classes.dex": dex_corrupt(
+                             one("classes.dex"))})
+        return
+    raise ValueError(f"mutacao desconhecida: {kind}")
 
 
 def dex_partition(srcroot: str, outjson: str, batches: int) -> dict:
@@ -895,6 +1180,19 @@ def execute(plan: dict) -> int:
             print(f"[fixture-pack] {step['id']}: keystore já existe, pulando",
                   file=sys.stderr)
             continue
+        if (step.get("skip_if") == "keystore_b_existe"
+                and os.path.isfile(plan.get("keystore_b", ""))):
+            print(f"[fixture-pack] {step['id']}: keystore B já existe, "
+                  "pulando", file=sys.stderr)
+            continue
+        if (step.get("skip_if") == "mode_nao_e_v3_rotation"
+                and plan.get("fixture") != "v3-rotation-lineage"):
+            continue
+        if (step.get("skip_if") == "keystore_existe"
+                and os.path.isfile(plan["keystore"])):
+            print(f"[fixture-pack] {step['id']}: keystore já existe, pulando",
+                  file=sys.stderr)
+            continue
         print(f"[fixture-pack] {step['id']}: {step['description']}",
               file=sys.stderr)
         proc = subprocess.run(step["command"], cwd=step.get("cwd"))
@@ -908,7 +1206,7 @@ def execute(plan: dict) -> int:
 
 
 def selftest() -> int:
-    """--dry-run dos 21 modos parseia (com apk_name); --fixture nope sai 2."""
+    """--dry-run dos 27 modos parseia (com apk_name); --fixture nope sai 2."""
     tmp = tempfile.mkdtemp(prefix="apktester-fixturepack-selftest-")
     try:
         for mode in MODES:
@@ -929,9 +1227,9 @@ def selftest() -> int:
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         assert proc.returncode == 2, \
             f"--fixture nope deveria sair 2, veio {proc.returncode}"
-        print("[fixture-pack] selftest OK: 21 modos (12 parser-torture + "
-              "9 engines tier C) com plano parseável e apk_name; "
-              "--fixture nope => exit 2")
+        print("[fixture-pack] selftest OK: 27 modos (18 parser-torture "
+              "incl. 6 malformed D4 + 9 engines tier C) com plano "
+              "parseável e apk_name; --fixture nope => exit 2")
         return 0
     except AssertionError as exc:
         print(f"[fixture-pack] selftest FALHOU: {exc}", file=sys.stderr)
@@ -957,7 +1255,7 @@ def parse_args(argv=None):
         ap.add_argument(f"--{name}", default=None,
                         help=f"caminho do {name} (padrão: shutil.which)")
     ap.add_argument("--selftest", action="store_true",
-                     help="valida planos dos 21 modos em tmp e sai")
+                     help="valida planos dos 27 modos em tmp e sai")
     ap.add_argument("--zip64-augment", action="store_true",
                     help=argparse.SUPPRESS)
     ap.add_argument("--into", default=None, help=argparse.SUPPRESS)
@@ -966,6 +1264,9 @@ def parse_args(argv=None):
                     help=argparse.SUPPRESS)
     ap.add_argument("--dealign", metavar="ZIP", default=None,
                     help=argparse.SUPPRESS)
+    ap.add_argument("--malformed-mutate", metavar="KIND", default=None,
+                    help=argparse.SUPPRESS)
+    ap.add_argument("--src", default=None, help=argparse.SUPPRESS)
     ap.add_argument("--dex-partition", nargs=3,
                     metavar=("SRCROOT", "OUTJSON", "N"),
                     help=argparse.SUPPRESS)
@@ -1020,6 +1321,22 @@ def main(argv=None) -> int:
             return 1
         print(f"[fixture-pack] strip-entry: '{entry}' removida de "
               f"{zip_path}", file=sys.stderr)
+        return 0
+    if args.malformed_mutate:
+        if not args.src or not args.out:
+            print("[fixture-pack] ERRO: --malformed-mutate exige --src e "
+                  "--out", file=sys.stderr)
+            return 2
+        try:
+            malformed_mutate(args.malformed_mutate, args.src, args.out,
+                             args.seed)
+        except (OSError, ValueError, zipfile.BadZipFile) as exc:
+            print(f"[fixture-pack] ERRO: mutacao "
+                  f"{args.malformed_mutate} falhou: {exc}", file=sys.stderr)
+            return 1
+        print(f"[fixture-pack] malformed {args.malformed_mutate}: "
+              f"{args.src} -> {args.out} (mtimes 1980, seed {args.seed})",
+              file=sys.stderr)
         return 0
     if args.dealign:
         try:

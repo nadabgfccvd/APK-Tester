@@ -28,7 +28,7 @@ UTC (ou sob demanda via `workflow_dispatch`) ele:
 - **Escopo total (R1.3 + D2)**: além dos 32 engines da answer key, a matriz
   cobre a escada de dois eixos (18 degraus: 12 de minSdk 9..36 + 6 de
   targetSdk 23..35), as fixtures de tortura de
-  parser (11) e o flagship (variante classic) — inspeção estrutural pelo
+  parser (17, D4) e o flagship (variante classic) — inspeção estrutural pelo
   `rd inspect --json`.
 - **Fixture sem APK** vira linha `SEM_APK` (não é FAIL): honestidade sobre o
   estado da cobertura.

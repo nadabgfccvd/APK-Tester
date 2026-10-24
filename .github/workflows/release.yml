@@ -12,7 +12,7 @@
 #   build-tier-a   — matriz dos 14 engines reais (toolchains pinadas);
 #   build-tier-c   — as 9 fixtures honestas (toolchain real do SDK);
 #   build-ladder   — os 18 degraus da escada (12 minSdk + 6 targetSdk, D2);
-#   build-torture  — as 11 fixtures de tortura de parser;
+#   build-torture  — as 17 fixtures de tortura de parser (11 + 6 malformed D4);
 #   fetch-tier-b   — os 9 APKs Tier B do ULTIMO nightly verde (a build
 #                    pesada e lei do nightly; o release reutiliza os
 #                    artefatos verdes e os re-verifica contra o contrato);
@@ -352,7 +352,7 @@ jobs:
   # parser-torture do ci.yml — aqui o foco são os artefatos do release.
   # ------------------------------------------------------------------
   build-torture:
-    name: "Parser Torture (A2): 11 fixtures"
+    name: "Parser Torture (A2+D4): 17 fixtures"
     runs-on: ubuntu-latest
     needs: static-gate
     timeout-minutes: 30
@@ -372,13 +372,15 @@ jobs:
             "platforms;android-36" "build-tools;35.0.0" > /dev/null
           echo "ANDROID_HOME=${ANDROID_HOME}" >> "${GITHUB_ENV}"
 
-      - name: Empacotar as 11 fixtures (toolchain real do SDK)
+      - name: Empacotar as 17 fixtures (toolchain real do SDK)
         run: |
           python3 tools/fixture-pack.py --selftest
           BT="${ANDROID_HOME}/build-tools/35.0.0"
           mkdir -p dist/apks
           for f in minSdk9 sig-v1-only sig-v2-only sig-v3-only unaligned zip64 \
-                   huge-arsc multidex-8 unknown-perms exported-audit obfuscated; do
+                   huge-arsc multidex-8 unknown-perms exported-audit obfuscated \
+                   zip-slip duplicate-entries axml-truncated \
+                   arsc-type-collision dex-corrupted v3-rotation-lineage; do
             python3 tools/fixture-pack.py --fixture "$f" --out dist \
               --aapt2 "${BT}/aapt2" --d8 "${BT}/d8" \
               --apksigner "${BT}/apksigner" --zipalign "${BT}/zipalign"
@@ -392,7 +394,7 @@ jobs:
             cp "$apk" "dist/apks/torture-$(echo "${base}" | tr 'A-Z' 'a-z').apk"
           done
           ls -l dist/apks
-          test "$(ls dist/apks/*.apk | wc -l)" -eq 11
+          test "$(ls dist/apks/*.apk | wc -l)" -eq 17
 
       - name: Sanidade de ZIP (manifest presente em cada fixture)
         run: |
@@ -400,7 +402,7 @@ jobs:
           import zipfile
           from pathlib import Path
           apks = sorted(Path("dist/apks").glob("torture-*.apk"))
-          assert len(apks) == 11, f"esperava 11 fixtures, achei {len(apks)}"
+          assert len(apks) == 17, f"esperava 17 fixtures, achei {len(apks)}"
           for apk in apks:
               with zipfile.ZipFile(apk) as zf:
                   names = zf.namelist()

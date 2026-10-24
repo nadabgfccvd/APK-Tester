@@ -20,6 +20,12 @@ determinístico) e acompanhados de auditoria esperada.
 | `unknown-perms` | strings de permissão inventadas/inexistentes | classificação `unknown` estruturada — **único fixture com permissões falsas** |
 | `exported-audit` | conjunto de armadilhas: `exported`/permissões mal declaradas de propósito | auditoria documenta cada erro intencional (teste do manifest-as-truth) |
 | `obfuscated-r8` | R8 full com ofuscação + `mapping.txt` | resolução de nomes ofuscados via mapping |
+| `zip-slip` (D4) | entradas com traversal `../../` no Central Directory | detecção/confinamento — nunca crash |
+| `duplicate-entries` (D4) | mesmo nome DUAS vezes com conteúdo divergente | duplicata detectada — nunca crash |
+| `axml-truncated` (D4) | AXML truncado no meio de um chunk | reprovação estruturada — nunca crash |
+| `arsc-type-collision` (D4) | dois tipos de ids diferentes, MESMO nome | colisão reprovada — nunca crash |
+| `dex-corrupted` (D4) | checksum zerado + `map_off` inválido | DEX mentiroso reprovado — nunca crash |
+| `v3-rotation-lineage` (D4) | v3 com proof-of-rotation real (A → B) | parser lê v3 + lineage |
 
 ## Regras do pacote
 
@@ -35,7 +41,7 @@ determinístico) e acompanhados de auditoria esperada.
 
 | Item | Status |
 |---|---|
-| Pacote completo (10 fixtures + gabaritos) | **entregue (A2)** — 11 modos em `tools/fixture-pack.py` (os 10 + `minSdk9` da escada), toolchain real aapt2+d8+zip+zipalign+apksigner |
+| Pacote completo (16 fixtures + gabaritos; 10 estruturais A2 + 6 malformed D4) | **entregue (A2 + D4)** — 17 modos de parser-torture + `minSdk9` em `tools/fixture-pack.py` (27 no total com os 9 engines tier C), toolchain real aapt2+d8+zip+zipalign+apksigner |
 | Contratos | `contracts/parser-torture/` (fixtures-audit, huge-arsc-audit, exported-audit-traps, suites-fragment, ledger `manifest.json`) — gerados por `tools/gen-torture-contracts.py`, zero drift |
 | ARSc sintético | `tools/gen-arsc-stress.py` (10.000 entradas × 40 locales + 7 densidades; binário NÃO commitado — sha256 no `arsc-report.json` é a âncora) |
 | Build no CI | job `parser-torture` em `.github/workflows/ci.yml` (empacota as 10 + valida cada uma: esquemas de assinatura, zip64, multidex, arsc, armadilhas, mapping) |

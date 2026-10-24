@@ -1,4 +1,4 @@
-# Fixtures Audit — pacote parser-torture (10 fixtures)
+# Fixtures Audit — pacote parser-torture (16 fixtures)
 
 Gerado por `tools/gen-torture-contracts.py` (seed 20261022) lendo a tabela MODES
 de `tools/fixture-pack.py` — zero drift entre esta auditoria, o
@@ -20,6 +20,12 @@ Cada fixture ataca UMA suposição perigosa dos parsers do RustyDroid
 | `unknown-perms` | `unknown-perms.apk` | 26 | 36 | sim | sim | nao | strings de permissão inventadas dev.apktester.fake.* | permissões desconhecidas classificadas como unknown — nunca crash |
 | `exported-audit` | `exported-audit.apk` | 26 | 36 | sim | sim | nao | 9 componentes-armadilha (exported/permissões mal declaradas) | 9 armadilhas reportadas na auditoria |
 | `obfuscated` | `obfuscated-r8.apk` | 26 | 36 | sim | sim | nao | nomes minificados determinísticos + mapping.txt | nomes ofuscados resolvidos via mapping.txt |
+| `zip-slip` | `zip-slip.apk` | 26 | 36 | sim | sim | nao | entradas com traversal '../../' no Central Directory (zip-slip) | entradas de traversal detectadas/classificadas — extração confinada, nunca crash |
+| `duplicate-entries` | `duplicate-entries.apk` | 26 | 36 | sim | sim | nao | mesmo nome de entrada DUAS VEZES com conteúdo divergente | duplicatas detectadas (primeira entrada vence com trilha da divergência) — nunca crash |
+| `axml-truncated` | `axml-truncated.apk` | 26 | 36 | sim | sim | nao | AXML do manifesto truncado no meio de um chunk (tamanhos declarados > bytes reais) | AXML truncado reprovado com erro estruturado — nunca crash |
+| `arsc-type-collision` | `arsc-type-collision.apk` | 26 | 36 | sim | sim | nao | ARSc sintético com dois chunks de tipo de ids diferentes e o MESMO nome (string) | colisão de tipos reprovada com erro estruturado — nunca crash |
+| `dex-corrupted` | `dex-corrupted.apk` | 26 | 36 | sim | sim | nao | classes.dex com checksum adler32 zerado e map_off invalidado (0xFFFFFFFF) | DEX mentiroso reprovado com erro estruturado — nunca crash |
+| `v3-rotation-lineage` | `v3-rotation-lineage.apk` | 28 | 36 | nao | nao | sim | assinatura v3 com proof-of-rotation real (chave A -> chave B via apksigner rotate + --lineage) | parser lê a v3 e o lineage da rotação A->B (certificado novo + histórico provável) |
 
 ## Notas do pacote
 
@@ -40,6 +46,14 @@ Cada fixture ataca UMA suposição perigosa dos parsers do RustyDroid
   [h[huge-arsc-audit.md](huge-arsc-audit.md)) é a âncora.
 - `multidex-8`: corpus do `gen-dex-stress` fatiado em 8 lotes
   contíguos -> classes.dex..classes8.dex na raiz do APK.
+- Corpus adversarial-malformed (D4): `zip-slip`, `duplicate-entries`,
+  `axml-truncated`, `arsc-type-collision` e `dex-corrupted` são
+  UNSIGNED de propósito (a patologia é estrutural, não de assinatura)
+  e nascem de MUTAÇÃO pós-build determinística
+  (`fixture-pack.py --malformed-mutate`, mtimes 1980, stdlib only);
+  `v3-rotation-lineage` é a exceção HONESTA: usa as duas keystores de
+  fixture + `apksigner rotate` + `--lineage` para um proof-of-rotation
+  REAL (chave A -> chave B) na v3 block.
 - `sig-v1-only` (minSdk 9), `sig-v2-only` (minSdk 24) e `multidex-8`
   (minSdk 21) ficam abaixo do piso 26 do RustyDroid: `below_floor_allowed`
   cobre o BELOW_FLOOR estruturado — nunca crash.
@@ -66,5 +80,5 @@ Cada fixture ataca UMA suposição perigosa dos parsers do RustyDroid
 | `fixtures-audit.md` | esta visão geral |
 | `exported-audit-traps.md` | tabela das 9 armadilhas (idem `gen-trap-manifest`) |
 | `huge-arsc-audit.md` | contagens + validação do ARSc sintético |
-| `suites-fragment.json` | as 10 entradas de `contracts/suites.json` |
+| `suites-fragment.json` | as 16 entradas de `contracts/suites.json` |
 | `manifest.json` | ledger com sha256 de cada arquivo gerado |

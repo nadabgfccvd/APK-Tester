@@ -660,7 +660,7 @@ jobs:
   # A2: pacote parser-torture — 10 fixtures com uma patologia cada, empacotadas
   # com a toolchain real (aapt2+d8+zip+zipalign+apksigner) e validadas uma a uma.
   parser-torture:
-    name: "Parser Torture (A2): 10 fixtures + validações"
+    name: "Parser Torture (A2+D4): 17 fixtures + validações"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -693,12 +693,14 @@ jobs:
       - name: Selftest dos empacotadores
         run: python3 tools/fixture-pack.py --selftest
 
-      - name: Empacotar as 11 fixtures (toolchain real do SDK)
+      - name: Empacotar as 17 fixtures (toolchain real do SDK + 6 malformed D4)
         run: |
           BT="${ANDROID_HOME}/build-tools/35.0.0"
           mkdir -p dist
           for f in minSdk9 sig-v1-only sig-v2-only sig-v3-only unaligned zip64 \
-                   huge-arsc multidex-8 unknown-perms exported-audit obfuscated; do
+                   huge-arsc multidex-8 unknown-perms exported-audit obfuscated \
+                   zip-slip duplicate-entries axml-truncated \
+                   arsc-type-collision dex-corrupted v3-rotation-lineage; do
             python3 tools/fixture-pack.py --fixture "$f" --out dist \
               --aapt2 "${BT}/aapt2" --d8 "${BT}/d8" \
               --apksigner "${BT}/apksigner" --zipalign "${BT}/zipalign"
@@ -866,6 +868,126 @@ jobs:
             --apksigner "${BT}/apksigner" --zipalign "${BT}/zipalign"
           bash tools/verify-deterministic.sh --mode apk \
             --apk1 dist/unaligned.apk --apk2 dist2/unaligned.apk
+
+      - name: Validar as 6 malformed D4 (patologia comprovável, nunca crash)
+        run: |
+          BT="${ANDROID_HOME}/build-tools/35.0.0"
+          python3 - "${BT}" <<'PY'
+          import struct, subprocess, sys, zipfile, zlib
+          from pathlib import Path
+          bt = Path(sys.argv[1])
+          dist = Path("dist")
+
+          def names(apk):
+              with zipfile.ZipFile(apk) as zf:
+                  return zf.namelist()
+
+          # zip-slip: traversal presente no Central Directory (o parser deve
+          # classificar/confinar — nunca extrair fora nem crash).
+          slip = [n for n in names(dist / "zip-slip.apk") if "../" in n]
+          assert len(slip) >= 2, f"zip-slip sem traversal: {slip}"
+          print(f"[D4] ok zip-slip: {len(slip)} entradas de traversal "
+                f"({slip[0]} ...)")
+
+          # duplicate-entries: nomes duplicados no Central Directory.
+          nl = names(dist / "duplicate-entries.apk")
+          dups = sorted({n for n in nl if nl.count(n) > 1})
+          assert dups, "duplicate-entries sem duplicatas"
+          print(f"[D4] ok duplicate-entries: {dups}")
+
+          # axml-truncated: AXML declara mais bytes do que existem E o
+          # aapt2 reprova com erro (rc != 0) — parser alvo, nunca crash.
+          with zipfile.ZipFile(dist / "axml-truncated.apk") as zf:
+              axml = zf.read("AndroidManifest.xml")
+          declared = struct.unpack("<I", axml[4:8])[0]
+          assert declared > len(axml), \
+              f"AXML nao esta truncado: declara {declared}, tem {len(axml)}"
+          proc = subprocess.run(
+              [str(bt / "aapt2"), "dump", "xmltree",
+               str(dist / "axml-truncated.apk"),
+               "--file", "AndroidManifest.xml"],
+              capture_output=True, text=True)
+          assert proc.returncode != 0, \
+              "aapt2 aceitou um AXML truncado? (deveria reprovar)"
+          print(f"[D4] ok axml-truncated: declara {declared} > "
+                f"{len(axml)} bytes; aapt2 reprova (rc={proc.returncode})")
+
+          # arsc-type-collision: dois chunks de tipo com ids diferentes e o
+          # MESMO nome no pool de tipos; aapt2 reprova com erro estruturado.
+          with zipfile.ZipFile(dist / "arsc-type-collision.apk") as zf:
+              arsc = zf.read("resources.arsc")
+          off = 12 + struct.unpack("<I", arsc[16:20])[0]  # apos o pool global
+          pt, phs, psize = struct.unpack("<HHI", arsc[off:off + 8])
+          assert pt == 0x0200, f"package ausente: {hex(pt)}"
+          tstr = struct.unpack("<I", arsc[off + 268:off + 272])[0]
+          pool = off + tstr
+          count = struct.unpack("<I", arsc[pool + 8:pool + 12])[0]
+          sstart = struct.unpack("<I", arsc[pool + 20:pool + 24])[0]
+          type_names = []
+          for i in range(count):
+              o = struct.unpack("<I", arsc[pool + 28 + i * 4:
+                                           pool + 32 + i * 4])[0]
+              q = pool + sstart + o
+              type_names.append(
+                  arsc[q + 2:q + 2 + arsc[q + 1]].decode())
+          tids, cur = [], off + 284
+          while cur + 8 <= off + psize:
+              ct, chs, csize = struct.unpack("<HHI", arsc[cur:cur + 8])
+              if csize < 8 or cur + csize > off + psize:
+                  break
+              if ct == 0x0201:
+                  tids.append(arsc[cur + 8])
+              cur += csize
+          assert len(tids) == 2 and len(set(tids)) == 2 \
+              and len(set(type_names)) == 1, \
+              f"colisao ausente: ids={tids} nomes={type_names}"
+          proc = subprocess.run(
+              [str(bt / "aapt2"), "dump", "resources",
+               str(dist / "arsc-type-collision.apk")],
+              capture_output=True, text=True)
+          print(f"[D4] ok arsc-type-collision: ids={tids} "
+                f"nome repetido={type_names[0]!r}; aapt2 rc="
+                f"{proc.returncode} (erro estruturado esperado)")
+
+          # dex-corrupted: checksum adler32 mentiroso + map_off invalido;
+          # o d8 reprova com erro (nunca crash do parser).
+          with zipfile.ZipFile(dist / "dex-corrupted.apk") as zf:
+              dex = zf.read("classes.dex")
+          stored = struct.unpack("<I", dex[8:12])[0]
+          actual = zlib.adler32(dex[12:]) & 0xFFFFFFFF
+          map_off = struct.unpack("<I", dex[52:56])[0]
+          assert stored != actual, "checksum deveria divergir"
+          assert map_off == 0xFFFFFFFF, f"map_off = {hex(map_off)}"
+          extracted = Path("dist/classes-corrompido.dex")
+          extracted.write_bytes(dex)
+          proc = subprocess.run(
+              [str(bt / "d8"), "--release", "--output", "dist/d8-out",
+               str(extracted)], capture_output=True, text=True)
+          assert proc.returncode != 0, \
+              "d8 aceitou um DEX com map_off invalido? (deveria reprovar)"
+          print(f"[D4] ok dex-corrupted: checksum {stored} != {actual}, "
+                f"map_off=0xffffffff; d8 reprova (rc={proc.returncode})")
+
+          # v3-rotation-lineage: v3-only verdadeiro COM proof-of-rotation
+          # (o apksigner so consome --lineage quando o lineage e valido).
+          proc = subprocess.run(
+              [str(bt / "apksigner"), "verify", "--verbose",
+               "--min-sdk-version", "28",
+               str(dist / "v3-rotation-lineage.apk")],
+              capture_output=True, text=True)
+          out = proc.stdout + "\n" + proc.stderr
+          import re
+          def flag(scheme):
+              m = re.search(
+                  rf"\b{scheme}\s+scheme(?:\s*\([^)]*\))??:\s*"
+                  r"(true|false)\b", out, re.I)
+              return m.group(1).lower() if m else None
+          got = (flag("v1"), flag("v2"), flag("v3"))
+          assert got == ("false", "false", "true"), \
+              f"esquemas {got} != (false, false, true)\\n{out[:800]}"
+          print("[D4] ok v3-rotation-lineage: v1=false v2=false v3=true "
+                "(lineage A->B consumido pelo apksigner)")
+          PY
 
       - name: Upload das fixtures (artefato de CI)
         uses: actions/upload-artifact@v4

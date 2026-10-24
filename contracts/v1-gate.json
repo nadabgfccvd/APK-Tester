@@ -18,9 +18,9 @@
         "ladder_rungs": 18,
         "min_required": 30,
         "minsdk9_fixture_mode": true,
-        "torture_fixture_modes": 10,
+        "torture_fixture_modes": 16,
         "torture_modes_in_packer": true,
-        "total_apk_slots": 63
+        "total_apk_slots": 69
       },
       "status": "evidence-release"
     },
@@ -131,7 +131,7 @@
         "ladder_inputs": true,
         "schema_version": 1,
         "suite_ids_unique": true,
-        "suites": 64,
+        "suites": 70,
         "torture_packer_modes": true
       },
       "status": "pass"

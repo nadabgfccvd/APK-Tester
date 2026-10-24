@@ -60,10 +60,13 @@ fixture_pack = _load("fixture-pack")
 gen_arsc = _load("gen-arsc-stress")
 gen_trap = _load("gen-trap-manifest")
 
-# Ordem canônica das 10 fixtures (a da tabela do suites/parser-torture/README).
+# Ordem canônica das 16 fixtures (a da tabela do suites/parser-torture/README;
+# D4 acrescentou as 6 malformed do corpus adversarial).
 TORTURE_ORDER = (
     "sig-v1-only", "sig-v2-only", "sig-v3-only", "unaligned", "zip64",
     "huge-arsc", "multidex-8", "unknown-perms", "exported-audit", "obfuscated",
+    "zip-slip", "duplicate-entries", "axml-truncated",
+    "arsc-type-collision", "dex-corrupted", "v3-rotation-lineage",
 )
 
 PATOLOGIA = {
@@ -77,6 +80,16 @@ PATOLOGIA = {
     "unknown-perms": "strings de permissão inventadas dev.apktester.fake.*",
     "exported-audit": "9 componentes-armadilha (exported/permissões mal declaradas)",
     "obfuscated": "nomes minificados determinísticos + mapping.txt",
+    "zip-slip": "entradas com traversal '../../' no Central Directory (zip-slip)",
+    "duplicate-entries": "mesmo nome de entrada DUAS VEZES com conteúdo divergente",
+    "axml-truncated": "AXML do manifesto truncado no meio de um chunk "
+                      "(tamanhos declarados > bytes reais)",
+    "arsc-type-collision": "ARSc sintético com dois chunks de tipo de ids "
+                           "diferentes e o MESMO nome (string)",
+    "dex-corrupted": "classes.dex com checksum adler32 zerado e map_off "
+                     "invalidado (0xFFFFFFFF)",
+    "v3-rotation-lineage": "assinatura v3 com proof-of-rotation real "
+                           "(chave A -> chave B via apksigner rotate + --lineage)",
 }
 
 EXPECTED_RESULTS = {
@@ -90,6 +103,16 @@ EXPECTED_RESULTS = {
     "unknown-perms": "permissões desconhecidas classificadas como unknown — nunca crash",
     "exported-audit": "9 armadilhas reportadas na auditoria",
     "obfuscated": "nomes ofuscados resolvidos via mapping.txt",
+    "zip-slip": "entradas de traversal detectadas/classificadas — extração "
+                "confinada, nunca crash",
+    "duplicate-entries": "duplicatas detectadas (primeira entrada vence com "
+                         "trilha da divergência) — nunca crash",
+    "axml-truncated": "AXML truncado reprovado com erro estruturado — nunca crash",
+    "arsc-type-collision": "colisão de tipos reprovada com erro estruturado "
+                           "— nunca crash",
+    "dex-corrupted": "DEX mentiroso reprovado com erro estruturado — nunca crash",
+    "v3-rotation-lineage": "parser lê a v3 e o lineage da rotação A->B "
+                           "(certificado novo + histórico provável)",
 }
 
 
@@ -131,7 +154,7 @@ def build_fixtures_audit() -> str:
     """fixtures-audit.md — visão PT-BR das 10 fixtures do pacote."""
     lines = []
     add = lines.append
-    add("# Fixtures Audit — pacote parser-torture (10 fixtures)")
+    add("# Fixtures Audit — pacote parser-torture (16 fixtures)")
     add("")
     add(f"Gerado por `tools/{TOOL}` (seed {DEFAULT_SEED}) lendo a tabela MODES")
     add("de `tools/fixture-pack.py` — zero drift entre esta auditoria, o")
@@ -170,6 +193,14 @@ def build_fixtures_audit() -> str:
     add("  [h[huge-arsc-audit.md](huge-arsc-audit.md)) é a âncora.")
     add("- `multidex-8`: corpus do `gen-dex-stress` fatiado em 8 lotes")
     add("  contíguos -> classes.dex..classes8.dex na raiz do APK.")
+    add("- Corpus adversarial-malformed (D4): `zip-slip`, `duplicate-entries`,")
+    add("  `axml-truncated`, `arsc-type-collision` e `dex-corrupted` são")
+    add("  UNSIGNED de propósito (a patologia é estrutural, não de assinatura)")
+    add("  e nascem de MUTAÇÃO pós-build determinística")
+    add("  (`fixture-pack.py --malformed-mutate`, mtimes 1980, stdlib only);")
+    add("  `v3-rotation-lineage` é a exceção HONESTA: usa as duas keystores de")
+    add("  fixture + `apksigner rotate` + `--lineage` para um proof-of-rotation")
+    add("  REAL (chave A -> chave B) na v3 block.")
     add("- `sig-v1-only` (minSdk 9), `sig-v2-only` (minSdk 24) e `multidex-8`")
     add("  (minSdk 21) ficam abaixo do piso 26 do RustyDroid: `below_floor_allowed`")
     add("  cobre o BELOW_FLOOR estruturado — nunca crash.")
@@ -196,7 +227,7 @@ def build_fixtures_audit() -> str:
     add("| `fixtures-audit.md` | esta visão geral |")
     add("| `exported-audit-traps.md` | tabela das 9 armadilhas (idem `gen-trap-manifest`) |")
     add("| `huge-arsc-audit.md` | contagens + validação do ARSc sintético |")
-    add("| `suites-fragment.json` | as 10 entradas de `contracts/suites.json` |")
+    add("| `suites-fragment.json` | as 16 entradas de `contracts/suites.json` |")
     add("| `manifest.json` | ledger com sha256 de cada arquivo gerado |")
     return "\n".join(lines) + "\n"
 
@@ -261,7 +292,7 @@ def selftest() -> int:
 
             fragment = json.loads(a["contracts/parser-torture/suites-fragment.json"])
             suites = fragment["suites"]
-            assert len(suites) == 10, f"esperado 10 suites, veio {len(suites)}"
+            assert len(suites) == 16, f"esperado 16 suites, veio {len(suites)}"
             assert [s["id"] for s in suites] == \
                 [f"torture-{m}" for m in TORTURE_ORDER], "ordem/ids divergem"
             assert [s["apk"] for s in suites] == [
@@ -275,6 +306,12 @@ def selftest() -> int:
                 "suites/parser-torture/unknown-perms",
                 "suites/parser-torture/exported-audit",
                 "suites/parser-torture/obfuscated-r8",
+                "suites/parser-torture/zip-slip",
+                "suites/parser-torture/duplicate-entries",
+                "suites/parser-torture/axml-truncated",
+                "suites/parser-torture/arsc-type-collision",
+                "suites/parser-torture/dex-corrupted",
+                "suites/parser-torture/v3-rotation-lineage",
             ], "apks divergem"
             floor = {s["id"]: s["expects"]["below_floor_allowed"] for s in suites}
             assert floor == {
@@ -283,6 +320,11 @@ def selftest() -> int:
                 "torture-zip64": False, "torture-huge-arsc": False,
                 "torture-multidex-8": True, "torture-unknown-perms": False,
                 "torture-exported-audit": False, "torture-obfuscated": False,
+                "torture-zip-slip": False, "torture-duplicate-entries": False,
+                "torture-axml-truncated": False,
+                "torture-arsc-type-collision": False,
+                "torture-dex-corrupted": False,
+                "torture-v3-rotation-lineage": False,
             }, f"below_floor_allowed divergiu: {floor}"
 
             traps = json.loads(
@@ -317,11 +359,22 @@ def selftest() -> int:
                     f"sha256 diverge em {entry['path']}"
 
         # A3: fixture-pack ganhou os 9 modos engine-* (Tier C); o fragmento
-        # parser-torture continua amarrado aos 10 modos de TORTURE_ORDER.
+        # parser-torture continua amarrado aos 16 modos de TORTURE_ORDER.
         # A9: +multidex-8-full (corpus 65k completo; build-only/nightly).
-        assert len(fixture_pack.MODES) == 12 + 9, \
-            f"MODES deveria ter 21 modos (12 parser-torture + 9 engines " \
+        # D4: +6 malformed (zip-slip, duplicate-entries, axml-truncated,
+        # arsc-type-collision, dex-corrupted, v3-rotation-lineage).
+        assert len(fixture_pack.MODES) == 12 + 6 + 9, \
+            f"MODES deveria ter 27 modos (18 parser-torture + 9 engines " \
             f"tier C), tem {len(fixture_pack.MODES)}"
+        for malformed_mode in ("zip-slip", "duplicate-entries",
+                               "axml-truncated", "arsc-type-collision",
+                               "dex-corrupted"):
+            cfg_m = fixture_pack.MODES[malformed_mode]
+            assert cfg_m["malformed"] == malformed_mode, malformed_mode
+            assert cfg_m["sign"] is False, \
+                f"{malformed_mode} deveria ser unsigned"
+        assert fixture_pack.MODES["v3-rotation-lineage"]["v3"] is True, \
+            "v3-rotation-lineage deveria assinar v3 (lineage real)"
         assert "multidex-8-full" in fixture_pack.MODES and \
             fixture_pack.is_multidex("multidex-8-full") and \
             fixture_pack.corpus_args("multidex-8-full") == (), \
@@ -332,7 +385,7 @@ def selftest() -> int:
         audit = a["contracts/parser-torture/fixtures-audit.md"]
         for mode in TORTURE_ORDER:
             assert apk_name(mode) in audit and f"`{mode}`" in audit
-        print(f"[{TOOL}] selftest OK: 10 suites no fragmento, ledger com "
+        print(f"[{TOOL}] selftest OK: 16 suites no fragmento, ledger com "
               f"{len(ledger['artifacts'])} artifacts batendo com os bytes, "
               f"renderizações idênticas ao gen-trap-manifest/gen-arsc-stress, "
               f"MODES={len(fixture_pack.MODES)} modos")

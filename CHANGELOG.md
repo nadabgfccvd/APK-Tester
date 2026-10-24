@@ -34,6 +34,30 @@ de compatibilidade verde).
   57 → 63); docs (`docs/src/sdk-ladder.md`, `v1-gate.md`, `guide.md`,
   `compat-nightly.md`) e READMEs atualizados.
 
+### Adicionado (D4 — corpus adversarial-malformed do parser-torture)
+
+- **6 fixtures malformed** no `fixture-pack.py` (27 modos no total):
+  `zip-slip` (traversal `../../` no Central Directory),
+  `duplicate-entries` (mesmo nome duas vezes com conteúdo divergente),
+  `axml-truncated` (AXML truncado — declara > bytes reais),
+  `arsc-type-collision` (ARSc sintético estruturalmente honesto com dois
+  chunks de tipo de ids 1/2 e o MESMO nome no pool — colisão real),
+  `dex-corrupted` (checksum adler32 zerado + `map_off` = `0xFFFFFFFF`) e
+  `v3-rotation-lineage` (proof-of-rotation REAL: segunda keystore +
+  `apksigner rotate` + `--lineage`, v3-only).
+- Mutação pós-build determinística (`--malformed-mutate`, stdlib only,
+  mtimes 1980); as 5 patologias estruturais são unsigned de propósito
+  (alvo de PARSER, não de instalação).
+- CI `parser-torture` empacota e valida as 17 fixtures com prova por
+  patologia: traversal no CD, duplicatas, `declared > bytes` + reprovação
+  do aapt2, colisão parseada + reprovação do aapt2, checksum/map_off +
+  reprovação do d8, e v3-only com lineage consumido pelo apksigner.
+- Contratos: `TORTURE_ORDER` 16, `fixtures-audit.md` e
+  `suites-fragment.json` regenerados, `contracts/suites.json` com as 6
+  entradas `torture-*` novas (70 no total); `contracts/v1-gate.json`
+  re-sincronizado (torture_fixture_modes 10 → 16, total_apk_slots
+  63 → 69); release coleta 17 fixtures; docs e READMEs atualizados.
+
 ### Adicionado (D3 — wiring dos probes: answer key = código)
 
 - Paridade registry X código resolvida: `ProbeCatalog.java` agora tem os

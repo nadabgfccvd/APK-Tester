@@ -7,7 +7,26 @@ causa. Todos são empacotados por `tools/fixture-pack.py` (aapt2 + d8 + zip +
 zipalign + apksigner, python3 stdlib-only, determinístico por seed
 20261022).
 
-## As 10 fixtures (entregues em A2)
+## As 10 fixtures estruturais (entregues em A2)
+
+### Malformed corpus (D4)
+
+As 6 fixtures adversariais-malformed abaixo atacam o que escala
+sozinho não pega: a MALFORMAÇÃO. Todas nascem de mutação pós-build
+determinística (`fixture-pack.py --malformed-mutate`, mtimes 1980,
+stdlib only) sobre a base empacotada pela toolchain — e são
+unsigned de propósito (a patologia é estrutural), exceto a
+`v3-rotation-lineage`, que usa as duas keystores de fixture com
+`apksigner rotate` + `--lineage` para um proof-of-rotation REAL.
+
+| Fixture | Patologia | Resultado esperado no RustyDroid |
+|---|---|---|
+| `zip-slip` | entradas com traversal `../../` no Central Directory | detecção/confinamento da extração — nunca crash |
+| `duplicate-entries` | mesmo nome DUAS vezes com conteúdo divergente (manifesto e `assets/dup.txt`) | duplicata detectada (primeira vence com trilha) — nunca crash |
+| `axml-truncated` | AXML truncado no meio de um chunk (declara > bytes reais) | reprovação com erro estruturado — nunca crash |
+| `arsc-type-collision` | ARSc sintético com dois tipos de ids diferentes e o MESMO nome (`string`) | colisão reprovada com erro estruturado — nunca crash |
+| `dex-corrupted` | checksum adler32 zerado + `map_off` = `0xFFFFFFFF` | DEX mentiroso reprovado com erro estruturado — nunca crash |
+| `v3-rotation-lineage` | v3 com proof-of-rotation real (chave A → B) | parser lê v3 e o lineage (certificado novo + histórico) |
 
 | Fixture | Patologia | Resultado esperado no RustyDroid |
 |---|---|---|
@@ -43,15 +62,21 @@ zipalign + apksigner, python3 stdlib-only, determinístico por seed
 ## Empacotar e validar localmente
 
 ```bash
-python3 tools/fixture-pack.py --selftest                 # planos dos 11 modos
+python3 tools/fixture-pack.py --selftest                 # planos dos 27 modos
 python3 tools/fixture-pack.py --fixture huge-arsc --out dist   # com toolchain
 python3 tools/gen-torture-contracts.py --out .           # contratos (zero drift)
 ```
 
-O job `parser-torture` do CI empacota as 10 fixtures com a toolchain real do
-SDK e valida cada uma: esquemas de assinatura via `apksigner verify
---verbose`, reprovação esperada do `zipalign -c` na unaligned (com contraste
-aprovando), contagem de entradas Zip64, os 8 dex, sha256 + re-parse do arsc,
-as 4 permissões falsas, as armadilhas no manifesto binário e o
-`mapping.txt` + classes `a.a.*` no dex. A auditoria completa de cada fixture
-vive em `contracts/parser-torture/fixtures-audit.md`.
+O job `parser-torture` do CI empacota as 17 fixtures (10 estruturais + 6
+malformed D4 + minSdk9) com a toolchain real do SDK e valida cada uma:
+esquemas de assinatura via `apksigner verify --verbose`, reprovação
+esperada do `zipalign -c` na unaligned (com contraste aprovando),
+contagem de entradas Zip64, os 8 dex, sha256 + re-parse do arsc, as 4
+permissões falsas, as armadilhas no manifesto binário, o `mapping.txt` +
+classes `a.a.*` no dex — e as 6 provas da malformed: traversal no
+Central Directory (zip-slip), duplicatas no CD, `declared > bytes` no AXML
+truncado com reprovação do aapt2, colisão de tipos no arsc sintético
+(parse próprio + reprovação do aapt2), checksum/map_off mentirosos no dex
+com reprovação do d8, e v3-only com lineage consumido pelo apksigner. A
+auditoria completa de cada fixture vive em
+`contracts/parser-torture/fixtures-audit.md`.
