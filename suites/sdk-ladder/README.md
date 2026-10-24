@@ -1,8 +1,10 @@
-# suites/sdk-ladder — escada minSdk 9 → 36
+# suites/sdk-ladder — escada de dois eixos: minSdk 9 → 36 + targetSdk 23 → 35
 
-O **mesmo aplicativo mínimo** construído em doze níveis de minSdk, para
-provar as leis de piso do RustyDroid: o que está abaixo do floor 26 recebe
-erro estruturado; o que está acima executa.
+O **mesmo aplicativo mínimo** construído em **18 degraus de dois eixos**
+(12 de minSdk + 6 de targetSdk, D2), para provar as leis de piso do
+RustyDroid: o que está abaixo do floor 26 recebe erro estruturado; o que
+está acima executa — e no eixo targetSdk os switches de comportamento
+variam de verdade entre degraus.
 
 ## O app mínimo
 
@@ -13,9 +15,10 @@ Cada degrau da escada é a mesma aplicação com exatamente:
 - 1 receiver;
 - 1 provider.
 
-Nada mais — a variável em teste é **apenas** o minSdk. O código é
-framework-only (o flavor `classic`), sem androidx, para que a API mínima
-real corresponda ao minSdk declarado.
+Nada mais — no eixo 1 a variável em teste é **apenas** o minSdk; no eixo 2
+(D2) é o **targetSdk** (23/29/31/33/34/35, com minSdk no piso válido). O
+código é framework-only, sem androidx, para que a API mínima real
+corresponda ao minSdk declarado.
 
 ## Degrada da escada
 
@@ -50,12 +53,13 @@ crash. Nenhum degrau pode derrubar o runtime.
 
 | Item | Status |
 |---|---|
-| Escada completa (9, 12, 14, 16, 19, 21, 23, 26, 29, 33, 35, 36) | **entregue (A2)** — projeto Gradle com 12 product flavors lidos de `rungs.properties` |
+| Escada completa (9, 12, 14, 16, 19, 21, 23, 26, 29, 33, 35, 36 + targetSdk 23, 29, 31, 33, 34, 35 — D2) | **entregue (A2 + D2)** — projeto Gradle com 18 product flavors lidos de `rungs.properties` |
 | Contratos | `contracts/sdk-ladder/answer-key.json` + `ladder-audit.md` + ledger `manifest.json` (gerados por `tools/gen-ladder.py`, zero drift) |
-| Build no CI | job `sdk-ladder` em `.github/workflows/ci.yml` (`:app:assembleDebug` → 12 APKs validados por aapt2 badging) |
+| Build no CI | job `sdk-ladder` em `.github/workflows/ci.yml` (`:app:assembleDebug` → 18 APKs validados por aapt2 badging, por eixo) |
 
 O app mínimo tem 1 activity, 1 service, 1 receiver e 1 provider
 (`LadderActivity`, `LadderService`, `LadderReceiver`, `LadderProvider` —
-package `dev.apktester.ladder`, applicationId `dev.apktester.ladder.minsdkNN`,
-versionCode = minSdk) e declara **zero permissões** — a variável em teste é
-apenas o minSdk. Contexto geral em [README.md](../../README.md).
+package `dev.apktester.ladder`, applicationId `dev.apktester.ladder.minsdkNN`
+ou `dev.apktester.ladder.targetsdkNN`, versionCode = minSdk no eixo 1 e =
+targetSdk no eixo 2) e declara **zero permissões**. Contexto geral em
+[README.md](../../README.md).

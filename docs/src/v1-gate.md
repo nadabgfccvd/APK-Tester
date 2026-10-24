@@ -24,7 +24,7 @@ das duas builds de release consecutivas exigida pela Definition of Done.
 
 | id | critério (DoD) | prova estática (árvore) | prova dinâmica (workflow Release) |
 |---|---|---|---|
-| `apks_30_plus` | ≥ 30 APKs buildáveis de checkout limpo | 57 slots contados da árvore (32 engines + 2 flavors + 12 degraus + 11 fixtures + minSdk9) | contagem real dos APKs construídos no run |
+| `apks_30_plus` | ≥ 30 APKs buildáveis de checkout limpo | 63 slots contados da árvore (32 engines + 2 flavors + 18 degraus (D2) + 11 fixtures + minSdk9) | contagem real dos APKs construídos no run |
 | `flagship_size_gate` | flagship ∈ [850, 1000] MiB, R8, CSV concilia | baseline commitado `size-report.csv` | medição fresca do APK — bytes **descomprimidos** por entrada (semântica do gate A6: tamanho é conteúdo) + `size-budget.sh` |
 | `permissions_audit` | contagens por protectionLevel casam com o manifesto | registry == auditoria == manifesto (1004 strings AOSP verbatim) | — (estática por construção) |
 | `minsdk9_apk` | APK minSdk 9 aceito pelo caminho de build | flavor `minsdk09` + fixture `minSdk9` + suite `sdk-ladder-09` | — |
@@ -79,7 +79,7 @@ build-flagship → classic release (bulk quick) + modern release (bulk full) DUA
                  ignorado) + size gate fresco + sha256
 build-tier-a   → matriz dos 14 engines reais (toolchains pinadas, igual ao CI)
 build-tier-c   → 9 fixtures honestas + --verify-apk
-build-ladder   → 12 degraus minSdk 9..36
+build-ladder   → 18 degraus (12 minSdk 9..36 + 6 targetSdk 23..35, D2)
 build-torture  → 11 fixtures de tortura (inclui minSdk9)
 fetch-tier-b   → 9 APKs do ÚLTIMO nightly verde, re-verificados contra o contrato
 v1-release     → baixa tudo (≥ 30 APKs), roda o gate COM evidências,

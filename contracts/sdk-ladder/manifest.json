@@ -2,19 +2,19 @@
  "artifacts": [
   {
    "path": "contracts/sdk-ladder/answer-key.json",
-   "sha256": "6a9e97a4a3b4046dce817c1437c8691b121349e7aa5e31c6777b1540fae633ba"
+   "sha256": "ac4b30a13e8a7d1cb2a652eff6af28c1ace8dcf53e76be4c443c51510d41067d"
   },
   {
    "path": "contracts/sdk-ladder/ladder-audit.md",
-   "sha256": "4fed8c4b227711be2ce274b877437b4bd978b88308da522bb3455b915573c7ed"
+   "sha256": "39fe26f0b589bd5b779f126463187b0d808e82c321f67a8e1dc3be75f568469d"
   },
   {
    "path": "suites/sdk-ladder/app/src/main/assets/ladder/rungs.json",
-   "sha256": "c400696620cd29d1e03d24f29d4807096f2615d1410e9014eac4a216f37c7148"
+   "sha256": "58e6f3887690966941b85ce336e36e1b227a1d2c9597c77abb4d6ecdddd43615"
   },
   {
    "path": "suites/sdk-ladder/rungs.properties",
-   "sha256": "5505b206bed2ee5ebc52230906301e247862aafb71379aae4d04c4a951b8458a"
+   "sha256": "51a0a20312619b2624575d92e1f552a5c1d4945d794ba19c38517008b5c7b85a"
   }
  ],
  "note": "gerado; NAO editar a mao — regenere com a ferramenta",

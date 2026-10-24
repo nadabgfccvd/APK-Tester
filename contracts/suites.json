@@ -411,7 +411,8 @@
     ],
     "min_sdk": 9,
     "below_floor_allowed": true,
-    "expected_result": "BELOW_FLOOR(minSdk=9) estruturado — nunca crash"
+    "expected_result": "BELOW_FLOOR(minSdk=9) estruturado — nunca crash",
+    "target_sdk": 36
    }
   },
   {
@@ -424,7 +425,8 @@
     ],
     "min_sdk": 12,
     "below_floor_allowed": true,
-    "expected_result": "BELOW_FLOOR(minSdk=12) estruturado — nunca crash"
+    "expected_result": "BELOW_FLOOR(minSdk=12) estruturado — nunca crash",
+    "target_sdk": 36
    }
   },
   {
@@ -437,7 +439,8 @@
     ],
     "min_sdk": 14,
     "below_floor_allowed": true,
-    "expected_result": "BELOW_FLOOR(minSdk=14) estruturado — nunca crash"
+    "expected_result": "BELOW_FLOOR(minSdk=14) estruturado — nunca crash",
+    "target_sdk": 36
    }
   },
   {
@@ -450,7 +453,8 @@
     ],
     "min_sdk": 16,
     "below_floor_allowed": true,
-    "expected_result": "BELOW_FLOOR(minSdk=16) estruturado — nunca crash"
+    "expected_result": "BELOW_FLOOR(minSdk=16) estruturado — nunca crash",
+    "target_sdk": 36
    }
   },
   {
@@ -463,7 +467,8 @@
     ],
     "min_sdk": 19,
     "below_floor_allowed": true,
-    "expected_result": "BELOW_FLOOR(minSdk=19) estruturado — nunca crash"
+    "expected_result": "BELOW_FLOOR(minSdk=19) estruturado — nunca crash",
+    "target_sdk": 36
    }
   },
   {
@@ -476,7 +481,8 @@
     ],
     "min_sdk": 21,
     "below_floor_allowed": true,
-    "expected_result": "BELOW_FLOOR(minSdk=21) estruturado — nunca crash"
+    "expected_result": "BELOW_FLOOR(minSdk=21) estruturado — nunca crash",
+    "target_sdk": 36
    }
   },
   {
@@ -489,7 +495,8 @@
     ],
     "min_sdk": 23,
     "below_floor_allowed": true,
-    "expected_result": "BELOW_FLOOR(minSdk=23) estruturado — nunca crash"
+    "expected_result": "BELOW_FLOOR(minSdk=23) estruturado — nunca crash",
+    "target_sdk": 36
    }
   },
   {
@@ -502,7 +509,8 @@
     ],
     "min_sdk": 26,
     "below_floor_allowed": false,
-    "expected_result": "execução (piso do runtime)"
+    "expected_result": "execução (piso do runtime)",
+    "target_sdk": 36
    }
   },
   {
@@ -515,7 +523,8 @@
     ],
     "min_sdk": 29,
     "below_floor_allowed": false,
-    "expected_result": "execução (switches de comportamento por targetSdk)"
+    "expected_result": "execução (switches de comportamento por targetSdk)",
+    "target_sdk": 36
    }
   },
   {
@@ -528,7 +537,8 @@
     ],
     "min_sdk": 33,
     "below_floor_allowed": false,
-    "expected_result": "execução (switches de comportamento por targetSdk)"
+    "expected_result": "execução (switches de comportamento por targetSdk)",
+    "target_sdk": 36
    }
   },
   {
@@ -541,7 +551,8 @@
     ],
     "min_sdk": 35,
     "below_floor_allowed": false,
-    "expected_result": "execução (switches de comportamento por targetSdk)"
+    "expected_result": "execução (switches de comportamento por targetSdk)",
+    "target_sdk": 36
    }
   },
   {
@@ -554,7 +565,92 @@
     ],
     "min_sdk": 36,
     "below_floor_allowed": false,
-    "expected_result": "execução (switches de comportamento por targetSdk)"
+    "expected_result": "execução (switches de comportamento por targetSdk)",
+    "target_sdk": 36
+   }
+  },
+  {
+   "id": "sdk-ladder-ts23",
+   "apk": "suites/sdk-ladder/targetsdk-23",
+   "scenario": "install+inspect",
+   "expects": {
+    "rustydroid_engines": [
+     "java"
+    ],
+    "min_sdk": 23,
+    "target_sdk": 23,
+    "below_floor_allowed": true,
+    "expected_result": "BELOW_FLOOR(minSdk=23) estruturado — nunca crash"
+   }
+  },
+  {
+   "id": "sdk-ladder-ts29",
+   "apk": "suites/sdk-ladder/targetsdk-29",
+   "scenario": "install+inspect+test",
+   "expects": {
+    "rustydroid_engines": [
+     "java"
+    ],
+    "min_sdk": 26,
+    "target_sdk": 29,
+    "below_floor_allowed": false,
+    "expected_result": "execução (switches de comportamento por targetSdk=29)"
+   }
+  },
+  {
+   "id": "sdk-ladder-ts31",
+   "apk": "suites/sdk-ladder/targetsdk-31",
+   "scenario": "install+inspect+test",
+   "expects": {
+    "rustydroid_engines": [
+     "java"
+    ],
+    "min_sdk": 26,
+    "target_sdk": 31,
+    "below_floor_allowed": false,
+    "expected_result": "execução (switches de comportamento por targetSdk=31)"
+   }
+  },
+  {
+   "id": "sdk-ladder-ts33",
+   "apk": "suites/sdk-ladder/targetsdk-33",
+   "scenario": "install+inspect+test",
+   "expects": {
+    "rustydroid_engines": [
+     "java"
+    ],
+    "min_sdk": 26,
+    "target_sdk": 33,
+    "below_floor_allowed": false,
+    "expected_result": "execução (switches de comportamento por targetSdk=33)"
+   }
+  },
+  {
+   "id": "sdk-ladder-ts34",
+   "apk": "suites/sdk-ladder/targetsdk-34",
+   "scenario": "install+inspect+test",
+   "expects": {
+    "rustydroid_engines": [
+     "java"
+    ],
+    "min_sdk": 26,
+    "target_sdk": 34,
+    "below_floor_allowed": false,
+    "expected_result": "execução (switches de comportamento por targetSdk=34)"
+   }
+  },
+  {
+   "id": "sdk-ladder-ts35",
+   "apk": "suites/sdk-ladder/targetsdk-35",
+   "scenario": "install+inspect+test",
+   "expects": {
+    "rustydroid_engines": [
+     "java"
+    ],
+    "min_sdk": 26,
+    "target_sdk": 35,
+    "below_floor_allowed": false,
+    "expected_result": "execução (switches de comportamento por targetSdk=35)"
    }
   },
   {

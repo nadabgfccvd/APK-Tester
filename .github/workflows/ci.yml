@@ -540,12 +540,14 @@ jobs:
           path: suites/flagship/app/build/outputs/apk/*/debug/*.apk
           if-no-files-found: error
 
-  # A2: escada minSdk 9->36 — o MESMO app mínimo (1 activity + 1 service +
-  # 1 receiver + 1 provider, 0 permissões) construído em 12 degraus. Os
+  # A2 + D2: escada de DOIS eixos — o MESMO app mínimo (1 activity + 1
+  # service + 1 receiver + 1 provider, 0 permissões) construído em 18
+  # degraus: 12 de minSdk 9->36 (targetSdk 36) e 6 de targetSdk
+  # 23/29/31/33/34/35 (os switches de comportamento variam de verdade). Os
   # flavors são lidos de rungs.properties (gerado) em tempo de configuração:
   # zero drift por construção entre build e answer key.
   sdk-ladder:
-    name: "SDK Ladder (A2): 12 degraus minSdk 9-36"
+    name: "SDK Ladder (A2+D2): 18 degraus (12 minSdk + 6 targetSdk)"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -572,12 +574,12 @@ jobs:
             contracts/sdk-ladder/
           echo "[A2] zero drift: escada regenerada == commitada"
 
-      - name: Build (Gradle, 12 flavors debug em uma invocação)
+      - name: Build (Gradle, 18 flavors debug em uma invocação)
         run: |
           cd suites/sdk-ladder
           ./gradlew --no-daemon :app:assembleDebug
 
-      - name: Validar os 12 APKs (badging + componentes + zero permissões)
+      - name: Validar os 18 APKs (badging por eixo + componentes + zero permissões)
         run: |
           AAPT2="${ANDROID_HOME}/build-tools/35.0.0/aapt2"
           python3 - "$AAPT2" <<'PY'
@@ -586,10 +588,21 @@ jobs:
           aapt2 = sys.argv[1]
           root = Path("suites/sdk-ladder/app/build/outputs/apk")
           apks = sorted(root.glob("*/debug/*.apk"))
-          assert len(apks) == 12, f"esperava 12 APKs, achei {len(apks)}: {apks}"
+          assert len(apks) == 18, f"esperava 18 APKs, achei {len(apks)}: {apks}"
           for apk in apks:
-              flavor = apk.parent.parent.name              # minsdk09..minsdk36
-              min_sdk = int(flavor.replace("minsdk", ""))
+              flavor = apk.parent.parent.name
+              if flavor.startswith("minsdk"):
+                  # eixo 1: (minSdk varia, targetSdk 36 fixo)
+                  min_sdk = int(flavor.replace("minsdk", ""))
+                  want_min, want_target = min_sdk, 36
+                  want_vcode = min_sdk
+              else:
+                  # eixo 2 (D2): (targetSdk varia; minSdk piso válido —
+                  # targetSdk >= minSdk é contrato da toolchain)
+                  ts = int(flavor.replace("targetsdk", ""))
+                  want_target = ts
+                  want_min = 23 if ts == 23 else 26
+                  want_vcode = ts
               badging = subprocess.run(
                   [aapt2, "dump", "badging", str(apk)],
                   capture_output=True, text=True, check=True).stdout
@@ -599,10 +612,12 @@ jobs:
               name, vcode = m.group(1), int(m.group(2))
               assert name == f"dev.apktester.ladder.{flavor}", \
                   f"applicationId inesperado em {apk}: {name}"
-              assert vcode == min_sdk, f"versionCode != minSdk em {apk}: {vcode}"
-              assert f"minSdkVersion:'{min_sdk}'" in badging, \
-                  f"minSdkVersion errado em {apk}"
-              assert "targetSdkVersion:'36'" in badging, f"targetSdk errado em {apk}"
+              assert vcode == want_vcode, \
+                  f"versionCode inesperado em {apk}: {vcode} != {want_vcode}"
+              assert f"minSdkVersion:'{want_min}'" in badging, \
+                  f"minSdkVersion errado em {apk} (queria {want_min})"
+              assert f"targetSdkVersion:'{want_target}'" in badging, \
+                  f"targetSdk errado em {apk} (queria {want_target})"
               tree = subprocess.run(
                   [aapt2, "dump", "xmltree", str(apk),
                    "--file", "AndroidManifest.xml"],
@@ -614,18 +629,26 @@ jobs:
               perms = len(re.findall(r"^ +E: uses-permission ", tree, re.M))
               assert perms == 0, \
                   f"a escada não declara permissões, achei {perms} em {apk}"
-              print(f"[A2] ok degrau: {flavor} minSdk={min_sdk} "
+              axis = "minSdk" if flavor.startswith("minsdk") else "targetSdk"
+              print(f"[A2+D2] ok degrau: {flavor} eixo={axis} "
+                    f"minSdk={want_min} targetSdk={want_target} "
                     f"versionCode={vcode} 4 componentes 0 permissões")
           PY
 
-      - name: Copiar APKs para os diretórios dos contratos (minsdk-NN)
+      - name: Copiar APKs para os diretórios dos contratos (minsdk-NN / targetsdk-NN)
         run: |
           for d in 09 12 14 16 19 21 23 26 29 33 35 36; do
             mkdir -p "suites/sdk-ladder/minsdk-${d}"
             cp "suites/sdk-ladder/app/build/outputs/apk/minsdk${d}/debug/app-minsdk${d}-debug.apk" \
                "suites/sdk-ladder/minsdk-${d}/app-debug.apk"
           done
-          ls -l suites/sdk-ladder/minsdk-*/app-debug.apk
+          for t in 23 29 31 33 34 35; do
+            mkdir -p "suites/sdk-ladder/targetsdk-${t}"
+            cp "suites/sdk-ladder/app/build/outputs/apk/targetsdk${t}/debug/app-targetsdk${t}-debug.apk" \
+               "suites/sdk-ladder/targetsdk-${t}/app-debug.apk"
+          done
+          ls -l suites/sdk-ladder/minsdk-*/app-debug.apk \
+                suites/sdk-ladder/targetsdk-*/app-debug.apk
 
       - name: Upload dos APKs (artefato de CI)
         uses: actions/upload-artifact@v4

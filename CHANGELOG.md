@@ -10,6 +10,30 @@ de compatibilidade verde).
 
 ## [Unreleased]
 
+### Adicionado (D2 — escada de dois eixos)
+
+- Escada sdk-ladder estendida para **18 degraus em dois eixos**: os 12
+  degraus de minSdk (9..36, targetSdk 36) ganham 6 degraus de **targetSdk
+  23/29/31/33/34/35** (`targetsdkNN`, minSdk no piso válido — targetSdk 23
+  usa minSdk 23 e responde `BELOW_FLOOR` estruturado; 29..35 executam com
+  switches de comportamento DIFERENTES por degrau). A promessa doc antiga
+  de que "switches por targetSdk são exercitados pelos níveis da escada"
+  era tecnicamente falsa (targetSdk 36 constante) e agora é verdade.
+- `tools/gen-ladder.py`: constantes `MIN_SDK_RUNGS` + `TARGET_SDK_RUNGS`
+  (fonte única dos dois eixos), `rungs.properties` com `.targetSdk` por
+  degrau do eixo 2, answer key schema 2 (18 degraus, id
+  `sdk-ladder-tsNN`), auditoria com as duas tabelas; selftest 18 degraus.
+- `suites/sdk-ladder/app/build.gradle.kts`: consome `.targetSdk` (default
+  36 no eixo 1), `versionCode`/`versionName` por eixo (`-minNN`/`-tsNN`).
+- CI: job `sdk-ladder` valida 18 APKs por `aapt2 badging` com eixo por
+  flavor; release (`build-ladder`) e nightly (`compat`) coletam
+  `ladder-minsdk-NN.apk` + `ladder-targetsdk-NN.apk` (18 no total).
+- Contratos: `contracts/suites.json` com `target_sdk` nos 18 entries da
+  escada (+6 novos `sdk-ladder-tsNN`); `contracts/v1-gate.json`
+  re-sincronizado por medição (ladder_rungs 12 → 18, total_apk_slots
+  57 → 63); docs (`docs/src/sdk-ladder.md`, `v1-gate.md`, `guide.md`,
+  `compat-nightly.md`) e READMEs atualizados.
+
 ### Adicionado (AUDIT_ROADMAP_V2 — R0/R1: desbloqueio + compat real)
 
 - `scripts/compat-nightly.sh` (R1.2): bootstrap do CLI RustyDroid — o

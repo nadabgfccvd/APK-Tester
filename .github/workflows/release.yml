@@ -11,7 +11,7 @@
 #                    ignorado — verify-deterministic.sh --mode apk);
 #   build-tier-a   — matriz dos 14 engines reais (toolchains pinadas);
 #   build-tier-c   — as 9 fixtures honestas (toolchain real do SDK);
-#   build-ladder   — os 12 degraus minSdk 9..36;
+#   build-ladder   — os 18 degraus da escada (12 minSdk + 6 targetSdk, D2);
 #   build-torture  — as 11 fixtures de tortura de parser;
 #   fetch-tier-b   — os 9 APKs Tier B do ULTIMO nightly verde (a build
 #                    pesada e lei do nightly; o release reutiliza os
@@ -290,10 +290,11 @@ jobs:
           if-no-files-found: error
 
   # ------------------------------------------------------------------
-  # Escada minSdk 9..36: os 12 degraus (Gradle real, flavors minsdkNN).
+  # Escada de dois eixos: 12 degraus minSdk 9..36 + 6 degraus targetSdk
+  # 23/29/31/33/34/35 (Gradle real, flavors minsdkNN/targetsdkNN).
   # ------------------------------------------------------------------
   build-ladder:
-    name: "SDK Ladder (A2): 12 degraus minSdk 9-36"
+    name: "SDK Ladder (A2+D2): 18 degraus (12 minSdk + 6 targetSdk)"
     runs-on: ubuntu-latest
     needs: static-gate
     timeout-minutes: 45
@@ -313,12 +314,12 @@ jobs:
             "platforms;android-36" "build-tools;35.0.0" > /dev/null
           echo "ANDROID_HOME=${ANDROID_HOME}" >> "${GITHUB_ENV}"
 
-      - name: Build (Gradle, 12 flavors debug em uma invocação)
+      - name: Build (Gradle, 18 flavors debug em uma invocação)
         run: |
           cd suites/sdk-ladder
           ./gradlew --no-daemon :app:assembleDebug
 
-      - name: Coletar e renomear os 12 APKs (ladder-minsdk-NN.apk)
+      - name: Coletar e renomear os 18 APKs (ladder-minsdk-NN / ladder-targetsdk-NN)
         run: |
           mkdir -p dist/apks
           n=0
@@ -328,8 +329,14 @@ jobs:
             cp "${src}" "dist/apks/ladder-minsdk-${d}.apk"
             n=$((n + 1))
           done
+          for t in 23 29 31 33 34 35; do
+            src="suites/sdk-ladder/app/build/outputs/apk/targetsdk${t}/debug/app-targetsdk${t}-debug.apk"
+            test -f "${src}"
+            cp "${src}" "dist/apks/ladder-targetsdk-${t}.apk"
+            n=$((n + 1))
+          done
           echo "degraus coletados: ${n}"
-          test "${n}" -eq 12
+          test "${n}" -eq 18
           ls -l dist/apks
 
       - name: Upload dos APKs da escada (artefato de CI)

@@ -189,7 +189,7 @@ jobs:
   # e roadmap R1.3). Inspeção estrutural pelo snapshot pinado do rd.
   # ------------------------------------------------------------------
   build-ladder:
-    name: "Escada minSdk 9-36 (R1.3) para a matriz compat"
+    name: "Escada 18 degraus: minSdk 9-36 + targetSdk 23-35 (R1.3+D2)"
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -208,12 +208,12 @@ jobs:
             "platforms;android-36" "build-tools;${BT}" > /dev/null
           echo "ANDROID_HOME=${ANDROID_HOME}" >> "${GITHUB_ENV}"
 
-      - name: Build (Gradle, 12 flavors debug em uma invocação)
+      - name: Build (Gradle, 18 flavors debug em uma invocação)
         run: |
           cd suites/sdk-ladder
           ./gradlew --no-daemon :app:assembleDebug
 
-      - name: Coletar e renomear os 12 APKs (ladder-minsdk-NN.apk)
+      - name: Coletar e renomear os 18 APKs (ladder-minsdk-NN / ladder-targetsdk-NN)
         run: |
           mkdir -p staging/compat/ladder
           n=0
@@ -223,8 +223,14 @@ jobs:
             cp "${src}" "staging/compat/ladder/ladder-minsdk-${d}.apk"
             n=$((n + 1))
           done
+          for t in 23 29 31 33 34 35; do
+            src="suites/sdk-ladder/app/build/outputs/apk/targetsdk${t}/debug/app-targetsdk${t}-debug.apk"
+            test -f "${src}"
+            cp "${src}" "staging/compat/ladder/ladder-targetsdk-${t}.apk"
+            n=$((n + 1))
+          done
           echo "degraus coletados: ${n}"
-          test "${n}" -eq 12
+          test "${n}" -eq 18
           ls -l staging/compat/ladder
 
       - name: Upload da escada (artefato de CI)

@@ -25,8 +25,9 @@ UTC (ou sob demanda via `workflow_dispatch`) ele:
   sha256 (release `rustydroid-cli-snapshot`, ADR 0004) quando não há `rd`
   no PATH. Download/integridade falhando é **FAIL explícito** — o status
   `SKIP` saiu da matriz (era 32 SKIPs por nightly desde sempre).
-- **Escopo total (R1.3)**: além dos 32 engines da answer key, a matriz
-  cobre a escada minSdk 9..36 (12 degraus), as fixtures de tortura de
+- **Escopo total (R1.3 + D2)**: além dos 32 engines da answer key, a matriz
+  cobre a escada de dois eixos (18 degraus: 12 de minSdk 9..36 + 6 de
+  targetSdk 23..35), as fixtures de tortura de
   parser (11) e o flagship (variante classic) — inspeção estrutural pelo
   `rd inspect --json`.
 - **Fixture sem APK** vira linha `SEM_APK` (não é FAIL): honestidade sobre o

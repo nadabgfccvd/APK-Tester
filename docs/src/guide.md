@@ -21,7 +21,9 @@ com um **answer key** verificável por máquina, para que
    RustyDroid (Apêndice G): 32 diretórios `suites/engines/engine-NN-slug/`.
 2. **minSdk 9 existe na suíte** — escada 9, 12, 14, 16, 19, 21, 23, 26, 29, 33,
    35, 36; abaixo do piso 26 do runtime a resposta correta é o erro estruturado
-   `BELOW_FLOOR(minSdk=X)`, nunca um crash.
+   `BELOW_FLOOR(minSdk=X)`, nunca um crash. E o targetSdk varia de verdade
+   (23/29/31/33/34/35 — D2): os switches de comportamento são exercitados
+   pelos próprios degraus.
 3. **Literalmente toda permissão da plataforma declarada** no flagship
    (1004 strings do snapshot verbatim do AOSP master, incluindo
    `@hide`/internas), mais appops/roles.

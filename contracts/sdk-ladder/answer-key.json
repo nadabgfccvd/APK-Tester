@@ -1,5 +1,5 @@
 {
- "description": "gabarito da escada sdk-ladder: o mesmo app mínimo (1 activity, 1 service, 1 receiver, 1 provider, 0 permissões) construído em doze níveis de minSdk; abaixo do piso 26 do RustyDroid a resposta é o erro estruturado BELOW_FLOOR — minSdk 9 É o teste — e a partir de 26 o app executa",
+ "description": "gabarito da escada sdk-ladder: o mesmo app mínimo (1 activity, 1 service, 1 receiver, 1 provider, 0 permissões) construído em 18 degraus de dois eixos: 12 de minSdk (9..36, targetSdk 36) e 6 de targetSdk (23/29/31/33/34/35) — abaixo do piso 26 do RustyDroid a resposta é o erro estruturado BELOW_FLOOR — minSdk 9 É o teste — e a partir de 26 o app executa com switches de comportamento que agora VARIAAM por degrau no eixo targetSdk",
  "generated_by": "tools/gen-ladder.py",
  "rungs": [
   {
@@ -159,7 +159,7 @@
     "provider"
    ],
    "expected": {
-    "detail": "execução (piso/switches por targetSdk)",
+    "detail": "execução (switches de comportamento por targetSdk=36)",
     "rustydroid": "EXECUTE"
    },
    "flavor": "minsdk26",
@@ -180,7 +180,7 @@
     "provider"
    ],
    "expected": {
-    "detail": "execução (piso/switches por targetSdk)",
+    "detail": "execução (switches de comportamento por targetSdk=36)",
     "rustydroid": "EXECUTE"
    },
    "flavor": "minsdk29",
@@ -201,7 +201,7 @@
     "provider"
    ],
    "expected": {
-    "detail": "execução (piso/switches por targetSdk)",
+    "detail": "execução (switches de comportamento por targetSdk=36)",
     "rustydroid": "EXECUTE"
    },
    "flavor": "minsdk33",
@@ -222,7 +222,7 @@
     "provider"
    ],
    "expected": {
-    "detail": "execução (piso/switches por targetSdk)",
+    "detail": "execução (switches de comportamento por targetSdk=36)",
     "rustydroid": "EXECUTE"
    },
    "flavor": "minsdk35",
@@ -243,7 +243,7 @@
     "provider"
    ],
    "expected": {
-    "detail": "execução (piso/switches por targetSdk)",
+    "detail": "execução (switches de comportamento por targetSdk=36)",
     "rustydroid": "EXECUTE"
    },
    "flavor": "minsdk36",
@@ -253,9 +253,135 @@
    "target_sdk": 36,
    "version_code": 36,
    "version_name": "1.0.0-min36"
+  },
+  {
+   "apk": "suites/sdk-ladder/targetsdk-23",
+   "application_id": "dev.apktester.ladder.targetsdk23",
+   "components": [
+    "activity",
+    "service",
+    "receiver",
+    "provider"
+   ],
+   "expected": {
+    "detail": "BELOW_FLOOR(minSdk=23) estruturado — nunca crash",
+    "rustydroid": "BELOW_FLOOR"
+   },
+   "flavor": "targetsdk23",
+   "id": "sdk-ladder-ts23",
+   "min_sdk": 23,
+   "permissions_count": 0,
+   "target_sdk": 23,
+   "version_code": 23,
+   "version_name": "1.0.0-ts23"
+  },
+  {
+   "apk": "suites/sdk-ladder/targetsdk-29",
+   "application_id": "dev.apktester.ladder.targetsdk29",
+   "components": [
+    "activity",
+    "service",
+    "receiver",
+    "provider"
+   ],
+   "expected": {
+    "detail": "execução (switches de comportamento por targetSdk=29)",
+    "rustydroid": "EXECUTE"
+   },
+   "flavor": "targetsdk29",
+   "id": "sdk-ladder-ts29",
+   "min_sdk": 26,
+   "permissions_count": 0,
+   "target_sdk": 29,
+   "version_code": 29,
+   "version_name": "1.0.0-ts29"
+  },
+  {
+   "apk": "suites/sdk-ladder/targetsdk-31",
+   "application_id": "dev.apktester.ladder.targetsdk31",
+   "components": [
+    "activity",
+    "service",
+    "receiver",
+    "provider"
+   ],
+   "expected": {
+    "detail": "execução (switches de comportamento por targetSdk=31)",
+    "rustydroid": "EXECUTE"
+   },
+   "flavor": "targetsdk31",
+   "id": "sdk-ladder-ts31",
+   "min_sdk": 26,
+   "permissions_count": 0,
+   "target_sdk": 31,
+   "version_code": 31,
+   "version_name": "1.0.0-ts31"
+  },
+  {
+   "apk": "suites/sdk-ladder/targetsdk-33",
+   "application_id": "dev.apktester.ladder.targetsdk33",
+   "components": [
+    "activity",
+    "service",
+    "receiver",
+    "provider"
+   ],
+   "expected": {
+    "detail": "execução (switches de comportamento por targetSdk=33)",
+    "rustydroid": "EXECUTE"
+   },
+   "flavor": "targetsdk33",
+   "id": "sdk-ladder-ts33",
+   "min_sdk": 26,
+   "permissions_count": 0,
+   "target_sdk": 33,
+   "version_code": 33,
+   "version_name": "1.0.0-ts33"
+  },
+  {
+   "apk": "suites/sdk-ladder/targetsdk-34",
+   "application_id": "dev.apktester.ladder.targetsdk34",
+   "components": [
+    "activity",
+    "service",
+    "receiver",
+    "provider"
+   ],
+   "expected": {
+    "detail": "execução (switches de comportamento por targetSdk=34)",
+    "rustydroid": "EXECUTE"
+   },
+   "flavor": "targetsdk34",
+   "id": "sdk-ladder-ts34",
+   "min_sdk": 26,
+   "permissions_count": 0,
+   "target_sdk": 34,
+   "version_code": 34,
+   "version_name": "1.0.0-ts34"
+  },
+  {
+   "apk": "suites/sdk-ladder/targetsdk-35",
+   "application_id": "dev.apktester.ladder.targetsdk35",
+   "components": [
+    "activity",
+    "service",
+    "receiver",
+    "provider"
+   ],
+   "expected": {
+    "detail": "execução (switches de comportamento por targetSdk=35)",
+    "rustydroid": "EXECUTE"
+   },
+   "flavor": "targetsdk35",
+   "id": "sdk-ladder-ts35",
+   "min_sdk": 26,
+   "permissions_count": 0,
+   "target_sdk": 35,
+   "version_code": 35,
+   "version_name": "1.0.0-ts35"
   }
  ],
  "rustydroid_floor": 26,
- "schema_version": 1,
+ "schema_version": 2,
  "seed": 20261022
 }

@@ -37,7 +37,8 @@ Portuguese documentation: [README.md](README.md) · Documentation site (mdBook):
 
 - a deterministic golden-fixture suite: generators in `tools/` (python3,
   stdlib-only, seeded), no committed binaries;
-- one APK per language engine (a 32-entry matrix), a minSdk 9→36 ladder, a
+- one APK per language engine (a 32-entry matrix), a two-axis ladder
+  (12 minSdk rungs 9→36 + 6 targetSdk rungs 23→35, D2), a
   *parser-torture* pack, and the 850 MB–1 GB flagship "Behemoth";
 - machine-checkable answer keys in `contracts/` for numeric diffing against
   `rd inspect --json`, engine detection, and scenario suites;
@@ -59,7 +60,9 @@ Portuguese documentation: [README.md](README.md) · Documentation site (mdBook):
 1. **One APK per language engine** — a 32-entry matrix mirroring RustyDroid's
    28-language registry (Apêndice G), plus platform variants and the unified
    hybrid fixture (TST-14).
-2. **minSdk 9 exists in the suite** — the full ladder 9→36, not just floor 26.
+2. **minSdk 9 exists in the suite** — the full ladder 9→36, not just floor 26;
+   and **targetSdk actually varies** (23/29/31/33/34/35, D2): targetSdk
+   behavior switches are exercised by the rungs themselves.
 3. **Literally every platform permission** declared somewhere: the flagship
    declares the complete set — **1004** strings, verbatim from the AOSP
    master snapshot (including `@hide`/internal), plus appops and roles
@@ -79,7 +82,7 @@ apk-tester/
 │   ├── engines/               # 32 dirs, ONE APK PER ENGINE (engine-01…engine-32)
 │   │   ├── engine-01-java/    # … each: real build OR detection fixture (tiered)
 │   │   └── …
-│   ├── sdk-ladder/            # same minimal app built at minSdk 9,12,14,16,19,21,23,26,29,33,35,36
+│   ├── sdk-ladder/            # same minimal app: 12 minSdk rungs (9..36) + 6 targetSdk rungs (23..35)
 │   └── parser-torture/        # ZIP64, v1/v2/v3-only sigs, unknown-perms, huge-arsc, obfuscated
 ├── tools/                     # ALL generators (python3, stdlib-only, seeded, no binaries committed)
 │   ├── gen-dex-stress.py      gen-strings.py       gen-assets.py
@@ -151,13 +154,13 @@ Every phase ends compiling green. Detailed exit criteria in
 |---|---|---|
 | **A0** | Repo scaffold + governance kit + CI skeletons + `tools/` generators | **delivered** |
 | A1 | Flagship skeleton (probe harness, manifest-complete with EVERY permission, PermissionsHub, ButtonGrid, IconGrid) | delivered |
-| A2 | `sdk-ladder` (minSdk 9 first!) + `parser-torture` pack | delivered |
+| A2 | `sdk-ladder` (minSdk 9 first!) + `parser-torture` pack | delivered (extended in D2: 18 rungs, two axes) |
 | A3 | Tier C engine fixtures + `expected-engines.json` | delivered |
 | **A4** | Tier A real builds (Java, Kotlin, C/C++, Rust, Go, Zig, WASM, …) | **delivered (A4)** — 14 engines with REAL builds: orchestrator `tools/build-tier-a.py` + pinned toolchains (`tools/setup-tier-a-toolchain.sh`), packaging through the same fixture-pack path and `--verify-apk` contract check (CI `tier-a-engines`, 14-job matrix) |
 | **A5** | 3D/shader pillar (`:sim3d` golden + shader-library + textures/meshes/audio) | **done (A5)** — `:sim3d` engine 100% integer Q16 (perspective-correct software rasterizer, 10k-body physics, 100k CPU particles, marching cubes, skeleton animation) with byte-exact golden (`contracts/flagship/sim3d-golden.json`), Java==C++ native parity proven in CI, 239-program GLSL ES 3.1 shader-library (215 graphics + 24 compute) validated by glslang, PBR KTX2 textures + meshes (teapot/1024² terrain/50k crowd) + 5.1 audio packed into the APK (CI `flagship-3d`) |
 | **A6** | Size engineering to the [850 MB, 1000 MB] gate + `size-report.csv` | **done (A6)** — "fully optimized" `modern` release (R8 full, resource shrinking with keep.xml for the 1.800 `getIdentifier` families, vcsInfo off, deterministic signing via b64 fixture keystore) + 768 MiB deterministic `gen-bulk.py` payload under `assets/bulk/` (valid KTX2/PLY/WAV + `APKT-BULK1`, sha256/synthetic manifest, full/quick presets) and the real [850, 1000] MB gate with ±2% per-category drift (`size-budget.sh --baseline`, Size Gate workflow) |
 | A7 | Tier B nightly jobs + `compat-nightly` + docs site (mdBook) | delivered |
-| **A8** | v1.0 gate: full matrix green, deterministic build proven, v1.0.0 release | **delivered (A8)** — `tools/v1-gate.py` evaluates the 10 Definition of Done criteria (contract `contracts/v1-gate.json`, zero-drift in CI); the `Release` workflow builds all 6 families (flagship classic+modern, Tier A 14, Tier B 9 re-verified from the green nightly, Tier C 9, ladder 12, torture 11 = 57 APKs), proves determinism with TWO consecutive modern release builds (`gradlew clean` in between, `verify-deterministic.sh --mode apk`), runs the gate with dynamic evidence and publishes the v1.0.0 release with APKs + contracts attached |
+| **A8** | v1.0 gate: full matrix green, deterministic build proven, v1.0.0 release | **delivered (A8)** — `tools/v1-gate.py` evaluates the 10 Definition of Done criteria (contract `contracts/v1-gate.json`, zero-drift in CI); the `Release` workflow builds all 6 families (flagship classic+modern, Tier A 14, Tier B 9 re-verified from the green nightly, Tier C 9, ladder 18 (D2), torture 11 = 63 APKs), proves determinism with TWO consecutive modern release builds (`gradlew clean` in between, `verify-deterministic.sh --mode apk`), runs the gate with dynamic evidence and publishes the v1.0.0 release with APKs + contracts attached |
 
 
 ## APKBot — anti-regression bot

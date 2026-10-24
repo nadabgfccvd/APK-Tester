@@ -15,12 +15,12 @@
           "classic",
           "modern"
         ],
-        "ladder_rungs": 12,
+        "ladder_rungs": 18,
         "min_required": 30,
         "minsdk9_fixture_mode": true,
         "torture_fixture_modes": 10,
         "torture_modes_in_packer": true,
-        "total_apk_slots": 57
+        "total_apk_slots": 63
       },
       "status": "evidence-release"
     },
@@ -66,7 +66,7 @@
     },
     {
       "dod": "APK minSdk 9 existe e e aceito pelo caminho de build (ou fixture empacotada)",
-      "evidence": "dois caminhos independentes: flavor Gradle minsdk09 (escada real, 12 APKs no CI) e fixture minSdk9 do fixture-pack (parser-torture); o resultado esperado no RustyDroid e BELOW_FLOOR(minSdk=9) — a lei de erro estruturado e o teste",
+      "evidence": "dois caminhos independentes: flavor Gradle minsdk09 (escada real, 18 APKs no CI, dois eixos D2) e fixture minSdk9 do fixture-pack (parser-torture); o resultado esperado no RustyDroid e BELOW_FLOOR(minSdk=9) — a lei de erro estruturado e o teste",
       "id": "minsdk9_apk",
       "measurements": {
         "fixture_packer_mode": true,
@@ -131,7 +131,7 @@
         "ladder_inputs": true,
         "schema_version": 1,
         "suite_ids_unique": true,
-        "suites": 58,
+        "suites": 64,
         "torture_packer_modes": true
       },
       "status": "pass"

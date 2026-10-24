@@ -30,12 +30,18 @@ val rungs = Properties().apply {
     f.inputStream().use { load(it) }
 }
 
-// "minsdk09.minSdk=9" -> flavor "minsdk09"; ordenado para determinismo do
-// configure (a ordem alfabetica dos ids de 2 digitos equivale a numerica).
+// "minsdk09.minSdk=9" -> flavor "minsdk09"; "targetsdk29.targetSdk=29" ->
+// degrau do eixo targetSdk (D2). Ordenado para determinismo do configure (a
+// ordem alfabetica dos ids equivale a numerica dentro de cada eixo).
 val rungNames = rungs.stringPropertyNames()
     .filter { it.endsWith(".minSdk") }
     .map { it.removeSuffix(".minSdk") }
     .sorted()
+
+// Eixo 2 (D2): degraus targetsdkNN declaram o proprio targetSdk; degraus
+// minsdkNN usam o default 36 (a variavel em teste do eixo 1 e so o minSdk).
+fun rungTargetSdk(name: String): Int =
+    rungs.getProperty("$name.targetSdk")?.toInt() ?: 36
 
 android {
     namespace = "dev.apktester.ladder"
@@ -67,15 +73,25 @@ android {
     productFlavors {
         for (rungName in rungNames) {
             val rungMinSdk = rungs.getProperty("$rungName.minSdk").toInt()
+            val rungTsSdk = rungTargetSdk(rungName)
+            val isTargetAxis = rungName.startsWith("targetsdk")
             create(rungName) {
                 dimension = "rung"
                 minSdk = rungMinSdk
+                targetSdk = rungTsSdk
                 applicationId = "dev.apktester.ladder.$rungName"
-                versionCode = rungMinSdk
-                versionName = "1.0.0-min$rungMinSdk"
+                // Eixo 1: versionCode = minSdk; eixo 2 (D2): versionCode =
+                // targetSdk (versionName distingue o eixo: -minNN vs -tsNN).
+                versionCode = if (isTargetAxis) rungTsSdk else rungMinSdk
+                versionName = if (isTargetAxis) "1.0.0-ts$rungTsSdk"
+                              else "1.0.0-min$rungMinSdk"
                 // Label por degrau: gerado via resValue (NAO declarar
                 // rung_label em res/values/strings.xml — chocaria com isso).
-                resValue("string", "rung_label", "APK Ladder minSdk $rungMinSdk")
+                resValue(
+                    "string", "rung_label",
+                    if (isTargetAxis) "APK Ladder targetSdk $rungTsSdk (minSdk $rungMinSdk)"
+                    else "APK Ladder minSdk $rungMinSdk"
+                )
             }
         }
     }

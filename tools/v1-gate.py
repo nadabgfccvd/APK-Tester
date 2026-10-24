@@ -453,7 +453,8 @@ def check_minsdk9_apk(ctx: StaticContext, args) -> tuple:
     status = PASS if ok else FAIL
     evidence = (
         "dois caminhos independentes: flavor Gradle minsdk09 (escada real, "
-        "12 APKs no CI) e fixture minSdk9 do fixture-pack (parser-torture); "
+        "18 APKs no CI, dois eixos D2) e fixture minSdk9 do fixture-pack "
+        "(parser-torture); "
         "o resultado esperado no RustyDroid e BELOW_FLOOR(minSdk=9) — a lei "
         "de erro estruturado e o teste"
     )
