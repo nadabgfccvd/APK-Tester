@@ -1,0 +1,17 @@
+# Code Owners — APK Tester
+
+# Padrao: o owner/mantenedor principal (GOVERNANCE.md) revisa tudo.
+# O agente de commits (xisto) nao aparece como code owner: por lei da
+# governanca, commits do agente nunca sao auto-aprovados — toda
+# contribuicao passa por revisao humana do owner.
+*                       @nadabgfccvd
+
+# Contratos e ADRs: mudancas exigem aprovacao humana explicita do owner
+# (regra dura do GOVERNANCE.md — o bot audita commits de contracts/).
+/contracts/             @nadabgfccvd
+/docs/src/adr/          @nadabgfccvd
+
+# Workflows de CI/governanca: o APKBot guarda a integridade da propria
+# automacao; mudancas aqui sao de dominio do owner.
+/.github/               @nadabgfccvd
+/bot/                   @nadabgfccvd

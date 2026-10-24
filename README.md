@@ -39,7 +39,10 @@ Documentação em inglês: [README.en.md](README.en.md) · Site de documentaçã
 **É:**
 
 - uma suíte de *golden fixtures* determinística: geradores em `tools/`
-  (python3, stdlib-only, seeded), sem binários commitados;
+  (python3, stdlib-only, seeded), sem binários commitados — a única exceção
+  documentada é o `gradle-wrapper.jar` (prática-padrão Gradle, integridade
+  verificável pelo `.sha256` commitado ao lado; ver
+  [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) e a nota do item 3);
 - um APK por engine de linguagem (matriz de 32), escada de dois eixos
   (12 degraus de minSdk 9→36 + 6 degraus de targetSdk 23→35, D2), pacote
   *parser-torture* e o flagship "Behemoth" de 850 MB–1 GB;
@@ -192,6 +195,13 @@ Escopo, limites e como desativar: [GOVERNANCE.md](GOVERNANCE.md); operação:
   instalabilidade em device.
 - **APKs de 850 MB+ são escala de sideload apenas** (limite do Play ~200 MB de
   base) — aceitável, pois aqui são fixtures, não produtos de loja.
+- **O gate [850, 1000] MiB mede bytes DESCOMPRIMIDOS** (a instalação na
+  partição de dados — 912.18 MiB no baseline do `size-report.csv`), não o
+  arquivo `.apk` em si (859.7 MB no release, dentro do gate por decisão
+  documentada: o custo REAL para o device é a instalação descomprimida, e as
+  libs nativas vão descomprimidas por contrato). A política está no
+  `tools/size-budget.sh` e o arquivo físico é conferido com `ls -la` + sha256
+  no log do Size Gate.
 
 ## Início rápido: integrando com o RustyDroid
 
