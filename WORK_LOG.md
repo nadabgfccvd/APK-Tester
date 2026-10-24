@@ -75,6 +75,16 @@ finding já nasce com o diff de conteúdo (28 entradas) e a baseline
 recomeça com nomes extraídos, habilitando diffs acionáveis dali em
 diante.
 
+**Follow-up da mesma iteração** (commit subsequente): a primeira execução
+do APKBot no CI pós-clone (run 40076776161, success) mostrou que o
+deep_merge do dispatcher preservou o `skipped` legado dentro de
+`targets.compat-nightly` junto das durações novas — corrigido com
+sobrescrita `skipped: null` nos alvos clone executados (nulo = exercitado;
+skip futuro sobrescreve de volta com o motivo). Baseline do
+`answerkey_drift` segue em confirmação (merge N=2): a transição de fonte
+confirma na próxima execução agendada e o issue #20 fecha sozinho quando o
+fingerprint estabilizar — comportamento desenhado, documentado no issue.
+
 **Próxima tarefa útil sugerida.** Roadmap W7 concluído; sem lacunas
 conhecidas de cobertura no bot. Candidatos: (a) mover a extração do
 `answerkey_drift` para consumir também `data/engines.toml` direto (a

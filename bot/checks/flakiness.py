@@ -217,9 +217,14 @@ def run(ctx) -> CheckResult:
                 fingerprint=f"{CHECK_ID}:{target}:execucao-pulada"))
             continue
 
-        learn_targets[target] = {
-            "durations_s": [round(d, 3) for d in durations],
-        }
+        entry = {"durations_s": [round(d, 3) for d in durations]}
+        if mode == "clone":
+            # deep_merge do dispatcher NUNCA apaga chaves: o legado pré-clone
+            # deixou "skipped" no baseline; nulo explícito = alvo exercitado
+            # (e sobrescreve a string antiga; um skip futuro sobrescreve de
+            # volta com o motivo — o par sempre reflete a última execução).
+            entry["skipped"] = None
+        learn_targets[target] = entry
 
         # 1) qualquer FAIL em qualquer repetição
         if failures:

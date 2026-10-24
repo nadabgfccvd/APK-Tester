@@ -51,7 +51,10 @@ de compatibilidade verde).
   do script (parse da answer key, laço das fixtures, agregação do markdown,
   contrato do exit code); git indisponível/clone falho degrada para INFO
   único com o motivo — nunca falha. Medição local: 32 engines, ~30 ms por
-  execução, CV 0.05.
+  execução, CV 0.05. O legado `targets.compat-nightly.skipped` do baseline
+  pré-clone é limpo na primeira execução pós-clone (`skipped: null` — o
+  deep_merge do dispatcher nunca apaga chaves; nulo = exercitado, string =
+  motivo do skip, o par reflete sempre a última execução).
 
 ### Adicionado (A9 — CI hardening, roadmap W6)
 
