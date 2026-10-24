@@ -32,6 +32,19 @@ de compatibilidade verde).
   2026-10-20 (antes do nightly verde) e o Engines Nightly #9 validou os 32
   fixtures contra exatamente este registro de 28 engines — a mudança do
   README é de documentação (Apêndice C/status), não de detecção (issue #19).
+- `bot/checks/determinism.py` + `tools/gen-engine-fixtures.py`: o cheque
+  `determinism` do APKBot cobre agora 16/16 geradores (eram 14). O leitor
+  de manifest passa a aceitar também a forma `"files"` (mesmo par
+  `{path, sha256}`) usada pelo `gen-bulk` — o maior gerador (768 MiB de
+  conteúdo do flagship) ficava de fora da memória de determinismo
+  entre-tempos; e o `gen-engine-fixtures` passa a gravar também um
+  `manifest.json` no formato convencional (além do
+  `tier-c-payload-report.json`, que continua sendo a âncora commitada e
+  revalidada pelo selftest). Eliminados os findings INFO
+  `determinism:gen-bulk:sem-manifest-json` e
+  `determinism:gen-engine-fixtures:sem-manifest-json`, que reportavam a
+  lacuna de cobertura em toda execução; o determinismo byte a byte dos 16
+  geradores segue provado por `tools/verify-deterministic.sh` (16/16 PASS).
 
 ## [1.0.0] - 2026-10-23
 

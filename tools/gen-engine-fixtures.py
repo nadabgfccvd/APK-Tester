@@ -20,7 +20,13 @@ reais; todo README da suíte declara "fixture de detecção; payload não
 executável".
 
 Modos:
-  --out DIR [--engine N] [--report P]   gera payloads (+ report de sha256)
+  --out DIR [--engine N] [--report P]   gera payloads (+ report de sha256);
+                                        grava também DIR/manifest.json no
+                                        formato convencional do repositório
+                                        (chave "artifacts", {path, sha256}
+                                        relativos a DIR) — é o que o cheque
+                                        determinism do APKBot compara entre
+                                        execuções/tempos
   --sync-contracts                      escreve suites/engines/<engine>/
                                         expected-engines.json (valida contra
                                         o contrato canônico em contracts/)
@@ -281,6 +287,46 @@ def write_file(path: str, data: bytes) -> None:
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
     with open(path, "wb") as fh:
         fh.write(data)
+
+
+def write_out_manifest(out: str, seed: int, extra_exclude: tuple = ()) -> list:
+    """Grava <out>/manifest.json no formato convencional do repositório e
+    devolve as entradas [{path, sha256}, ...] (ordenadas por path).
+
+    Varre a árvore gerada sob --out (payloads + classes marcador Java) e
+    declara sha256 por arquivo com caminho relativo a --out, sempre com "/".
+    Ficam de fora o próprio manifest.json e o report de sha256 (padrão
+    tier-c-payload-report.json ou o caminho passado em --report) — o report
+    tem contrato próprio commitado (contracts/engines/) e é revalidado pelo
+    --selftest; o manifest cobre exatamente os artefatos que o fixture-pack
+    consome. Byte-estável: chaves ordenadas, indent 2, sem timestamps
+    (lei da ADR 0001).
+    """
+    excluded = {os.path.abspath(p) for p in extra_exclude}
+    entries = []
+    for dirpath, dirnames, filenames in os.walk(out):
+        dirnames.sort()
+        for name in sorted(filenames):
+            abs_path = os.path.join(dirpath, name)
+            if name == "manifest.json" or \
+                    os.path.abspath(abs_path) in excluded:
+                continue
+            rel = os.path.relpath(abs_path, out).replace(os.sep, "/")
+            with open(abs_path, "rb") as fh:
+                digest = hashlib.sha256(fh.read()).hexdigest()
+            entries.append({"path": rel, "sha256": digest})
+    entries.sort(key=lambda e: e["path"])
+    manifest = {
+        "schema_version": 1,
+        "generator": TOOL,
+        "seed": seed,
+        "synthetic": True,
+        "artifacts": entries,
+    }
+    write_file(os.path.join(out, "manifest.json"),
+               (json.dumps(manifest, indent=2, ensure_ascii=False,
+                           sort_keys=True) + "\n").encode("utf-8"))
+    return entries
 
 
 def elf64_stub(markers: list, soname: str, seed: int, path: str) -> bytes:
@@ -659,6 +705,27 @@ def selftest() -> int:
                     f"{engine}/{rel}: sha256 diverge do report"
         print("[{0}] selftest 3/5: determinismo 2x + report âncora ok".format(
             TOOL))
+        ent_a = write_out_manifest(out_a, DEFAULT_SEED)
+        man_a = open(os.path.join(out_a, "manifest.json"), "rb").read()
+        ent_a2 = write_out_manifest(out_a, DEFAULT_SEED)
+        man_a2 = open(os.path.join(out_a, "manifest.json"), "rb").read()
+        assert ent_a == ent_a2 and man_a == man_a2, \
+            "manifest.json diverge entre escritas (não-determinístico)"
+        n_payload = sum(len(rep_a["engines"][e]["files"])
+                        for e in ENGINE_IDS)
+        assert len(ent_a) == n_payload + n_java, \
+            f"manifest devia cobrir {n_payload} payloads + {n_java} java, " \
+            f"achei {len(ent_a)}"
+        for entry in ent_a:
+            assert set(entry) == {"path", "sha256"}, \
+                f"entrada do manifest com chaves inesperadas: {entry}"
+            with open(os.path.join(out_a, entry["path"]), "rb") as fh:
+                assert hashlib.sha256(fh.read()).hexdigest() == \
+                    entry["sha256"], f"{entry['path']}: sha diverge"
+        assert len({e["path"] for e in ent_a}) == len(ent_a), \
+            "paths duplicados no manifest"
+        print("[{0}] selftest extra: manifest.json convencional ok "
+              "({1} artefatos, 2x byte-idêntico)".format(TOOL, len(ent_a)))
         for engine in ENGINE_IDS:
             for rel, meta in rep_a["engines"][engine]["files"].items():
                 data = open(os.path.join(out_a, engine, "payload", rel),
@@ -781,8 +848,11 @@ def main(argv=None) -> int:
     with open(report_path, "w", encoding="utf-8", newline="\n") as fh:
         fh.write(json.dumps(report, indent=2, ensure_ascii=False,
                             sort_keys=True) + "\n")
+    n_entries = write_out_manifest(out, args.seed,
+                                   extra_exclude=(report_path,))
     print(f"[{TOOL}] OK: {files_total} payloads em {out}; report de sha256 "
-          f"em {report_path}", file=sys.stderr)
+          f"em {report_path}; manifest com {len(n_entries)} artefatos em "
+          f"{os.path.join(out, 'manifest.json')}", file=sys.stderr)
     return 0
 
 

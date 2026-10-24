@@ -105,6 +105,8 @@ def _collect_artifacts(out_dir: Path):
 
     Alguns geradores gravam em <out>/manifest.json, outros em subpastas
     (gen-audio => audio/manifest.json, gen-textures => textures/manifest.json).
+    Duas formas de entrada são aceitas (mesmo par {path, sha256}):
+    "artifacts" (convenção da maioria dos gen-*) e "files" (gen-bulk).
     Retorna None se nenhum manifest legível declarar artefatos.
     """
     manifests = sorted(Path(out_dir).rglob("manifest.json"),
@@ -115,7 +117,10 @@ def _collect_artifacts(out_dir: Path):
             data = json.loads(mpath.read_text(encoding="utf-8"))
         except (OSError, ValueError):
             continue
-        entries = data.get("artifacts") or []
+        entries = data.get("artifacts")
+        if not isinstance(entries, list):
+            # gen-bulk declara os mesmos pares {path, sha256} sob "files".
+            entries = data.get("files")
         if not isinstance(entries, list):
             continue
         for entry in entries:
