@@ -1,7 +1,7 @@
 # APK Tester
 
 <p align="center">
-  <img src="docs/assets/logo.svg" alt="APK Tester logo (placeholder)" width="320">
+  <img src="docs/assets/logo.svg" alt="APK Tester logo" width="320">
 </p>
 
 <p align="center">
@@ -61,8 +61,9 @@ Portuguese documentation: [README.md](README.md) · Documentation site (mdBook):
    hybrid fixture (TST-14).
 2. **minSdk 9 exists in the suite** — the full ladder 9→36, not just floor 26.
 3. **Literally every platform permission** declared somewhere: the flagship
-   declares the complete set (~160, including `@hide`/internal strings), plus
-   appops and roles coverage.
+   declares the complete set — **1004** strings, verbatim from the AOSP
+   master snapshot (including `@hide`/internal), plus appops and roles
+   coverage.
 4. **Heavy 3D + shaders** and a fully optimized 850 MB–1 GB flagship: size is
    content (procedural textures/meshes/audio/shaders) — never padding garbage.
 5. **Professional repository governance** equal to RustyDroid itself
@@ -111,34 +112,34 @@ Details in [`suites/engines/README.md`](suites/engines/README.md).
 | `engine-02-kotlin` | Kotlin | A | **delivered (A4)** |
 | `engine-03-kmp` | Kotlin Multiplatform / Compose MP | A | **delivered (A4)** |
 | `engine-04-scala` | Scala | B | **delivered (A7, nightly)** |
-| `engine-05-clojure` | Clojure | C | planned (A3) |
+| `engine-05-clojure` | Clojure | C | **delivered (A3)** |
 | `engine-06-groovy` | Groovy | A | **delivered (A4)** |
 | `engine-07-c-ndk` | C (NDK) | A | **delivered (A4)** |
 | `engine-08-cpp-ndk` | C++ (NDK + STL) | A | **delivered (A4)** |
 | `engine-09-rust` | Rust (cargo-ndk, JNI crate) | A | **delivered (A4)** |
 | `engine-10-go` | Go (gomobile bind) | A | **delivered (A4)** |
-| `engine-11-objc` | Objective-C | C | planned (A3) |
+| `engine-11-objc` | Objective-C | C | **delivered (A3)** |
 | `engine-12-zig` | Zig (`zig cc` .so) | A | **delivered (A4)** |
 | `engine-13-flutter` | Flutter (Dart) | B | **delivered (A7, nightly)** |
 | `engine-14-react-native` | React Native (Hermes) | B | **delivered (A7, nightly)** |
 | `engine-15-cordova` | Cordova (assets/www) | B | **delivered (A7, nightly)** |
 | `engine-16-tauri` | Tauri v2 | A | **delivered (A4)** |
 | `engine-17-nativescript` | NativeScript | B | **delivered (A7, nightly)** |
-| `engine-18-maui-xamarin` | .NET MAUI / Xamarin | C | planned (A3) |
-| `engine-19-unity-mono` | Unity (Mono) | C | planned (A3) |
-| `engine-20-unity-il2cpp` | Unity (IL2CPP) | C | planned (A3) |
-| `engine-21-unreal` | Unreal | C | planned (A3) |
+| `engine-18-maui-xamarin` | .NET MAUI / Xamarin | C | **delivered (A3)** |
+| `engine-19-unity-mono` | Unity (Mono) | C | **delivered (A3)** |
+| `engine-20-unity-il2cpp` | Unity (IL2CPP) | C | **delivered (A3)** |
+| `engine-21-unreal` | Unreal | C | **delivered (A3)** |
 | `engine-22-lua-defold` | Lua (Defold) | B | **delivered (A7, nightly)** |
 | `engine-23-godot` | Godot | B | **delivered (A7, nightly)** |
 | `engine-24-haxe` | Haxe | A | **delivered (A4)** |
 | `engine-25-python-chaquopy` | Python (Chaquopy) | A | **delivered (A4)** |
 | `engine-26-qt-qml` | Qt / QML | B | **delivered (A7, nightly)** |
-| `engine-27-b4x-appinventor` | B4X / App Inventor | C | planned (A3) |
+| `engine-27-b4x-appinventor` | B4X / App Inventor | C | **delivered (A3)** |
 | `engine-28-avalonia-dotnet` | Avalonia (.NET) | B | **delivered (A7, nightly)** |
-| `engine-29-python-kivy-beeware` | Python (Kivy/BeeWare) | C | planned (A3) |
+| `engine-29-python-kivy-beeware` | Python (Kivy/BeeWare) | C | **delivered (A3)** |
 | `engine-30-wasm-in-app` | WASM in-app (module + JS/JNI host) | A | **delivered (A4)** |
 | `engine-31-hybrid` | Hybrid Kotlin+Rust+Hermes+WASM (TST-14) | A | **delivered (A4)** |
-| `engine-32-twa-pwa` | TWA / PWA | C | planned (A3) |
+| `engine-32-twa-pwa` | TWA / PWA | C | **delivered (A3)** |
 
 ## Delivery phases (A0–A8)
 
@@ -186,7 +187,7 @@ how to disable it: [GOVERNANCE.md](GOVERNANCE.md); operation:
 ```bash
 # 1) Structural audit: numeric diff of inspect against the fixture answer key
 rustydroid inspect --json suites/flagship/behemoth.apk > /tmp/behemoth.json
-diff /tmp/behemoth.json contracts/flagship/manifest-audit.json
+diff /tmp/behemoth.json contracts/flagship/manifest-audit.md
 
 # 2) Engine detector: the result MUST match the expected engine ids
 rd engine detect suites/engines/engine-09-rust/*.apk \

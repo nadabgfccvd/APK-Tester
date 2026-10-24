@@ -1,5 +1,14 @@
 # APK Tester — Master Prompt v1.0 (paste into your code-gen agent)
 
+> NOTA DE RECONCILIAÇÃO (A9, roadmap 4.5): este documento é a especificação
+> ORIGINAL entregue ao agente (fonte histórica). Onde ele diz "30 APKs",
+> "engine-01…30" ou "31 engine APKs", a resolução ENTREGUE é a matriz de
+> **32 engines** (engine-01..engine-32, incluindo o híbrido #31 como
+> engine-31-hybrid e o TWA/PWA como #32) — ver
+> `contracts/engines/expected-engines.json` e `docs/src/engine-matrix.md`,
+> que são a verdade canônica. Contagens divergentes deste prompt são
+> histórico, não drift.
+
 > Sibling repo to RustyDroid. 30+ APKs: one per engine in RustyDroid's registry
 > (Apêndice G, 28+), a minSdk-9→36 ladder, parser-torture pack, and a 850 MB–1 GB
 > flagship with 3D/shader stress, every platform permission, and thousands of

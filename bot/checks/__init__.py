@@ -17,6 +17,7 @@ CHECK_MODULES = [
     "permission_drift",
     "size_drift",
     "governance",
+    "locale_sync",
 ]
 
 

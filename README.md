@@ -1,7 +1,7 @@
 # APK Tester
 
 <p align="center">
-  <img src="docs/assets/logo.svg" alt="Logotipo do APK Tester (placeholder)" width="320">
+  <img src="docs/assets/logo.svg" alt="Logotipo do APK Tester" width="320">
 </p>
 
 <p align="center">
@@ -192,7 +192,7 @@ Escopo, limites e como desativar: [GOVERNANCE.md](GOVERNANCE.md); operação:
 ```bash
 # 1) Auditoria estrutural: diff numérico do inspect contra o gabarito do fixture
 rustydroid inspect --json suites/flagship/behemoth.apk > /tmp/behemoth.json
-diff /tmp/behemoth.json contracts/flagship/manifest-audit.json
+diff /tmp/behemoth.json contracts/flagship/manifest-audit.md
 
 # 2) Detector de engines: o resultado DEVE casar com os engine ids esperados
 rd engine detect suites/engines/engine-09-rust/*.apk \

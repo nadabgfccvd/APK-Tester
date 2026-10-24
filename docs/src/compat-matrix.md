@@ -9,10 +9,13 @@ aqui no GH Pages junto com o site mdBook.
 
 ## Ver agora
 
-A matriz fresca está em [`compat-matrix.md`](compat-matrix.md) **após a
-última execução nightly bem-sucedida**; enquanto isso, a versão commitada
-deste stub indica que o nightly ainda não rodou desde o último deploy (ou o
-deploy falhou — verifique o job `docs-pages`).
+A matriz fresca de cada execução nightly é o **artefato `compat-matrix`**
+do run (upload de `docs/compat-matrix.md`) — abra a lista de runs do
+[`engines-nightly.yml`](https://github.com/nadabgfccvd/APK-Tester/actions/workflows/engines-nightly.yml),
+baixe o artefato do último run verde. Este arquivo é o stub da página no
+site: a versão fresca substitui `docs/compat-matrix.md` a cada run
+bem-sucedido e é espelhada aqui (sem link para si mesma — a página que
+apontava para ela própria era um loop).
 
 > Regra (ADR 0003): detecção não valida payload nem autoriza execução. FAIL
 > na matriz é drift de DETECÇÃO vs answer key, não falha de payload.

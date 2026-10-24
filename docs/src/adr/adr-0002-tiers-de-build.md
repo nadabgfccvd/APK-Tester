@@ -1,7 +1,7 @@
 # ADR 0002 — Tiers de build A/B/C
 
 - Status: accepted
-- Data: 2024-01-01 (A0)
+- Data: 2026-10-22 (decisão registrada no commit A0; data placeholder 2024-01-01 removida na A9)
 - Decisores: nadabgfccvd, xisto-agent
 
 ## Contexto

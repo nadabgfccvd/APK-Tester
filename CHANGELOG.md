@@ -10,6 +10,42 @@ de compatibilidade verde).
 
 ## [Unreleased]
 
+### Corrigido (A9 — consistência de docs, roadmap W4)
+
+- `docs/assets/logo.svg`: o logotipo referenciado pelos dois READMEs agora
+  EXISTE (era `<img>` com alt-text confessando "placeholder" — roadmap
+  4.1). SVG vetorial determinístico do repositório (badge hexagonal com
+  circuito de fixture), sem dependências externas.
+- `README.en.md`: sincronizado com a realidade (roadmap 4.2) — "~160"
+  permissões corrigido para **1004 verbatim do snapshot AOSP master**;
+  as 9 engines Tier C "planned (A3)" viram "**delivered (A3)**".
+- `README.md` + `README.en.md`: quick-start aponta para
+  `contracts/flagship/manifest-audit.md` (o `.json` nunca existiu —
+  roadmap 4.3).
+- Novo check do APKBot `locale_sync` (roadmap 4.2, "ideal"): vigia drift
+  de tradução PT/EN nos READMEs — conjunto de engines da tabela, fase de
+  entrega `(AX)` por engine e status "planned/planejado" (a classe exata
+  do bug corrigido). Números-chave vão para o learn (relatório sem
+  issue-spam). Registrado no catálogo do bot/README.md.
+- ADRs 0001-0003: data placeholder `2024-01-01 (A0)` substituída pela
+  data real `2026-10-22` (data do commit A0 que registrou as decisões —
+  roadmap 4.4).
+- `APK_TESTER_PROMPT.md`: nota de reconciliação no topo (roadmap 4.5) —
+  o documento é a especificação histórica; onde diz "30 APKs"/"31 engine
+  APKs", a resolução entregue é a matriz de 32 engines
+  (`contracts/engines/expected-engines.json` é a verdade canônica).
+- `bot/checks/answerkey_drift.py`: comentário deixa explícito que
+  `candidate_paths` são caminhos REMOTOS no repo irmão RustyDroid (via
+  API do GitHub) — auditor standalone não deve tentar resolvê-los em
+  disco (roadmap 4.6).
+- `CODE_OF_CONDUCT.md`: erro de tradução corrigido ("comportamento
+  abusivo, abusivo em relação a dados" → "comportamento abusivo, de
+  assédio" — "abusive, harassing"; roadmap 4.7).
+- `docs/src/compat-matrix.md`: removido o link em loop (página que
+  apontava para si mesma — roadmap 4.8); "Ver agora" aponta para o
+  artefato `compat-matrix` do workflow. E a página entra no `SUMMARY.md`
+  do mdBook (roadmap 1.4): agora RENDERIZA no site.
+
 ### Corrigido (A9 — formatos de arquivo, roadmap W3)
 
 - `tools/gen-textures.py` + `tools/gen-bulk.py`: containers KTX2

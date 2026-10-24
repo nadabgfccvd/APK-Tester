@@ -54,7 +54,7 @@ indivíduo representa oficialmente o projeto em espaços públicos.
 
 ## Aplicação
 
-Casos de comportamento abusivo, abusivo em relação a dados ou qualquer outro
+Casos de comportamento abusivo, de assédio ou qualquer outro
 comportamento inaceitável podem ser reportados de forma **confidencial** ao
 responsável principal do projeto: `nadabgfccvd` (via contato privado indicado
 no perfil, ou via canais privados descritos em [SUPPORT.md](SUPPORT.md)).

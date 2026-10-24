@@ -54,6 +54,7 @@ complementa com seis capacidades:
 | `permission_drift` | permissões do AOSP `main` vs `contracts/flagship/permissions-audit.md` |
 | `size_drift` | tamanho por categoria vs gate [850, 1000] MB e projeção de breach |
 | `governance` | identidade dos commits (`allowed_authors`) e presença do kit de governança |
+| `locale_sync` | drift de tradução PT/EN nos READMEs (tabela de engines: conjunto, fase de entrega, status "planned") |
 
 ## Contrato de um check
 

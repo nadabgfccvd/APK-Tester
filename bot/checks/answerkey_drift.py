@@ -38,6 +38,10 @@ from pathlib import Path
 CHECK_ID = "answerkey_drift"
 
 # Defaults inline (usados quando cfg.rustydroid ausente no bot-config.json).
+# ATENÇÃO (A9/roadmap 4.6): candidate_paths são caminhos REMOTOS no repo
+# IRMÃO nadabgfccvd/RustyDroid (baixados via ctx.gh.get_file_contents) —
+# NÃO arquivos locais deste repositório; um auditor standalone não deve
+# tentar resolvê-los em disco (data/engines.toml vive no irmão, não aqui).
 RUSTYDROID_DEFAULTS = {
     "owner": "nadabgfccvd",
     "repo": "RustyDroid",
@@ -45,7 +49,7 @@ RUSTYDROID_DEFAULTS = {
     "candidate_paths": [
         "docs/engine-registry.md",   # registro gerado (Apêndice G) do irmão
         "README.md",                 # seção Apêndice G no README
-        "data/engines.toml",         # fonte bruta do registro
+        "data/engines.toml",         # fonte bruta do registro (remoto, irmão)
         "docs/src/apendice-g.md",
         "APENDICE-G.md",
     ],
