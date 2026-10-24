@@ -1,0 +1,113 @@
+# Snapshot do CLI RustyDroid (projeto irmão) — R1.1 (AUDIT_ROADMAP_V2).
+#
+# O binário `rd` (crates/rd-cli) é buildado A PARTIR DA FONTE no runner
+# (nada de binário commitado — mesma lei do Tier B) a partir de um commit
+# PINADO, e publicado como asset fixo do release `rustydroid-cli-snapshot`.
+# O sha256 do asset é pinado em scripts/compat-nightly.sh (R1.2) e a
+# proveniência (commit fonte, toolchain, data do corte) vai no ADR 0004.
+#
+# Por que snapshot e não release do repo irmão: o PAT de manutenção do
+# APK-Tester não tem acesso de escrita ao RustyDroid (403 verificado em
+# 2026-10-24); o roadmap previa exatamente este fallback ("asset fixo" +
+# ADR de proveniência). O CI do RustyDroid em main @ RD_COMMIT está vermelho
+# APENAS num alvo clippy de TESTE (rd-vm test parcel_binder, -D warnings) —
+# o cargo check --workspace (job MSRV) passa: o CLI compila limpo.
+name: RustyDroid CLI Snapshot
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  # Commit fonte do snapshot (pinned). Re-corte = atualizar aqui + re-pin
+  # do sha256 no compat-nightly.sh + nota no ADR 0004.
+  RD_COMMIT: "89bbe8f274f8d57b279f604406540ab12b8473c3"
+  RD_REPO: "https://github.com/nadabgfccvd/RustyDroid.git"
+  # Tag/asset do release fixo (NÃO casa com "v*" — o release.yml não dispara).
+  RD_TAG: "rustydroid-cli-snapshot"
+
+jobs:
+  build-cli:
+    name: "cargo build --release -p rd-cli (fonte pinada) + asset fixo"
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout (APK-Tester — proveniência e release)
+        uses: actions/checkout@v4
+
+      - name: Toolchain Rust (runner traz rustup)
+        run: |
+          rustup update stable
+          rustc --version
+          cargo --version
+
+      - name: Clonar RustyDroid no commit pinado
+        run: |
+          git clone --quiet --no-checkout "$RD_REPO" rd-src
+          git -C rd-src checkout --quiet "$RD_COMMIT"
+          echo "fonte pinada: $(git -C rd-src rev-parse HEAD)"
+
+      - name: Build do CLI (locked)
+        run: |
+          cd rd-src
+          cargo build --release -p rd-cli --locked
+
+      - name: "Smoke (sem APK: help + registro de engines)"
+        run: |
+          ./rd-src/target/release/rd --help > /dev/null
+          cd rd-src
+          ./target/release/rd engine list | head -5
+
+      - name: Empacotar + sha256 + proveniência
+        run: |
+          set -euo pipefail
+          DIR=rustydroid-cli-snapshot
+          mkdir -p "$DIR"
+          cp rd-src/target/release/rd "$DIR/rd"
+          SHA="$(sha256sum "$DIR/rd" | awk '{print $1}')"
+          echo "$SHA  rd" > rustydroid-cli-sha256.txt
+          {
+            echo "source: ${RD_REPO}"
+            echo "commit: ${RD_COMMIT}"
+            echo "build: cargo build --release -p rd-cli --locked (runner ubuntu-latest)"
+            echo "rustc: $(rustc --version | awk '{print $2}')"
+            echo "date: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "sha256: ${SHA}"
+          } > rustydroid-cli-provenance.txt
+          cat rustydroid-cli-provenance.txt
+
+      - name: Publicar no release fixo (idempotente)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view "$RD_TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release upload "$RD_TAG" \
+              rustydroid-cli-snapshot/rd \
+              rustydroid-cli-sha256.txt \
+              rustydroid-cli-provenance.txt \
+              --repo "$GITHUB_REPOSITORY" --clobber
+            echo "assets atualizados no release existente ${RD_TAG}"
+          else
+            gh release create "$RD_TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" \
+              --title "rustydroid-cli-snapshot (binario rd pinado)" \
+              --notes "Snapshot do CLI RustyDroid para o bootstrap do compat-nightly (R1.1/R1.2, AUDIT_ROADMAP_V2). Fonte: nadabgfccvd/RustyDroid@${RD_COMMIT}. Proveniência e sha256 nos assets. NÃO é release de versão do APK-Tester." \
+              rustydroid-cli-snapshot/rd \
+              rustydroid-cli-sha256.txt \
+              rustydroid-cli-provenance.txt
+            echo "release ${RD_TAG} criado"
+          fi
+
+      - name: Upload do snapshot (artefato de CI, auditoria)
+        uses: actions/upload-artifact@v4
+        with:
+          name: rustydroid-cli-snapshot
+          path: |
+            rustydroid-cli-snapshot/rd
+            rustydroid-cli-sha256.txt
+            rustydroid-cli-provenance.txt
+          if-no-files-found: error
