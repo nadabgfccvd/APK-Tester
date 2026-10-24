@@ -181,7 +181,9 @@ Execução integral das ondas R0–R4, com os fatos verificados no CI:
   key foi re-escrito como o conjunto EMITIDO real do detector, verificado
   contra os 32 APKs (9 entradas divergiam do registro — issue #23).
 - **R2 — substância do flagship:** módulos `:native`/`:rust`/`:compose`
-  reais (1 .so JNI + cargo-ndk + 1 tela Compose, o modern-only); **uma
+  reais (1 .so JNI + cargo-ndk + 1 tela Compose) — **todos modern-only**:
+  o piso do NDK 27 é API 21 (CXX1110) e o classic (minSdk 9) permanece
+  framework-only, SEM código nativo; **uma
   activity real por engine** (32 sondas `.engines.*`, 39 activities, alvo
   contratual >= 30 atingido) com cheque novo `activity_coverage` no
   APKBot; locales como asset usado em runtime (12 arquivos

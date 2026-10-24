@@ -22,6 +22,8 @@
 
 [Integração RustyDroid](rustydroid-integration.md)
 
+[GAPs do detector — drafts para o irmão](rustydroid-gaps.md)
+
 ---
 
 # ADRs

@@ -178,7 +178,9 @@ Full execution of waves R0–R4, with CI-verified facts:
   REAL emitted set, verified against all 32 APKs (9 entries diverged —
   issue #23).
 - **R2 — flagship substance:** real `:native`/`:rust`/`:compose`
-  modules (1 JNI .so + cargo-ndk + 1 Compose screen, modern-only);
+  modules (1 JNI .so + cargo-ndk + 1 Compose screen) — **all
+  modern-only**: the NDK 27 floor is API 21 (CXX1110) and the classic
+  (minSdk 9) stays framework-only, NO native code;
   **one real activity per engine** (32 `.engines.*` probes, 39
   activities, contract target >= 30 met) with the new `activity_coverage`
   bot check; locales as runtime-USED assets (12 `assets/locales/`

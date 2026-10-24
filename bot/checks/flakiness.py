@@ -28,6 +28,16 @@ script (parse da answer key, laço das 32 fixtures, agregação do markdown,
 contrato do exit code); os caminhos FAIL dependem do runtime irmão e
 continuem cobertos pelo job engines-nightly no CI.
 
+A PRIMEIRA execução do alvo clone é um AQUECIMENTO não cronometrado e com
+resultado IGNORADO: ela bootstrap o snapshot do `rd` no ~/.cache (download
++ validação sha256), e as repetições cronometradas medem o regime estável.
+Medir cold-start junto estoura CV sem ser flake: a mesma rodada de CI que
+abriu o issue #35 mediu [0.614, 0.042, 0.099] (CV 1.02) — só a primeira
+repetição pagou o bootstrap; aquecido, o mesmo alvo roda com CV ~0.05.
+Se o script estiver quebrado DE VERDADE, as repetições cronometradas pegam
+(aquecimento não é evidência; cold-start transitório não vira regression
+falso).
+
 Se o git não estiver disponível ou o clone falhar (disco cheio, permissão),
 o alvo degrada para um Finding "info" único documentando o motivo — a
 lacuna volta a ser honesta e NUNCA é falha.
@@ -170,6 +180,22 @@ def run(ctx) -> CheckResult:
                     # vira a raiz do pipeline — toda escrita fica no clone.
                     argv_base = ["bash",
                                  str(clone / "scripts" / "compat-nightly.sh")]
+
+            if mode == "clone" and skip_reason is None:
+                # Aquecimento NÃO cronometrado (issue #35): a 1a execução
+                # bootstrap o snapshot do rd no ~/.cache; cronometrar esse
+                # cold-start junto das repetições mistura dois regimes e
+                # fabrica CV alto sem instabilidade real. Resultado e
+                # exceção IGNORADOS de propósito — as repetições
+                # cronometradas abaixo são a evidência.
+                try:
+                    subprocess.run(
+                        argv_base, cwd=str(repo),
+                        timeout=SUBPROCESS_TIMEOUT_S,
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                        text=True)
+                except (subprocess.TimeoutExpired, OSError):
+                    pass
 
             if skip_reason is None:
                 for i in range(reps):

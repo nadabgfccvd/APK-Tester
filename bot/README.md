@@ -48,6 +48,7 @@ complementa com seis capacidades:
 |---|---|
 | `determinism` | perda de determinismo dos geradores (mesma seed, saída diferente) |
 | `flakiness` | instabilidade estatística entre execuções (CV acima do limite) |
+|  ↳ aquecimento | o alvo `compat-nightly` roda UMA execução não cronometrada antes das repetições — a 1ª bootstrap o snapshot do `rd` no `~/.cache`; cold-start não é flake (issue #35) |
 | `staleness` | links mortos em docs, marcadores de dívida e deriva de agendamento do bot |
 | `engine_matrix` | consistência da matriz de engines entre `contracts/` e docs |
 | `answerkey_drift` | drift entre gabaritos locais e as fontes do RustyDroid |

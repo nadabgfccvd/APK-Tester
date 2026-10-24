@@ -16,12 +16,16 @@ UI e switches por targetSdk.
 | minSdk | 9 |
 | targetSdk | 36 |
 | Flavors | `classic` (framework-only, minSdk 9) e `modern` (androidx/compose, minSdk 26) |
-| Módulos | `:app`, `:compose` (só modern), `:native` (C++ JNI, 4 ABIs), `:rust` (cargo-ndk `.so` com stub fallback), `:sim3d` (3D por software headless) |
+| Módulos | `:app`, `:compose` (só modern), `:native` (C++ JNI, 4 ABIs; só modern), `:rust` (cargo-ndk `.so`; só modern), `:sim3d` (3D por software headless, Java puro — os dois flavors) |
 | Size gate (release) | **∈ [850 MB, 1000 MB]**, totalmente otimizado (R8 full, resource shrinking, zipalign, native libs uncompressed) |
 
 No flavor `classic` todo código androidx fica isolado: guards com
 `Build.VERSION` + lazy init seguro contra `NoClassDefFoundError`, de modo que
-o código faltante nunca é tocado em APIs antigas.
+o código faltante nunca é tocado em APIs antigas. E o código NATIVO
+(`:native`/`:rust`/`:compose`) só é empacotado no flavor `modern`: o piso do
+NDK 27 é API 21 (CXX1110) e o classic (minSdk 9) permanece framework-only —
+nenhum `.so` no APK classic; `:sim3d` é Java puro (rasterizador por software)
+e entra nos DOIS flavors.
 
 ## O que o Behemoth carrega
 

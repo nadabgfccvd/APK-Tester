@@ -80,8 +80,9 @@ custar ~2 GB de artefatos/empacotamento por push; o **Size Gate**
   byte-reproduzíveis entre máquinas (a alternativa `~/.android/debug.keystore`
   varia por host e quebraria o `sha256_of_apk` do CSV).
 - **Libs nativas descomprimidas** (`jniLibs.useLegacyPackaging = false`) —
-  contrato do flagship para quando `:native` entrar (A7+); zipalign é
-  padrão do AGP no release.
+  contrato do flagship com `:native`/`:rust` no modern (R2.2; ambos
+  modern-only pelo piso do NDK 27 = API 21); zipalign é padrão do AGP no
+  release.
 
 ## Gate e drift no CI
 

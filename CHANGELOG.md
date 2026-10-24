@@ -377,6 +377,45 @@ de compatibilidade verde).
 - `contracts/engines/tier-c-payload-report.json`: payload dos marcadores
   Tier C regenerado (o marker.txt embute os tokens do answer key).
 
+## [1.0.2]
+
+### Corrigido
+
+- APKBot `flakiness` (issue #35): o alvo `compat-nightly` ganha UMA
+  execução de AQUECIMENTO não cronometrada antes das repetições — a 1ª
+  execução bootstrap o snapshot do `rd` no `~/.cache` e cronometrar esse
+  cold-start junto das repetições fabricou CV 1.02 ([0.614, 0.042,
+  0.099]) sem instabilidade real; aquecido, o pipeline roda com CV
+  ~0.05. Falha do aquecimento NÃO é evidência (transitório de rede não
+  vira regression falso); script quebrado de verdade é pego pelas
+  repetições cronometradas.
+- READMEs (PT/EN + `suites/flagship/README.md`): o piso do NDK 27 é API
+  21 (CXX1110) — `:native`/`:rust`/`:compose` são **modern-only** e o
+  classic (minSdk 9) permanece framework-only, SEM código nativo; o
+  texto não promete mais nativo no classic e o "stub fallback" do
+  `:rust` (mecanismo pré-R2.2) saiu da tabela de módulos (`:sim3d` é
+  Java puro e entra nos DOIS flavors — agora dito explicitamente).
+
+### Adicionado
+
+- `docs/src/rustydroid-gaps.md`: drafts prontos para doação dos GAPs do
+  detector ao repo irmão — tauri (marcadores divergem do layout
+  cargo-ndk), defold (`libdefold.so` vs `libdmengine.so` real), twa-pwa
+  (minimal marker set não documentado) e scala/clojure/groovy/b4x (sem
+  registro no detector de 28 ids). O PAT de manutenção continua SEM
+  escrita no irmão (403 reverificado em 2026-10-24 com o PAT vigente —
+  o `permissions` do `GET /repos` reflete o usuário, não os escopos do
+  token); o dono cola cada draft como issue.
+
+### Confirmado
+
+- Destino da draft v1.0.0: NÃO foi deletada nem publicada — segue draft
+  arquivada (id 422425698, renomeada "[ARQUIVADA] v1.0.0 (pré-fix,
+  draft) — NÃO publicar; superada pela v1.0.1"), 8 assets, com a tag
+  desanexada (`untagged-97f15be75446ceefe3e4`, o esperado após o re-cut
+  da v1.0.1). Drafts só aparecem em listas autenticadas; na UI fica sob
+  o filtro de drafts.
+
 ## [1.0.1]
 
 ### Corrigido
