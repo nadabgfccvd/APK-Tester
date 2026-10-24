@@ -30,10 +30,10 @@
       "id": "flagship_size_gate",
       "measurements": {
         "baseline_categories": 10,
-        "baseline_sha256": "a8c85aa1a3c90f77f09b344412c54d518badc5ba4c5df547fcb2436a132e473c",
+        "baseline_sha256": "2bc3f92106be7e2c41a7d68fd6bcad291d981fdea78fc2ab5e4fbce6ea7ceb57",
         "baseline_sha256_consistent": true,
-        "baseline_total_bytes": 960783552,
-        "baseline_total_mib": 916.27,
+        "baseline_total_bytes": 953973254,
+        "baseline_total_mib": 909.78,
         "gate_max_mb": 1000,
         "gate_min_mb": 850
       },
