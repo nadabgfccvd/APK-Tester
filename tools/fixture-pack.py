@@ -464,12 +464,15 @@ def build_plan(args, cfg: dict, work: str, out_apk: str, tools: dict,
          "cwd": None, "skip_if": "keystore_b_existe"},
         {"id": "apksigner-rotate",
          "description": "gera o lineage proof-of-rotation A -> B "
-                        "(apksigner rotate; exige as duas keystores)",
-         "command": [signer, "rotate", "--in-old-keystore", keystore,
-                     "--in-new-keystore", keystore_b, "--ks-pass", KS_PASS,
-                     "--ks-key-alias", KS_ALIAS,
-                     "--out-lineage", lineage], "cwd": None,
-         "skip_if": "mode_nao_e_v3_rotation"},
+                        "(apksigner rotate com --old-signer/--new-signer; "
+                        "exige as duas keystores)",
+         "command": [signer, "rotate",
+                     "--out-lineage", lineage,
+                     "--old-signer", "--ks", keystore,
+                     "--ks-pass", KS_PASS, "--ks-key-alias", KS_ALIAS,
+                     "--new-signer", "--ks", keystore_b,
+                     "--ks-pass", KS_PASS, "--ks-key-alias", KS_ALIAS],
+         "cwd": None, "skip_if": "mode_nao_e_v3_rotation"},
         {"id": "aapt2-compile", "description": "compila res/ em res.zip (flat)",
          "command": [a2, "compile", "--dir", os.path.join(work, "res"), "-o",
                      os.path.join(work, "res.zip")], "cwd": None},
@@ -916,7 +919,6 @@ def craft_arsc_collision(seed: int) -> bytes:
     fixed = 284
     key_strings_off = fixed
     type_strings_off = key_strings_off + len(key_pool)
-    types_start = type_strings_off + len(type_pool)
 
     def type_spec(type_id: int) -> bytes:
         # ResTable_typeSpec: header 16 (8 do chunk + id/flags/reserved)
