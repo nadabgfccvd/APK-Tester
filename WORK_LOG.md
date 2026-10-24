@@ -370,3 +370,118 @@ piso do NDK 27 nos READMEs; e release atualizada.
    números criados.
 3. Dono: revisar os itens M10–M12 do irmão quando o RustyDroid retomar
    (fora do escopo deste repo).
+
+---
+
+## Iteração D1–D6 (roadmap "o que resta, curto" — auditoria forense do dono)
+
+Data: 2026-10-24 · HEAD inicial: aecfce1 · Autor: xisto (xisto-agent)
+
+### D1 — trigger do size-gate.yml: FALSO POSITIVO (forense de blob)
+
+- O dono reportou `branches: ain]` (o `[m` "devorado") no HEAD, confirmado
+  pelo blob 099001f0. Verificação BYTE A BYTE (hex, imune a canal de
+  exibição) do blob LOCAL e do blob do GitHub via API: o conteúdo real do
+  line 18 é `20 20 20 20 62 72 61 6e 63 68 65 73 3a 20 5b 6d 61 69 6e 5d`
+  = `    branches: [main]`. O blob 099001f0 é idêntico local/remoto e
+  CONTÉM `[main]` — a corrupção NUNCA existiu em nenhum commit
+  (`git log -S'branches: ain]'` vazio desde 306a05f).
+- Causa-raiz da ilusão: o canal de exibição consome a sequência literal
+  `[m` (reproduzido no sandbox: `printf 'branches: [main]'` renderiza
+  `branches: ain]`). O run de push das 16:55 disparou porque o trigger
+  sempre foi válido — nenhuma mudança de código necessária.
+- Evidência guardada: hexdump do blob + contagens (`has_open_bracket_main: 1`,
+  `has_corrupted: 0`) em ambas as pontas.
+
+### Nit R02 — runs órfãos do canary apagados
+
+- Os 2 runs falhos do workflow removido `r02-canary.yml` (runs
+  40095928776 e 40095833531) foram apagados via API (DELETE 204 2x).
+
+### D2 — escada de dois eixos (commit 5e5a189)
+
+- `tools/gen-ladder.py`: `MIN_SDK_RUNGS` (12) + `TARGET_SDK_RUNGS`
+  (6: targetSdk 23/29/31/33/34/35), `rung_id()` (sdk-ladder-tsNN),
+  answer-key schema 2 com 18 degraus, rungs.properties com `.targetSdk`,
+  auditoria com as duas tabelas + nota honesta do targetsdk23
+  (minSdk 23 → BELOW_FLOOR: o targetSdk baixo não engana a lei do piso).
+- `suites/sdk-ladder/app/build.gradle.kts`: consome `.targetSdk`
+  (default 36); versionCode/versionName/label por eixo.
+- CI `sdk-ladder` valida 18 APKs com eixo por flavor; release e nightly
+  coletam `ladder-minsdk-NN.apk` + `ladder-targetsdk-NN.apk` (18).
+- `contracts/suites.json` com `target_sdk` nos 18 entries; v1-gate
+  re-sincronizado (ladder_rungs 18, total 63); READMEs/docs atualizados.
+- CI: job `SDK Ladder (A2+D2): 18 degraus` VERDE no primeiro commit.
+
+### D3 — wiring completo dos probes (commit 34964d6)
+
+- `ProbeCatalog.java` 17/17 (8 adicionados verbatim do registry);
+  `ProbeRunner.java` novo com wiring REAL dos 8 orfos: SQLite CRUD,
+  HttpURLConnection record/replay (URLStreamHandler próprio, zero
+  rede), MediaPlayer/AudioTrack sobre WAV determinístico, Camera2 stub
+  (guarda API 21, subclass anônima — Proxy não faz classe abstrata),
+  SensorManager TYPE_ALL, LocationManager, TelephonyManager, matriz JNI
+  via reflexão (classic → NOT_IMPLEMENTED estruturado, honesto com
+  "nativo é modern-only").
+- `ProbeReporter.recordResult()` com a lei completa (OK /
+  NOT_IMPLEMENTED / ERROR); instrumentação roda o runner e finaliza
+  RESULT_OK com resumo nos extras.
+- `native_probe.c`: matriz JNI real + correção do símbolo latente
+  `nativeSum` → `sum` (UnsatisfiedLinkError garantido antes).
+- APKBot: check novo `probe_registry_parity` (registry-only =
+  regression; catalog-only = new); paridade 17↔17; CHECK_MODULES
+  atualizado; teste negativo provou a detecção.
+
+### D4 — corpus adversarial-malformed (commits b4a2bf7, 1f06e65, 6d391c5, 090448c)
+
+- 6 fixtures no `fixture-pack.py` (27 modos): zip-slip, duplicate-entries,
+  axml-truncated, arsc-type-collision (ARSc sintético estruturalmente
+  honesto: 3 pools + 2 TypeSpec + 2 Type com ids 1/2 e MESMO nome
+  "string" — colisão real, validada por parser próprio), dex-corrupted
+  (checksum zerado + map_off 0xFFFFFFFF), v3-rotation-lineage.
+- Mutação pós-build determinística (`--malformed-mutate`, mtimes 1980);
+  unsigned de propósito, exceto a rotação.
+- Rotacao v3 validada LOCALMENTE contra o apksigner 35.0.0 REAL
+  (build-tools r35 baixado): `rotate --out lineage.bin --old-signer --ks A
+  --new-signer --ks B` + `sign --ks A --next-signer --ks B --lineage
+  lineage.bin --v3-only` → Verifies, v3=true, --print-certs mostra
+  A(24..32) e B(33..) — as opções --in-old-keystore/--out-lineage/
+  --lineage-min-sdk-version NÃO existem no 35.0.0.
+- CI `parser-torture`: 17 fixtures empacotadas e validadas com prova por
+  patologia (traversal no CD, duplicatas, declared>bytes + aapt2 reprova,
+  colisão + aapt2 reprova, checksum/map_off + d8 reprova, e v3 com os
+  DOIS certificados da rotação via print-certs).
+- Contratos: TORTURE_ORDER 16, fragment/audit regenerados, suites.json
+  70 entradas, v1-gate re-sincronizado (torture 16, total 69); release
+  coleta 17; docs/READMEs atualizados.
+
+### D5 + D6 + nit wrapper (commit e72d329)
+
+- `CODEOWNERS` (owner default @nadabgfccvd; agente NUNCA auto-aprova).
+- `THIRD-PARTY-NOTICES.md`: a dupla licença cobre o repositório, não os
+  runtimes embutidos (Qt LGPLv3, CPython PSF-2.0, Go BSD-3, Hermes MIT,
+  Clojure EPL-1.0, Defold CC0, toolchains, stubs Tier C, wrapper jar).
+- D6: nota explícita PT/EN de que o gate [850, 1000] MiB mede bytes
+  DESCOMPRIMIDOS (912.18 MiB no CSV), não o arquivo .apk (859.7 MB).
+- Nit: gradle-wrapper.jar declarado como ÚNICA exceção a "sem binários",
+  com .sha256 e link para as notices.
+
+### Checagens e resultados
+
+- Selftests: gen-ladder (18), fixture-pack (27 modos), gen-torture-contracts
+  (16 suites), v1-gate, verify-deterministic.sh 16/16 PASS.
+- Bot `--local` (estado restaurado): 0 findings; probe_registry_parity
+  paridade 17↔17.
+- CI no HEAD: Lint, Contratos, Gate estático, Selftests, SDK Ladder
+  (18 degraus), Parser Torture (17 fixtures), Tier A, Tier C, Tier B
+  contratos → verdes. Jobs restantes (flagship 2x, Tier A stragglers)
+  em andamento na escrita deste log.
+- Correções de CI durante a iteração: F841 (variável morta), sintaxe do
+  apksigner rotate/sign (--out, --next-signer + --lineage) — sempre com
+  validação local antes do push.
+
+### Status no GitHub
+
+- main: 090448c (5e5a189 D2 → 34964d6 D3 → b4a2bf7 D4 → e72d329 D5+D6 →
+  1f06e65/6d391c5/090448c fixes de CI com prova local).
+- Issues abertas: 0; runs órfãos do canary: 0.
