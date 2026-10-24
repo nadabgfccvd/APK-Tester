@@ -377,6 +377,28 @@ jobs:
           done
           ls suites/engines/*/dist/*.apk | wc -l
 
+      - name: "Baixar APKs Tier A do último ci.yml verde (R1.3: matriz completa)"
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          RUN_ID="$(gh api \
+            'repos/${{ github.repository }}/actions/workflows/ci.yml/runs?status=success&branch=main&per_page=1' \
+            --jq '.workflow_runs[0].id')"
+          echo "ci.yml verde: run ${RUN_ID}"
+          mkdir -p tier-a-staging
+          gh run download "${RUN_ID}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --pattern 'tier-a-*' \
+            --dir tier-a-staging
+          find tier-a-staging -type f -name '*.apk' | while read -r apk; do
+            base="$(basename "$apk" .apk)"
+            engine="${base#tier-a-}"
+            mkdir -p "suites/engines/$engine/dist"
+            cp "$apk" "suites/engines/$engine/dist/$engine.apk"
+          done
+          echo "APKs de engine na árvore: $(ls suites/engines/*/dist/*.apk | wc -l) (esperado 32)"
+
       - name: Baixar escada + tortura + flagship (staging da matriz)
         uses: actions/download-artifact@v4
         with:
