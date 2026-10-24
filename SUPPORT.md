@@ -53,4 +53,10 @@ Sem esses dados, o triage fica mais lento ou o relato é encerrado como
 - Uso da suíte como ferramenta ofensiva ou para enganar ferramentas de
   terceiros;
 - Dúvidas sobre o runtime em si — use os canais do
-  [RustyDroid](https://github.com/nadabgfccvd/RustyDroid).
+  [RustyDroid](https://github.com/nadabgfccvd/RustyDroid). Os marcos
+  M10–M12 do irmão (dispositivos virtuais, engines em golden flow,
+  ecossistema GH/docs/releases) vivem no ROADMAP do
+  [RustyDroid](https://github.com/nadabgfccvd/RustyDroid/blob/main/docs/ROADMAP.md);
+  o APK-Tester consome o CLI `rd` via snapshot pinado (ADR 0004) e os
+  GAPs de detecção conhecidos estão documentados no answer key
+  (`contracts/engines/expected-engines.json`, coluna notes).
