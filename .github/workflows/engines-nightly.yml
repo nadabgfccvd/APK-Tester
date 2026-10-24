@@ -313,6 +313,8 @@ jobs:
             curl -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
             echo "${HOME}/.cargo/bin" >> "${GITHUB_PATH}"
           fi
+          # std dos alvos android para o cargo-ndk (E0463 sem isto)
+          rustup target add aarch64-linux-android x86_64-linux-android
           if ! command -v cargo-ndk >/dev/null 2>&1; then
             cargo install cargo-ndk --version 4.1.2 --locked
           fi
