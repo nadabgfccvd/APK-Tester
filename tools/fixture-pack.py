@@ -467,7 +467,7 @@ def build_plan(args, cfg: dict, work: str, out_apk: str, tools: dict,
                         "(apksigner rotate com --old-signer/--new-signer; "
                         "exige as duas keystores)",
          "command": [signer, "rotate",
-                     "--out-lineage", lineage,
+                     "--out", lineage,
                      "--old-signer", "--ks", keystore,
                      "--ks-pass", KS_PASS, "--ks-key-alias", KS_ALIAS,
                      "--new-signer", "--ks", keystore_b,
