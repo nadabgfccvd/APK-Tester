@@ -65,7 +65,7 @@ jobs:
             echo "${HOME}/.cargo/bin" >> "${GITHUB_PATH}"
           fi
           if ! command -v cargo-ndk >/dev/null 2>&1; then
-            cargo install cargo-ndk --version 3.5.7 --locked
+            cargo install cargo-ndk --version 4.1.2 --locked
           fi
           cargo ndk --version
 
