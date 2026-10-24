@@ -42,7 +42,7 @@ Verdades duras embutidas nos critérios (honestidade de contrato):
   subconjunto público);
 - o prompt cita **31 engines** — a matriz entrega **32 diretórios**
   (hibrido #31 + TWA/PWA #32), todos com contrato por diretório;
-- `rd engine detect` e `rustydroid inspect` rodam no **runtime RustyDroid**
+- `rd engine detect` e `rd inspect` rodam no **runtime RustyDroid**
   (repositório irmão); aqui provamos os answer keys por zero drift
   estrutural + verificação artefato-nível (`--verify-apk`) em cada build.
 

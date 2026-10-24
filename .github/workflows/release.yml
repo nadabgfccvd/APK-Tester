@@ -604,19 +604,33 @@ jobs:
 
       - name: Rascunhar notas de release a partir do CHANGELOG.md
         run: |
-          # extrai a seção [1.0.0] do Keep a Changelog
-          awk '/^## \[1\.0\.0\]/{seen=1; next} /^## /{if (seen) exit} seen{print}' \
-            CHANGELOG.md > release-notes.md
+          # extrai a seção da VERSÃO DA TAG do Keep a Changelog (antes era
+          # fixo [1.0.0]; v1.0.1+ pega a seção da própria tag). O cabeçalho
+          # casa EXATO (ou com data após) — [1.0.1] não pode pegar [1.0.10].
+          VER="${GITHUB_REF_NAME#v}"
+          if [ "${GITHUB_REF_TYPE}" != "tag" ]; then
+            VER="Unreleased"
+          fi
+          awk -v hdr="## [${VER}]" '
+            {
+              if (index($0, hdr) == 1) {
+                rest = substr($0, length(hdr) + 1)
+                if (rest == "" || rest ~ /^ /) { seen = 1; next }
+              }
+              if ($0 ~ /^## /) { if (seen) exit }
+              if (seen) print
+            }' CHANGELOG.md > release-notes.md
           if [ ! -s release-notes.md ]; then
             head -n 60 CHANGELOG.md > release-notes.md
           fi
+          echo "notas extraídas da seção [${VER}]:"
           head -n 20 release-notes.md
 
-      - name: Criar draft release com artefatos
+      - name: Criar release pública com artefatos
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          draft: true
+          draft: false
           body_path: release-notes.md
           files: |
             dist/apks/flagship-modern-release.apk

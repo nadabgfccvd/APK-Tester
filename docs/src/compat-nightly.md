@@ -12,19 +12,23 @@ UTC (ou sob demanda via `workflow_dispatch`) ele:
    pela `tools/fixture-pack.py`;
 3. **Roda o `scripts/compat-nightly.sh`**: para cada engine dos 32 do answer
    key (`contracts/engines/expected-engines.json`) ele executa
-   `rustydroid inspect --json` e `rd engine detect` contra o APK e compara a
+   `rd inspect --json` e `rd engine detect` contra o APK e compara a
    saída com os `rustydroid_engines` esperados;
 4. **Publica `docs/compat-matrix.md` no GH Pages** junto com o site mdBook
    (job `docs-pages`);
 5. **Abre uma issue `fixture_gap`** automaticamente se qualquer linha vier
    FAIL (drift de detecção vs answer key).
 
-## Lei do nightly
+## Lei do nightly (pós R1.2, AUDIT_ROADMAP_V2)
 
-- **Sem `rustydroid` no PATH**, todas as linhas viram `SKIP` e o script sai 0
-  — a matriz existe e é publicada mesmo antes do runtime estar disponível no
-  runner. Quando o binário do RustyDroid for publicado, o mesmo script passa
-  a exercitá-lo sem mudança de workflow (basta colocá-lo no PATH).
+- **O CLI `rd` é garantido**: o script faz bootstrap do snapshot PINADO por
+  sha256 (release `rustydroid-cli-snapshot`, ADR 0004) quando não há `rd`
+  no PATH. Download/integridade falhando é **FAIL explícito** — o status
+  `SKIP` saiu da matriz (era 32 SKIPs por nightly desde sempre).
+- **Escopo total (R1.3)**: além dos 32 engines da answer key, a matriz
+  cobre a escada minSdk 9..36 (12 degraus), as fixtures de tortura de
+  parser (11) e o flagship (variante classic) — inspeção estrutural pelo
+  `rd inspect --json`.
 - **Fixture sem APK** vira linha `SEM_APK` (não é FAIL): honestidade sobre o
   estado da cobertura.
 - **Qualquer FAIL sai 1** e o workflow abre `fixture_gap` com o run e os
@@ -34,17 +38,20 @@ UTC (ou sob demanda via `workflow_dispatch`) ele:
 ## Como rodar localmente
 
 ```bash
-bash scripts/compat-nightly.sh            # matriz com SKIP (sem rustydroid)
-# com um rustydroid local no PATH:
-rustydroid --version && bash scripts/compat-nightly.sh
+bash scripts/compat-nightly.sh
+# sem `rd` no PATH o script faz bootstrap do snapshot pinado (ADR 0004);
+# com um rd local mais novo no PATH, ele é usado direto.
 ```
 
-O script procura cada APK em
+O script procura cada APK de engine em
 `suites/engines/<engine>/dist/<engine>.apk`,
 `suites/engines/<engine>/dist/app.apk`,
-`suites/engines/<engine>/<engine>.apk` e escreve
-`docs/compat-matrix.md` com a tabela completa + resumo (OK/FAIL/SKIP/
-SEM_APK).
+`suites/engines/<engine>/<engine>.apk`; a escada/tortura/flagship vêm dos
+dirs de staging (`staging/compat/{ladder,torture,flagship}` — no CI o
+job `compat-nightly` baixa os artefatos `ladder-nightly`,
+`torture-nightly` e `flagship-classic-nightly`). Escreve
+`docs/compat-matrix.md` com as tabelas completas + resumo (OK/FAIL/
+SEM_APK; SKIP é estruturalmente 0).
 
 ## Estratégia de build Tier B (fase A7)
 

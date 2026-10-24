@@ -8,6 +8,7 @@ mudar uma decisão, crie um novo ADR com status `superseded by ADR-MMMM`.
 | [ADR 0001](adr-0001-geradores-python-stdlib.md) | Geradores Python stdlib-only e determinísticos | accepted |
 | [ADR 0002](adr-0002-tiers-de-build.md) | Tiers de build A/B/C | accepted |
 | [ADR 0003](adr-0003-deteccao-nao-valida-payload.md) | Detecção não valida payload nem autoriza execução | accepted |
+| [ADR 0004](adr-0004-rustydroid-snapshot-pinado.md) | Snapshot pinado do CLI RustyDroid para o compat-nightly | accepted |
 
 ## Template de ADR
 

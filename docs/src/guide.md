@@ -13,7 +13,7 @@ engines, renderização de UI e switches de comportamento por `targetSdk`.
 Cada APK é determinístico (geradores com seed, sem rede em runtime, sem SDKs
 proprietários), licenciado abertamente (MIT OR Apache-2.0, fontes OFL) e vem
 com um **answer key** verificável por máquina, para que
-`rustydroid inspect --json` possa ser diffado numericamente (zero-drift).
+`rd inspect --json` possa ser diffado numericamente (zero-drift).
 
 ## Os 5 pilares (requisitos duros)
 

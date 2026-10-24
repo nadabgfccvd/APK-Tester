@@ -183,14 +183,156 @@ jobs:
           if-no-files-found: error
 
   # ------------------------------------------------------------------
-  # compat-nightly: roda o RustyDroid (se disponível) contra TODOS os
-  # fixtures com APK e agrega docs/compat-matrix.md. Sem rustydroid no
-  # runner, todas as linhas viram SKIP e o job passa (lei do script).
+  # R1.3 (AUDIT_ROADMAP_V2): a matriz de compat passa a cobrir TAMBÉM a
+  # escada minSdk 9..36, as fixtures de tortura de parser e o flagship
+  # (variante classic — a modern de 857 MB fica para o release; ADR 0004
+  # e roadmap R1.3). Inspeção estrutural pelo snapshot pinado do rd.
+  # ------------------------------------------------------------------
+  build-ladder:
+    name: "Escada minSdk 9-36 (R1.3) para a matriz compat"
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Componentes Android SDK (platform 36 + build-tools)
+        run: |
+          yes | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" \
+            "platforms;android-36" "build-tools;${BT}" > /dev/null
+          echo "ANDROID_HOME=${ANDROID_HOME}" >> "${GITHUB_ENV}"
+
+      - name: Build (Gradle, 12 flavors debug em uma invocação)
+        run: |
+          cd suites/sdk-ladder
+          ./gradlew --no-daemon :app:assembleDebug
+
+      - name: Coletar e renomear os 12 APKs (ladder-minsdk-NN.apk)
+        run: |
+          mkdir -p staging/compat/ladder
+          n=0
+          for d in 09 12 14 16 19 21 23 26 29 33 35 36; do
+            src="suites/sdk-ladder/app/build/outputs/apk/minsdk${d}/debug/app-minsdk${d}-debug.apk"
+            test -f "${src}"
+            cp "${src}" "staging/compat/ladder/ladder-minsdk-${d}.apk"
+            n=$((n + 1))
+          done
+          echo "degraus coletados: ${n}"
+          test "${n}" -eq 12
+          ls -l staging/compat/ladder
+
+      - name: Upload da escada (artefato de CI)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ladder-nightly
+          path: staging/compat/ladder/*.apk
+          if-no-files-found: error
+
+  build-torture:
+    name: "Parser Torture (11 fixtures) (R1.3) para a matriz compat"
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Componentes Android SDK (platform 36 + build-tools)
+        run: |
+          yes | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" \
+            "platforms;android-36" "build-tools;${BT}" > /dev/null
+          echo "ANDROID_HOME=${ANDROID_HOME}" >> "${GITHUB_ENV}"
+
+      - name: Empacotar as 11 fixtures (toolchain real do SDK)
+        run: |
+          python3 tools/fixture-pack.py --selftest
+          BT_DIR="${ANDROID_HOME}/build-tools/${BT}"
+          mkdir -p dist/apks
+          for f in minSdk9 sig-v1-only sig-v2-only sig-v3-only unaligned zip64 \
+                   huge-arsc multidex-8 unknown-perms exported-audit obfuscated; do
+            python3 tools/fixture-pack.py --fixture "$f" --out dist \
+              --aapt2 "${BT_DIR}/aapt2" --d8 "${BT_DIR}/d8" \
+              --apksigner "${BT_DIR}/apksigner" --zipalign "${BT_DIR}/zipalign"
+          done
+          # mesmos nomes do release: prefixo torture-, caixa baixa, seguindo
+          # os .apk PRODUZIDOS (zip64 -> zip64-65k, obfuscated -> obfuscated-r8)
+          for apk in dist/*.apk; do
+            base="$(basename "$apk" .apk)"
+            cp "$apk" "dist/apks/torture-$(echo "${base}" | tr 'A-Z' 'a-z').apk"
+          done
+          test "$(ls dist/apks/*.apk | wc -l)" -eq 11
+          mkdir -p staging/compat/torture
+          cp dist/apks/*.apk staging/compat/torture/
+          ls -l staging/compat/torture
+
+      - name: Upload das fixtures de tortura (artefato de CI)
+        uses: actions/upload-artifact@v4
+        with:
+          name: torture-nightly
+          path: staging/compat/torture/*.apk
+          if-no-files-found: error
+
+  build-flagship-classic:
+    name: "Flagship classic (variante da matriz, R1.3)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Componentes Android SDK (platform 36 + build-tools 35.0.0)
+        run: |
+          yes | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" \
+            "platforms;android-36" "build-tools;35.0.0" > /dev/null
+          echo "ANDROID_HOME=${ANDROID_HOME}" >> "${GITHUB_ENV}"
+
+      - name: Build do flagship classic (bulk quick, minSdk 9)
+        run: |
+          cd suites/flagship
+          ./gradlew --no-daemon -PbulkPreset=quick :app:assembleClassicRelease
+
+      - name: Coletar o APK classic
+        run: |
+          mkdir -p staging/compat/flagship
+          SRC="suites/flagship/app/build/outputs/apk/classic/release/app-classic-release.apk"
+          test -f "${SRC}"
+          cp "${SRC}" staging/compat/flagship/flagship-classic-release.apk
+          ls -l staging/compat/flagship
+
+      - name: Upload do flagship classic (artefato de CI)
+        uses: actions/upload-artifact@v4
+        with:
+          name: flagship-classic-nightly
+          path: staging/compat/flagship/*.apk
+          if-no-files-found: error
+
+  # ------------------------------------------------------------------
+  # compat-nightly: roda o snapshot pinado do RustyDroid (ADR 0004) contra
+  # TODOS os fixtures com APK (32 engines + escada + tortura + flagship)
+  # e agrega docs/compat-matrix.md. Sem o snapshot (download/integridade
+  # falhando) o script sai FAIL — nunca SKIP silencioso (R1.2).
   # ------------------------------------------------------------------
   compat-nightly:
     name: Compat nightly (RustyDroid x fixtures)
-    needs: [tier-b-matrix, tier-c-fixtures]
-    if: ${{ always() && needs.tier-b-matrix.result != 'cancelled' && needs.tier-c-fixtures.result != 'cancelled' }}
+    needs: [tier-b-matrix, tier-c-fixtures, build-ladder, build-torture, build-flagship-classic]
+    if: ${{ always() && needs.tier-b-matrix.result != 'cancelled' && needs.tier-c-fixtures.result != 'cancelled' && needs.build-ladder.result != 'cancelled' && needs.build-torture.result != 'cancelled' && needs.build-flagship-classic.result != 'cancelled' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -219,6 +361,23 @@ jobs:
             cp "$apk" "suites/engines/$base/dist/$base.apk"
           done
           ls suites/engines/*/dist/*.apk | wc -l
+
+      - name: Baixar escada + tortura + flagship (staging da matriz)
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "{ladder-nightly,torture-nightly,flagship-classic-nightly}"
+          path: staging-externo
+
+      - name: Posicionar escada + tortura + flagship
+        run: |
+          mkdir -p staging/compat/ladder staging/compat/torture staging/compat/flagship
+          find staging-externo/ladder-nightly -name '*.apk' \
+            -exec cp {} staging/compat/ladder/ \;
+          find staging-externo/torture-nightly -name '*.apk' \
+            -exec cp {} staging/compat/torture/ \;
+          find staging-externo/flagship-classic-nightly -name '*.apk' \
+            -exec cp {} staging/compat/flagship/ \;
+          echo "ladder: $(ls staging/compat/ladder/*.apk | wc -l) | torture: $(ls staging/compat/torture/*.apk | wc -l) | flagship: $(ls staging/compat/flagship/*.apk | wc -l)"
 
       - name: Rodar scripts/compat-nightly.sh
         run: bash scripts/compat-nightly.sh
@@ -314,7 +473,7 @@ jobs:
   # ------------------------------------------------------------------
   notify-failure:
     name: Auto-issue em falha do nightly (R0.2/R3.1)
-    needs: [tier-b-matrix, tier-c-fixtures, compat-nightly, docs-pages]
+    needs: [tier-b-matrix, tier-c-fixtures, build-ladder, build-torture, build-flagship-classic, compat-nightly, docs-pages]
     if: >-
       ${{
         always() && !cancelled() &&
@@ -330,6 +489,9 @@ jobs:
           COMMIT: ${{ github.sha }}
           RES_TIER_B: ${{ needs.tier-b-matrix.result }}
           RES_TIER_C: ${{ needs.tier-c-fixtures.result }}
+          RES_LADDER: ${{ needs.build-ladder.result }}
+          RES_TORTURE: ${{ needs.build-torture.result }}
+          RES_FLAGSHIP: ${{ needs.build-flagship-classic.result }}
           RES_COMPAT: ${{ needs.compat-nightly.result }}
           RES_DOCS: ${{ needs.docs-pages.result }}
         run: |
@@ -338,6 +500,9 @@ jobs:
           for pair in \
             "tier-b-matrix:${RES_TIER_B}" \
             "tier-c-fixtures:${RES_TIER_C}" \
+            "build-ladder:${RES_LADDER}" \
+            "build-torture:${RES_TORTURE}" \
+            "build-flagship-classic:${RES_FLAGSHIP}" \
             "compat-nightly:${RES_COMPAT}" \
             "docs-pages:${RES_DOCS}"; do
             job="${pair%%:*}"

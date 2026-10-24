@@ -10,6 +10,43 @@ de compatibilidade verde).
 
 ## [Unreleased]
 
+### Adicionado (AUDIT_ROADMAP_V2 — R0/R1: desbloqueio + compat real)
+
+- `scripts/compat-nightly.sh` (R1.2): bootstrap do CLI RustyDroid — o
+  script baixa o snapshot PINADO por sha256 (release
+  `rustydroid-cli-snapshot`, ADR 0004), valida a integridade e instala em
+  `$WORK_DIR/bin`. Download ou integridade falhando é FAIL explícito — o
+  "se disponível" (SKIP=32 em todo nightly desde sempre) era mentira
+  documentada e saiu.
+- `.github/workflows/rustydroid-snapshot.yml` (R1.1): snapshot do CLI `rd`
+  buildado da FONTE pinada (`RD_COMMIT`) no runner e publicado como asset
+  fixo do release `rustydroid-cli-snapshot` com sha256 + proveniência
+  (commit fonte, toolchain, data do corte). ADR 0004 declara a decisão e
+  o fallback ("asset fixo") — o PAT de manutenção não tem escrita no repo
+  irmão (403 verificado em 2026-10-24).
+- `engines-nightly.yml` (R1.3): a matriz de compat cobre a ESCADA minSdk
+  9..36 (12 degraus), as fixtures de tortura de parser (11) e o flagship
+  (variante classic — a modern 857 MB segue no release), além dos 32
+  engines; alvo contratual OK >= 54, SKIP = 0.
+- `.github/workflows/engines-nightly.yml` (R0.2/R3.1): job
+  `notify-failure` abre issue `ci` automática em falha de BUILD/INFRA do
+  nightly (antes a falha vivia só no log — o PR ficava verde com o
+  nightly vermelho há dias, ex. KeyError do engine-04-scala, run
+  40076184463). Mecânica validada com canary (issue de teste #22 aberta e
+  fechada; job removido após a prova).
+
+### Corrigido (AUDIT_ROADMAP_V2 — R0/R1)
+
+- `tools/build-tier-a.py` (R0.1): guard `SPECS.get(engine, {})` no
+  `--verify-apk` — o verificador também valida APKs Tier B, mas o `SPECS`
+  é do Tier A: `SPECS[engine]["kind"]` levantava `KeyError:
+  engine-04-scala` nos 9 builds do nightly (run 40076184463). Aceite
+  comprovado: `verify_apk` sem exceção para Tier B; nightly re-executado
+  100% verde (run 40095992749, 12/12 jobs).
+- `scripts/compat-nightly.sh`: binário único `rd` (o nome `rustydroid`
+  nunca existiu como binário — era o nome do projeto); a dupla
+  HAVE_RUSTYDROID/HAVE_RD e o status SKIP estrutural saem da matriz.
+
 ### Corrigido (A9 — auditoria de continuidade, roadmap W7)
 
 - `bot/checks/answerkey_drift.py`: corrigido CRASH LATENTE na comparação
@@ -270,6 +307,20 @@ de compatibilidade verde).
   `determinism:gen-engine-fixtures:sem-manifest-json`, que reportavam a
   lacuna de cobertura em toda execução; o determinismo byte a byte dos 16
   geradores segue provado por `tools/verify-deterministic.sh` (16/16 PASS).
+
+## [1.0.1]
+
+### Corrigido
+
+- `maxSdkVersion` da `GET_TASKS`/`USE_FINGERPRINT` no manifesto do
+  flagship (W0) — as answer keys de permissão erradas congeladas na tag
+  v1.0.0 (pré-fix) são corrigidas aqui; a v1.0.0 segue draft arquivada e
+  NÃO é publicada.
+- Formatos spec-completos no flagship: KTX2/WAV/multidex/WASM (W3).
+- `tools/build-tier-a.py`: guard `SPECS.get()` no `--verify-apk` (R0.1) —
+  KeyError nos 9 builds Tier B do nightly.
+- Observabilidade do nightly: auto-issue em falha de build/infra (R0.2) e
+  compat REAL com snapshot pinado do RustyDroid (R1.1/R1.2).
 
 ## [1.0.0] - 2026-10-23
 

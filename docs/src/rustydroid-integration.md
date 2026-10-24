@@ -7,7 +7,7 @@ exatos de integração e como o CI os consome.
 
 ```bash
 # flagship (flavor modern, minSdk 26)
-rustydroid inspect --json suites/flagship/dist/behemoth.apk > /tmp/flagship-inspect.json
+rd inspect --json suites/flagship/dist/behemoth.apk > /tmp/flagship-inspect.json
 ```
 
 A saída JSON é diffada numericamente contra os contratos do flagship:
@@ -73,8 +73,9 @@ versionado para diff entre releases.
 bash scripts/compat-nightly.sh
 ```
 
-- Sem `rustydroid` no PATH: todas as linhas `SKIP`, exit 0 (roda limpo hoje);
-- Com runtime: `rustydroid inspect --json` + `rd engine detect` por fixture,
+- Sem `rd` no PATH, o script faz bootstrap do snapshot pinado por sha256
+  (ADR 0004); download/integridade falhando é FAIL, nunca SKIP silencioso;
+- Com runtime: `rd inspect --json` + `rd engine detect` por fixture,
   diff contra o answer key, e agregação em `docs/compat-matrix.md`;
 - Qualquer `FAIL` => exit 1 (o workflow nightly abre issue com label
   `fixture_gap` e publica a matriz no GH Pages).
