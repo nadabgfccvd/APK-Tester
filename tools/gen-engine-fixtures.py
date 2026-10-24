@@ -529,10 +529,22 @@ def dir_contract(engine: str) -> dict:
                         f"--out dist",
         "verify_command": f"python3 tools/gen-engine-fixtures.py "
                           f"--verify-apk dist/{engine}.apk --engine {engine}",
-        "notes": "fixture de detecção; payload não executável (ADR 0003). "
-                 "Empacotada por tools/fixture-pack.py, payloads por "
-                 "tools/gen-engine-fixtures.py.",
+        # notes vem do CANÔNICO (fonte única — o sync não pode regenerar
+        # um texto próprio e divergir do commitado; AUDIT_ROADMAP_V2 R1.3:
+        # o canônico carrega o estado do detector por entrada).
+        "notes": _canonical_notes(engine),
     }
+
+
+def _canonical_notes(engine: str) -> str:
+    """notes do contrato canônico (fallback honesto se ausente)."""
+    canonical = load_canonical_contract()
+    for entry in canonical.get("engines", []):
+        if entry.get("dir") == engine:
+            return str(entry.get("notes", ""))
+    return ("fixture de detecção; payload não executável (ADR 0003). "
+            "Empacotada por tools/fixture-pack.py, payloads por "
+            "tools/gen-engine-fixtures.py.")
 
 
 def load_canonical_contract() -> dict:
