@@ -34,6 +34,30 @@ de compatibilidade verde).
   57 → 63); docs (`docs/src/sdk-ladder.md`, `v1-gate.md`, `guide.md`,
   `compat-nightly.md`) e READMEs atualizados.
 
+### Adicionado (D3 — wiring dos probes: answer key = código)
+
+- Paridade registry X código resolvida: `ProbeCatalog.java` agora tem os
+  **17 probes** do `api-probe-registry.json` (faltavam 8: ST-DB-001,
+  NET-RP-001, MEDIA-PL-001, MEDIA-CM-001, SYS-SN-001, SYS-LC-001,
+  SYS-TP-001, LANG-JN-001) e os 8 orfos têm **wiring real** no novo
+  `ProbeRunner.java`, executado pela `BehemothInstrumentation` (resultados
+  no `maxprobe-report.json` com a lei do registry — OK /
+  NOT_IMPLEMENTED / ERROR; nenhuma exceção escapa, ADR 0003).
+- `ProbeReporter.recordResult()`: resultado com a lei completa do registry
+  (o `record()` binário legado delega).
+- Matriz JNI real (LANG-JN-001): `native_probe.c` ganha
+  GetStringUTFChars/NewStringUTF, GetIntArrayRegion,
+  GetDirectBufferAddress, ThrowNew (ArithmeticException) e
+  AttachCurrentThread via pthread + JNI_OnLoad; `NativeProbe.java`
+  declara a matriz. **Correção de bug**: o símbolo C era
+  `...NativeProbe_nativeSum` e o Java declarava `sum(...)` —
+  UnsatisfiedLinkError garantido; agora casa. LANG-JN-001 usa reflexão:
+  no classic (framework-only, NDK 27 modern-only) o resultado honesto é
+  NOT_IMPLEMENTED estruturado.
+- APKBot: novo check `probe_registry_parity` — registry-only vira
+  "regression" (probe-sem-wiring), catalog-only vira "new"
+  (probe-sem-contrato); paridade 17↔17 no commit.
+
 ### Adicionado (AUDIT_ROADMAP_V2 — R0/R1: desbloqueio + compat real)
 
 - `scripts/compat-nightly.sh` (R1.2): bootstrap do CLI RustyDroid — o

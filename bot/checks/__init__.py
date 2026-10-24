@@ -14,6 +14,7 @@ CHECK_MODULES = [
     "staleness",
     "engine_matrix",
     "answerkey_drift",
+    "probe_registry_parity",
     "permission_drift",
     "size_drift",
     "governance",

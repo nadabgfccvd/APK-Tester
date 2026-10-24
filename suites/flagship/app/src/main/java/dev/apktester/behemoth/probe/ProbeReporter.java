@@ -24,7 +24,12 @@ import java.util.Locale;
  * files/maxprobe-report.json como array JSON, gravando primeiro em arquivo
  * temporario e renomeando depois (escrita tudo-ou-nada: qualquer falha e
  * engolida com Log.w, jamais derruba o processo). O tag de logcat segue o
- * contrato do registry: MAXPROBE/&lt;MODULE_ID&gt;.
+ * contrato do registry: MAXPROBE/<MODULE_ID>.
+ *
+ * D3: o campo result agora carrega a lei do registry — "OK" (rota CPU rodou
+ * de verdade), "NOT_IMPLEMENTED" (erro estruturado obrigatório — ADR 0003)
+ * ou "ERROR". O record() binario legado continua valido (OK/ERROR) e
+ * delega para recordResult().
  *
  * Nenhuma API aqui exige mais que minSdk 9: leitura/escrita usa
  * java.io puro com nome de charset "UTF-8" (StandardCharsets so existe a
@@ -59,7 +64,22 @@ public final class ProbeReporter {
      */
     public static void record(Context context, ProbeSpec spec, boolean ok,
             String error, long durationMs) {
-        String json = buildJson(spec, ok, error, durationMs);
+        recordResult(context, spec, ok ? "OK" : "ERROR", error, durationMs);
+    }
+
+    /**
+     * Registra uma execucao de probe com a lei completa do registry (D3):
+     * result em {"OK", "NOT_IMPLEMENTED", "ERROR"}.
+     *
+     * @param context    contexto para localizar o diretorio de arquivos
+     * @param spec       especificacao do probe (contracts api-probe-registry)
+     * @param result     resultado conforme a lei do registry
+     * @param error      detalhe do erro; null quando result for "OK"
+     * @param durationMs duracao medida pelo chamador (SystemClock.uptimeMillis)
+     */
+    public static void recordResult(Context context, ProbeSpec spec,
+            String result, String error, long durationMs) {
+        String json = buildJson(spec, result, error, durationMs);
         synchronized (LOCK) {
             ENTRIES.add(json);
             Log.i("MAXPROBE/" + spec.moduleId, json);
@@ -104,17 +124,16 @@ public final class ProbeReporter {
     }
 
     /** Monta a linha JSON do registro com escape manual correto. */
-    private static String buildJson(ProbeSpec spec, boolean ok, String error,
-            long durationMs) {
-        String result = ok ? "OK" : "ERROR";
-        String errorJson = ok ? "null" : "\"" + jsonEscape(
+    private static String buildJson(ProbeSpec spec, String result,
+            String error, long durationMs) {
+        String errorJson = "OK".equals(result) ? "null" : "\"" + jsonEscape(
                 error == null ? "erro sem detalhes" : error) + "\"";
         return new StringBuilder()
                 .append("{\"id\":\"").append(jsonEscape(spec.id)).append('"')
                 .append(",\"module_id\":\"").append(jsonEscape(spec.moduleId)).append('"')
                 .append(",\"domain\":\"").append(jsonEscape(spec.domain)).append('"')
                 .append(",\"api\":\"").append(jsonEscape(spec.api)).append('"')
-                .append(",\"result\":\"").append(result).append('"')
+                .append(",\"result\":\"").append(jsonEscape(result)).append('"')
                 .append(",\"error\":").append(errorJson)
                 .append(",\"duration_ms\":").append(durationMs)
                 .append('}')
