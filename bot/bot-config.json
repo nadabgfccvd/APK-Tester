@@ -10,7 +10,7 @@
   "commit_audit_count": 60,
   "allowed_authors": ["xisto", "nadabgfccvd", "apkbot[bot]"],
   "rustydroid": {"owner": "nadabgfccvd", "repo": "RustyDroid", "branch": "main",
-    "candidate_paths": ["README.md", "docs/apendice-g.md", "docs/engines.md", "docs/registry.md", "docs/apendices.md"]},
+    "candidate_paths": ["docs/engine-registry.md", "README.md", "data/engines.toml", "docs/src/apendice-g.md", "docs/engines.md", "docs/registry.md", "docs/apendices.md"]},
   "aosp_manifest_url": "https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/core/res/AndroidManifest.xml?format=TEXT",
   "labels": {"apkbot": "6f42c1", "apkbot:regression": "b60205", "apkbot:drift": "d4c5f9", "apkbot:flaky": "fbca04"},
   "state_path": "bot/state/bot-state.json",

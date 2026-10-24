@@ -15,18 +15,26 @@ Este cheque repete cada auto-teste cfg.flake_runs vezes (padrão 3) e analisa:
    vão para o learn ({"targets": {...}}); a tendência entre runs
    (flap_history) é responsabilidade do dispatcher.
 
-Alvos: todos os tools/gen-*.py --selftest, tools/fixture-pack.py --selftest
-e tools/fixture-pack.py --dry-run (equivalente leve com saída em /tmp).
+Alvos: todos os tools/gen-*.py --selftest, tools/fixture-pack.py --selftest,
+tools/fixture-pack.py --dry-run (equivalente leve com saída em /tmp) e
+scripts/compat-nightly.sh — este último DENTRO de um clone raso TEMPORÁRIO
+do próprio repositório: `git clone --depth 1` para <tmp>/clone e o script
+roda a partir do clone, de modo que docs/compat-matrix.md é escrito DENTRO
+do clone descartável e a lei "o APKBot nunca modifica o worktree" segue
+valendo (o clone copia o HEAD commitado — exatamente o que o nightly do CI
+exercita). Sem `rustydroid`/`rd` no PATH todas as linhas viram SKIP e o
+script sai 0: a estabilidade exercitada localmente é a do PIPELINE do
+script (parse da answer key, laço das 32 fixtures, agregação do markdown,
+contrato do exit code); os caminhos FAIL dependem do runtime irmão e
+continuem cobertos pelo job engines-nightly no CI.
 
-Limitação HONESTA: scripts/compat-nightly.sh é PULADO — ele escreve
-docs/compat-matrix.md DENTRO do repositório, e o APKBot nunca modifica o
-worktree (contornar exigiria clone/worktree temporário, custo alto para um
-cheque local). O registro vai para o learn e um Finding "info" único
-documenta a lacuna; a cobertura real fica no job engines-nightly (CI).
+Se o git não estiver disponível ou o clone falhar (disco cheio, permissão),
+o alvo degrada para um Finding "info" único documentando o motivo — a
+lacuna volta a ser honesta e NUNCA é falha.
 
 Nada é escrito no repositório: saídas efêmeras em mktemp sob /tmp com
 limpeza em finally; timeout de 120s por subprocesso (timeout conta como
-FAIL da repetição).
+FAIL da repetição; o clone tem o mesmo teto).
 """
 
 import shutil
@@ -40,6 +48,7 @@ from pathlib import Path
 CHECK_ID = "flakiness"
 
 SUBPROCESS_TIMEOUT_S = 120
+CLONE_TIMEOUT_S = 120
 DEFAULT_FLAKE_RUNS = 3
 DEFAULT_CV_THRESHOLD = 0.5
 STDERR_TAIL_LINES = 10
@@ -72,20 +81,55 @@ def _tail(text: str, lines: int = STDERR_TAIL_LINES) -> str:
 
 
 def _build_targets(repo: Path) -> list:
-    """[(target, argv, needs_out)] — argv sem --out quando needs_out."""
+    """[(target, argv, mode)] — argv pronto; mode em {"plain", "out", "clone"}.
+
+    - "plain": roda argv como está (selftests dos geradores);
+    - "out": acrescenta --out <tmp> por repetição (fixture-pack:dry-run);
+    - "clone": o argv aponta para a CÓPIA rasa do repositório (ver
+      _prepare_clone) — alvo que escreve dentro da própria raiz, como o
+      compat-nightly.
+    """
     targets = []
     for tool in sorted((repo / "tools").glob("gen-*.py")):
         targets.append((tool.stem,
-                        [sys.executable, str(tool), "--selftest"], False))
+                        [sys.executable, str(tool), "--selftest"], "plain"))
     fp = repo / "tools" / "fixture-pack.py"
     if fp.exists():
         targets.append(("fixture-pack:selftest",
-                        [sys.executable, str(fp), "--selftest"], False))
+                        [sys.executable, str(fp), "--selftest"], "plain"))
         # Equivalente leve: plano JSON do modo canônico minSdk9, --out em /tmp.
         targets.append(("fixture-pack:dry-run",
                         [sys.executable, str(fp), "--fixture", "minSdk9",
-                         "--dry-run"], True))
+                         "--dry-run"], "out"))
+    cn = repo / "scripts" / "compat-nightly.sh"
+    if cn.exists():
+        targets.append(("compat-nightly", ["bash", str(cn)], "clone"))
     return targets
+
+
+def _prepare_clone(repo: Path, tmp_root: str):
+    """Clone raso do HEAD commitado em <tmp_root>/clone.
+
+    Retorna (caminho_do_clone | None, motivo_do_skip | None). Qualquer
+    falha é motivo de skip honesto, nunca exceção.
+    """
+    git = shutil.which("git")
+    if git is None:
+        return None, "git não disponível no PATH"
+    clone = Path(tmp_root) / "clone"
+    try:
+        proc = subprocess.run(
+            [git, "clone", "--quiet", "--depth", "1", str(repo), str(clone)],
+            cwd=str(repo), timeout=CLONE_TIMEOUT_S,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return None, f"clone falhou: {type(exc).__name__}: {exc}"
+    if proc.returncode != 0:
+        return None, (f"clone falhou (exit {proc.returncode}): "
+                      f"{_tail(proc.stderr, 3)}")
+    if not (clone / "scripts" / "compat-nightly.sh").exists():
+        return None, "clone sem scripts/compat-nightly.sh (HEAD inesperado)"
+    return clone, None
 
 
 # ---------------------------------------------------------------------- run
@@ -108,123 +152,135 @@ def run(ctx) -> CheckResult:
             check=CHECK_ID, findings=[], learn={"targets": {}}, ran=True,
             notes="nenhum alvo de selftest encontrado (tools/gen-*.py ausentes)")
 
-    for target, argv, needs_out in targets:
+    for target, argv, mode in targets:
         durations = []
         failures = []  # (repetição, motivo, cauda de stderr)
         tmp_dirs = []
+        skip_reason = None
         try:
-            for i in range(reps):
-                argv_rep = list(argv)
-                if needs_out:
-                    out_dir = tempfile.mkdtemp(prefix=f"apkbot-flake-{i + 1}-")
-                    tmp_dirs.append(out_dir)
-                    argv_rep += ["--out", out_dir]
-                t0 = time.perf_counter()
-                try:
-                    proc = subprocess.run(
-                        argv_rep, cwd=str(repo), timeout=SUBPROCESS_TIMEOUT_S,
-                        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                        text=True)
-                    dur = time.perf_counter() - t0
-                    durations.append(dur)
-                    if proc.returncode != 0:
-                        failures.append((i + 1, f"exit {proc.returncode}",
-                                         _tail(proc.stderr)))
-                except subprocess.TimeoutExpired:
-                    dur = time.perf_counter() - t0
-                    durations.append(dur)
-                    failures.append(
-                        (i + 1, f"timeout {SUBPROCESS_TIMEOUT_S}s", ""))
-            executed += 1
+            argv_base = list(argv)
+            if mode == "clone":
+                clone_root = tempfile.mkdtemp(prefix="apkbot-flake-compat-")
+                tmp_dirs.append(clone_root)
+                clone, err = _prepare_clone(repo, clone_root)
+                if err is not None:
+                    skip_reason = err
+                else:
+                    # Rodar o script DO CLONE: o caminho do BASH_SOURCE
+                    # vira a raiz do pipeline — toda escrita fica no clone.
+                    argv_base = ["bash",
+                                 str(clone / "scripts" / "compat-nightly.sh")]
 
-            learn_targets[target] = {
-                "durations_s": [round(d, 3) for d in durations],
-            }
-
-            # 1) qualquer FAIL em qualquer repetição
-            if failures:
-                status_rows = []
-                failed_reps = {rep for rep, _, _ in failures}
+            if skip_reason is None:
                 for i in range(reps):
-                    dur = durations[i] if i < len(durations) else 0.0
-                    if (i + 1) in failed_reps:
-                        motivo = next(m for rep, m, _ in failures
-                                      if rep == i + 1)
-                        status_rows.append(
-                            (f"repetição {i + 1}", f"FALHOU ({motivo}, {dur:.3f}s)"))
-                    else:
-                        status_rows.append(
-                            (f"repetição {i + 1}", f"OK ({dur:.3f}s)"))
-                first_tail = failures[0][2]
-                findings.append(Finding(
-                    check=CHECK_ID, target=target, severity="regression",
-                    title=f"selftest instável: {target}",
-                    body_md=(
-                        f"`{target}` falhou em {len(failures)} de {reps} "
-                        "repetições CONSECUTIVAS no mesmo ambiente — um único "
-                        "passe de CI não distinguiria isto de um verde "
-                        "confiável.\n\n" +
-                        "| Repetição | Resultado |\n|---|---|\n" +
-                        "\n".join(f"| {a} | {b} |" for a, b in status_rows) +
-                        "\n\nCauda do stderr da primeira falha:\n\n"
-                        + first_tail +
-                        "\n\nSelftest que passa às vezes e falha outras = flake "
-                        "probabilístico (ordem de dict, tempo, arredondamento, "
-                        "estado compartilhado). Corrija antes de confiar nos "
-                        "fixtures."),
-                    fingerprint=f"{CHECK_ID}:{target}:selftest-instavel"))
-
-            # 2) análise de latência (média + CV)
-            if len(durations) >= 2:
-                mean = statistics.mean(durations)
-                std = statistics.pstdev(durations)
-                if mean > 0:
-                    cv = std / mean
-                    learn_targets[target]["cv"] = round(cv, 4)
-                    if cv > cv_threshold:
-                        durs = ", ".join(f"{d:.3f}" for d in durations)
-                        findings.append(Finding(
-                            check=CHECK_ID, target=target, severity="flaky",
-                            title=f"latência oscilante: {target}",
-                            body_md=(
-                                f"Durações das {reps} repetições de `{target}` "
-                                "oscilam além do limiar.\n\n"
-                                f"- durações (s): {durs}\n"
-                                f"- média: {mean:.3f}s | desvio-padrao "
-                                f"(populacional): {std:.3f}s | CV: {cv:.2f}\n"
-                                f"- limiar: CV <= {cv_threshold:.2f} "
-                                "(CV = desvio-padrao / média; ajustável via "
-                                "cfg.flake_cv_threshold)\n\n"
-                                "CV alto em selftests rápidos pode ser ruído de "
-                                "máquina compartilhada; investigue se persistir "
-                                "entre runs do bot (a tendência entre execuções "
-                                "é acumulada pelo dispatcher em flap_history)."),
-                            fingerprint=(
-                                f"{CHECK_ID}:{target}:latencia-oscilante")))
+                    argv_rep = list(argv_base)
+                    if mode == "out":
+                        out_dir = tempfile.mkdtemp(prefix=f"apkbot-flake-{i + 1}-")
+                        tmp_dirs.append(out_dir)
+                        argv_rep += ["--out", out_dir]
+                    t0 = time.perf_counter()
+                    try:
+                        proc = subprocess.run(
+                            argv_rep, cwd=str(repo),
+                            timeout=SUBPROCESS_TIMEOUT_S,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                            text=True)
+                        dur = time.perf_counter() - t0
+                        durations.append(dur)
+                        if proc.returncode != 0:
+                            failures.append((i + 1, f"exit {proc.returncode}",
+                                             _tail(proc.stderr)))
+                    except subprocess.TimeoutExpired:
+                        dur = time.perf_counter() - t0
+                        durations.append(dur)
+                        failures.append(
+                            (i + 1, f"timeout {SUBPROCESS_TIMEOUT_S}s", ""))
+                executed += 1
         finally:
             for d in tmp_dirs:
                 shutil.rmtree(d, ignore_errors=True)
 
-    # 3) limitação honesta: compat-nightly escreve dentro do repositório
-    learn_targets["compat-nightly"] = {
-        "skipped": "escreve em docs/ no repo",
-    }
-    findings.append(Finding(
-        check=CHECK_ID, target="compat-nightly", severity="info",
-        title="compat-nightly.sh pulado no cheque local de flakiness",
-        body_md=(
-            "`scripts/compat-nightly.sh` escreve `docs/compat-matrix.md` "
-            "DENTRO do repositório. O APKBot nunca modifica o worktree, e "
-            "contornar isso exigiria clone/worktree temporário — custo alto "
-            "para um cheque local.\n\n"
-            "Limitação honesta: a estabilidade do compat-nightly NÃO é "
-            "exercitada por este cheque; a cobertura real fica no job "
-            "`engines-nightly.yml` (CI), que roda o script sem a restrição de "
-            "worktree. Alternativa futura: rodar o script em clone temporário "
-            "raso e descartá-lo.\n\n"
-            "O registro fica no learn como "
-            "`targets.compat-nightly.skipped` para o dispatcher acompanhar."),
-        fingerprint=f"{CHECK_ID}:compat-nightly:execucao-pulada"))
+        # ---- pós-processamento do alvo (fora do try: tmp já limpo) ----
+        if skip_reason is not None:
+            learn_targets[target] = {"skipped": skip_reason}
+            findings.append(Finding(
+                check=CHECK_ID, target=target, severity="info",
+                title=f"{target} não exercitado no cheque local de flakiness",
+                body_md=(
+                    f"O alvo `{target}` (clone raso temporário do repositório) "
+                    "não pôde ser executado neste ambiente:\n\n"
+                    f"- motivo: {skip_reason}\n\n"
+                    "A lacuna é documentada como info (nunca falha); a "
+                    "cobertura real segue no job `engines-nightly.yml` (CI). "
+                    "O registro fica no learn como "
+                    f"`targets.{target}.skipped`."),
+                fingerprint=f"{CHECK_ID}:{target}:execucao-pulada"))
+            continue
+
+        learn_targets[target] = {
+            "durations_s": [round(d, 3) for d in durations],
+        }
+
+        # 1) qualquer FAIL em qualquer repetição
+        if failures:
+            status_rows = []
+            failed_reps = {rep for rep, _, _ in failures}
+            for i in range(reps):
+                dur = durations[i] if i < len(durations) else 0.0
+                if (i + 1) in failed_reps:
+                    motivo = next(m for rep, m, _ in failures
+                                  if rep == i + 1)
+                    status_rows.append(
+                        (f"repetição {i + 1}", f"FALHOU ({motivo}, {dur:.3f}s)"))
+                else:
+                    status_rows.append(
+                        (f"repetição {i + 1}", f"OK ({dur:.3f}s)"))
+            first_tail = failures[0][2]
+            findings.append(Finding(
+                check=CHECK_ID, target=target, severity="regression",
+                title=f"selftest instável: {target}",
+                body_md=(
+                    f"`{target}` falhou em {len(failures)} de {reps} "
+                    "repetições CONSECUTIVAS no mesmo ambiente — um único "
+                    "passe de CI não distinguiria isto de um verde "
+                    "confiável.\n\n" +
+                    "| Repetição | Resultado |\n|---|---|\n" +
+                    "\n".join(f"| {a} | {b} |" for a, b in status_rows) +
+                    "\n\nCauda do stderr da primeira falha:\n\n"
+                    + first_tail +
+                    "\n\nSelftest que passa às vezes e falha outras = flake "
+                    "probabilístico (ordem de dict, tempo, arredondamento, "
+                    "estado compartilhado). Corrija antes de confiar nos "
+                    "fixtures."),
+                fingerprint=f"{CHECK_ID}:{target}:selftest-instavel"))
+
+        # 2) análise de latência (média + CV)
+        if len(durations) >= 2:
+            mean = statistics.mean(durations)
+            std = statistics.pstdev(durations)
+            if mean > 0:
+                cv = std / mean
+                learn_targets[target]["cv"] = round(cv, 4)
+                if cv > cv_threshold:
+                    durs = ", ".join(f"{d:.3f}" for d in durations)
+                    findings.append(Finding(
+                        check=CHECK_ID, target=target, severity="flaky",
+                        title=f"latência oscilante: {target}",
+                        body_md=(
+                            f"Durações das {reps} repetições de `{target}` "
+                            "oscilam além do limiar.\n\n"
+                            f"- durações (s): {durs}\n"
+                            f"- média: {mean:.3f}s | desvio-padrao "
+                            f"(populacional): {std:.3f}s | CV: {cv:.2f}\n"
+                            f"- limiar: CV <= {cv_threshold:.2f} "
+                            "(CV = desvio-padrao / média; ajustável via "
+                            "cfg.flake_cv_threshold)\n\n"
+                            "CV alto em selftests rápidos pode ser ruído de "
+                            "máquina compartilhada; investigue se persistir "
+                            "entre runs do bot (a tendência entre execuções "
+                            "é acumulada pelo dispatcher em flap_history)."),
+                        fingerprint=(
+                            f"{CHECK_ID}:{target}:latencia-oscilante")))
 
     return CheckResult(
         check=CHECK_ID,
@@ -237,5 +293,5 @@ def run(ctx) -> CheckResult:
         learn_mode="immediate",
         notes=(f"{executed} alvo(s) x{reps} repetição(ões); "
                f"{len(learn_targets)} entradas no learn "
-               "(compat-nightly pulado por escrever em docs/)"),
+               "(compat-nightly em clone raso temporário)"),
     )

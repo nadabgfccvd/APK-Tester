@@ -22,6 +22,12 @@ Regras:
   repositórios (ex.: "Scala / Clojure / Groovy" numa linha só no irmão).
   A señal confiável de mudança é o sha256 do arquivo vs baseline.
 
+Além do sha BRUTO, a mudança de arquivo ganha DIFF DE CONTEÚDO: os nomes
+de engine extraídos são comparados LITERALMENTE com os nomes do baseline
+(as duas pontas vêm do mesmo extrator — granularidade idêntica) e o corpo
+do finding lista "entraram"/"saíram" — o alinhamento humano começa sabendo
+O QUE mudou, não apenas que o arquivo mudou.
+
 Findings:
 - "new"        ...:registry:engine-novo-em-rustydroid (fixture precisa ser criada, A3/A4)
 - "regression" ...:registry:engine-sumiu-do-irmao    (drift do answer key vs fonte da verdade)
@@ -62,7 +68,12 @@ MAX_LEARN_NAMES = 80         # learn "names" capsulado para não inflar o estado
 _HEADER_HINTS = ("linguagem", "language", "engine", "framework")
 _LINE_KEYS_RE = re.compile(r"(?i)\bengine[_ -]?(?:id|name)?s?\s*[:|]\s*(.+)")
 _SEP_ROW_RE = re.compile(r"^:?-{3,}:?$")
-_TOKEN_RE = re.compile(r"[a-z0-9#+]+")
+# "+" FORA da classe: ele é SEPARADOR em nomes compostos do answer key
+# (ex.: "Kotlin+Rust+Hermes+WASM" → kotlin/rust/hermes/wasm). Dentro dele,
+# o nome virava UM token único e a cobertura por tokens nunca casava
+# (falso "engine-sumiu-do-irmao" a cada execução confiante). "C#" e "C++"
+# continuam inteiros via "#" e recorte em "+" ("c++" → "c", cabeça válida).
+_TOKEN_RE = re.compile(r"[a-z0-9#]+")
 # Palavras de ligação/decoração descartadas na normalização dos dois lados.
 _STOPWORDS = {
     "in", "app", "host", "embutido", "cross", "via", "outra", "outras",
@@ -97,15 +108,43 @@ def _tokens(name: str):
 
 
 def _covered(toks, toksets, union):
-    """Nome está "presente" do outro lado? (3 níveis pragmáticos)."""
+    """Nome está "presente" do outro lado? (3 níveis pragmáticos).
+
+    ``toks`` é a lista ORDENADA de tokens de ``_tokens(name)[0]``; os testes
+    de subconjunto usam o conjunto derivado dela e o token de cabeça usa a
+    própria lista (só listas fatiam). (A9: antes convertia errado e qualquer
+    execução com extração confiante crashava — branch morto em produção.)
+    """
     if not toks:
         return False
+    tokset = set(toks)
     for other in toksets:
-        if toks <= other or other <= toks:
+        if tokset <= other or other <= tokset:
             return True
-    if toks <= union:
+    if tokset <= union:
         return True
     return any(t in union for t in toks[:2])  # token de cabeça (família)
+
+
+def _norm_name(name: str) -> str:
+    """Normalização literal leve para diff (caixa + espaços internos)."""
+    return " ".join(name.lower().split())
+
+
+def _names_diff(current, previous):
+    """Diff LITERAL de nomes extraídos (entraram, saíram).
+
+    As duas pontas vêm do MESMO extrator (baseline guarda a extração desta
+    própria verificação), logo a granularidade é idêntica — a comparação
+    correta aqui é a literal. (Cobertura por tokens seria tolerante demais:
+    renomear "Java" para "Java (OpenJDK)" não apareceria como mudança, e o
+    propósito do diff é justamente mostrar o que mudou no registro.)
+    """
+    prev_set = {_norm_name(n) for n in previous}
+    cur_set = {_norm_name(n) for n in current}
+    entraram = [n for n in current if _norm_name(n) not in prev_set]
+    sairam = [n for n in previous if _norm_name(n) not in cur_set]
+    return entraram, sairam
 
 
 def _table_blocks(text: str):
@@ -266,10 +305,40 @@ def run(ctx) -> CheckResult:
     confident = named_rows >= MIN_NAMED_ROWS and bool(names)
 
     # 4) Drift do arquivo vs baseline (sempre; independe da confiança).
+    #    A9: a evidência ganhou DIFF DE CONTEÚDO — nomes extraídos agora vs
+    #    nomes guardados no baseline (diff literal; extração idêntica nas
+    #    duas pontas), para que o alinhamento humano comece sabendo O QUE
+    #    mudou no Apêndice G.
     baseline = (ctx.state.get("baselines") or {}).get(CHECK_ID, {}) \
         if isinstance(ctx.state, dict) else {}
     old_sha = baseline.get("registry_sha")
     if old_sha and old_sha != sha:
+        old_names = [n for n in (baseline.get("names") or [])
+                     if isinstance(n, str) and n.strip()]
+        entraram, sairam = _names_diff(names, old_names)
+        diff_md = ""
+        if not old_names:
+            diff_md = (
+                "\n\nO baseline não carrega nomes extraídos (fonte anterior "
+                "sem tabela confiável) — o diff de conteúdo começa nesta "
+                "execução; as próximas mudanças trazem entraram/saíram.")
+        else:
+            shown_in, extra_in = _cap(entraram)
+            shown_out, extra_out = _cap(sairam)
+            entraram_txt = "".join(f"- `{n}`\n" for n in shown_in) \
+                or "- (nenhum)\n"
+            sairam_txt = "".join(f"- `{n}`\n" for n in shown_out) \
+                or "- (nenhum)\n"
+            diff_md = (
+                "\n\n**Diff de conteúdo do registro** (nomes extraídos agora vs "
+                "nomes do baseline — extração idêntica nas duas pontas, "
+                "diff literal):\n\n"
+                "Entraram no registro:\n" + entraram_txt)
+            if extra_in:
+                diff_md += f"\n(e mais {extra_in} entradas)\n"
+            diff_md += "\nSaíram do registro:\n" + sairam_txt
+            if extra_out:
+                diff_md += f"\n(e mais {extra_out} saídas)\n"
         findings.append(Finding(
             check=CHECK_ID, target=f"rustydroid:{source_path}",
             severity="drift",
@@ -278,7 +347,8 @@ def run(ctx) -> CheckResult:
                 f"O sha256 de `{source_path}` (RustyDroid `{owner}/{repo_name}`) "
                 f"mudou desde a última execução do bot:\n\n"
                 f"- baseline: `{old_sha}`\n- atual: `{sha}`\n\n"
-                "Ação: re-executar o alinhamento humano Apêndice G vs "
+                + diff_md +
+                "\nAção: re-executar o alinhamento humano Apêndice G vs "
                 "`contracts/engines/expected-engines.json` e conferir se novas "
                 "fixtures (A3/A4) ou remoções precisam entrar no answer key."),
             fingerprint=f"{CHECK_ID}:registry:arquivo-mudou"))

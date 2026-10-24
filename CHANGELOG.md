@@ -10,6 +10,49 @@ de compatibilidade verde).
 
 ## [Unreleased]
 
+### Corrigido (A9 — auditoria de continuidade, roadmap W7)
+
+- `bot/checks/answerkey_drift.py`: corrigido CRASH LATENTE na comparação
+  de nomes (roadmap 7.1) — `_covered` recebia a lista ORDENADA de tokens
+  e testava `<=` contra conjuntos (`list <= set` → `TypeError`); qualquer
+  execução com extração confiante (≥ 20 linhas nomeadas) quebrava o cheque
+  (degradado a nota pelo dispatcher). O branch estava morto em produção:
+  o candidato da config era o README do irmão, cuja extração nunca atingiu
+  o limiar. Na mesma passada, `_TOKEN_RE` perde o `+` da classe — ele é
+  SEPARADOR em nomes compostos (`Kotlin+Rust+Hermes+WASM` virava UM token
+  único e nunca casava — falso `engine-sumiu-do-irmao` a cada execução
+  confiante; `C#`/`C++` continuam inteiros via `#`/recorte). Simulação
+  ponta a ponta com fonte canônica: zero falso positivo nas 28×32
+  comparações.
+- `bot/bot-config.json`: `candidate_paths` do `answerkey_drift` passa a
+  preferir `docs/engine-registry.md` (roadmap 7.2) — o registro GERADO do
+  irmão (`cargo xtask engine-report` a partir de `data/engines.toml`), que
+  extrai com confiança (28 linhas nomeadas vs 0 do README); `README.md`
+  segue como fallback. Esperado UMA execução com finding `drift`
+  (`arquivo-mudou`) na transição de fonte — comportamento desenhado, o
+  baseline recomeça com os nomes agora extraídos.
+- `bot/checks/answerkey_drift.py`: o finding de drift do registro ganha
+  DIFF DE CONTEÚDO (roadmap 7.3, sugerido no WORK_LOG da iteração 2) —
+  em vez de só o par de sha256, o corpo lista "Entraram no registro:" e
+  "Saíram do registro:" (diff LITERAL entre as extrações: as duas pontas
+  vêm do mesmo extrator, granularidade idêntica; a cobertura por tokens
+  seria tolerante demais — renomear "Java" para "Java (OpenJDK)" some no
+  dif). Baseline sem nomes (era README) documenta o início do diff.
+- `bot/checks/flakiness.py`: o cheque local de flakiness EXERCITA o
+  `scripts/compat-nightly.sh` (roadmap 7.4, sugerido no WORK_LOG da
+  iteração 2) — o script roda dentro de um clone raso TEMPORÁRIO do
+  repositório (`git clone --depth 1` para mktemp; `docs/compat-matrix.md`
+  é escrito dentro do clone, descartado no finally; a lei "o APKBot nunca
+  modifica o worktree" segue valendo e o clone copia o HEAD commitado,
+  exatamente o que o nightly exercita). Eliminado o finding INFO
+  permanente `flakiness:compat-nightly:execucao-pulada` (a única lacuna
+  de cobertura honesta que restava ao cheque local); sem `rustydroid`/`rd`
+  no PATH as linhas viram SKIP e a estabilidade exercitada é a do pipeline
+  do script (parse da answer key, laço das fixtures, agregação do markdown,
+  contrato do exit code); git indisponível/clone falho degrada para INFO
+  único com o motivo — nunca falha. Medição local: 32 engines, ~30 ms por
+  execução, CV 0.05.
+
 ### Adicionado (A9 — CI hardening, roadmap W6)
 
 - Lint REAL de Python no CI (roadmap 6.1): job de lint ganha `ruff`
