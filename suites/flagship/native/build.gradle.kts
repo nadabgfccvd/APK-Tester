@@ -20,7 +20,10 @@ android {
     ndkVersion = "27.2.12479018"
 
     defaultConfig {
-        minSdk = 9
+        // Piso do NDK 27 (CXX1110: platform 21 é o mínimo suportado). O
+        // módulo entra SOMENTE no flavor modern (ver dependencies do :app) —
+        // o classic minSdk 9 permanece framework-only (A1).
+        minSdk = 21
         externalNativeBuild {
             cmake {
                 // ABIs do gate de tamanho (size-report conta .so por

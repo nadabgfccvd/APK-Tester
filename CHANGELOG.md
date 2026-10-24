@@ -329,15 +329,15 @@ de compatibilidade verde).
 - Módulos `:native`, `:rust` e `:compose` (prometidos desde a A1, agora
   reais): `:native` builda `libnative_probe.so` (CMake/NDK 27.2.12479018
   pinnado, UMA função JNI, C puro, sem estado) nos dois flavors;
-  `:rust` builda `librust_probe.so` (cargo-ndk 3.5.7 --locked, função JNI
+  `:rust` builda `librust_probe.so` (cargo-ndk 4.1.2 --locked, função JNI
   espelhada, zero dependências — Cargo.lock fecha vazio) via task
   `rustBuild` ligada às tasks `merge*JniLibFolders/NativeLibs`;
   `:compose` entrega UMA tela Compose real (material3 via BOM 2024.10.01,
-  Kotlin 2.0.20) consumida SOMENTE pelo flavor modern
-  (`modernImplementation`) — o classic minSdk 9 nunca compila
-  Kotlin/Compose. Toolchains baixadas da fonte oficial no CI (sdkmanager
-  ndk/cmake pinnados + rustup + cargo install --locked) — nada de binário
-  commitado (lei ADR 0002).
+  Kotlin 2.0.20). Os TRÊS módulos entram SOMENTE no flavor modern
+  (`modernImplementation`): o piso do NDK 27 é API 21 (CXX1110) e o
+  classic minSdk 9 permanece framework-only (A1). Toolchains baixadas da
+  fonte oficial no CI (sdkmanager ndk/cmake pinnados + rustup + cargo
+  install --locked) — nada de binário commitado (lei ADR 0002).
 - `tools/gen-strings.py` (R2.3): `assets/locales/<tag>/strings.properties`
   para os 12 locales — os NAMED_STRINGS localizados viram asset REAL e
   USADO em runtime (EngineProbeActivity do :app e ComposeProbeActivity do

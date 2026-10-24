@@ -212,13 +212,13 @@ tasks.register<Exec>("genBulk") {
 }
 
 // Dependencia do modulo do pilar 3D (biblioteca Java pura).
-// R2.2: :native e :rust entram nos DOIS flavors (a .so e minSdk 9-safe);
-// :compose entra SOMENTE no modern (minSdk 21 — o classic nunca compila
-// Kotlin/Compose e a lib nem participa do variant classic).
+// R2.2: :native/:rust/:compose entram SOMENTE no flavor modern — o piso do
+// NDK 27 e API 21 (CXX1110) e o classic minSdk 9 permanece framework-only
+// (A1); acessor de flavor e dinâmico no Kotlin DSL (add()).
 dependencies {
     implementation(project(":sim3d"))
-    implementation(project(":native"))
-    implementation(project(":rust"))
+    add("modernImplementation", project(":native"))
+    add("modernImplementation", project(":rust"))
     add("modernImplementation", project(":compose"))
 }
 

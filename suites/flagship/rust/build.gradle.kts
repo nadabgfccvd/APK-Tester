@@ -20,7 +20,9 @@ android {
     ndkVersion = "27.2.12479018"
 
     defaultConfig {
-        minSdk = 9
+        // Piso do NDK (mesma regra do :native): o módulo entra SOMENTE no
+        // flavor modern; o classic minSdk 9 permanece framework-only.
+        minSdk = 21
     }
 
     compileOptions {
