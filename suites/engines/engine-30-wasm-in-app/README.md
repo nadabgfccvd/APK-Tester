@@ -26,3 +26,17 @@ O CI (job `tier-a-engines`) executa: selftest → sync de contratos +
 presença de caminho/glob, `dex-strings:*` nos dex, `elf-strings:*` nos
 .so e magic ELF nos nativos). Os binários NÃO são commitados (lei do
 repo); o sha256 de cada build vai para o artefato de CI (report JSON).
+
+## Verificação do módulo WASM (A9)
+
+O `--verify-apk` do orquestrador vai além da presença de artefatos para o
+kind `wasm`: o `assets/module.wasm` extraído do APK é (1) validado
+estruturalmente por um parser de seções WASM em stdlib (magic `\0asm`,
+versão 1, tamanhos de seção coerentes, export section decodificada com
+LEB128 — exports `apktester_add`/`apktester_checksum`/`apktester_mem` — e
+data segment com o marcador `apktester-wasm/engine-30`) e (2) INSTANCIADO
+de verdade no WebAssembly do node (preinstalado nos runners do CI):
+`apktester_add(2,3)==5`, `apktester_checksum()==20261022` e
+`memória[0:24]=="apktester-wasm/engine-30"`. O runtime wasmer do APK deixa
+de ser apenas linkado — a promessa de "validável em runtime" agora é uma
+prova executável (auditoria A9/roadmap 3.4).
