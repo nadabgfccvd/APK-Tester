@@ -1,0 +1,21 @@
+[package]
+name = "rust_probe"
+version = "1.0.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "Probe Rust minimo do flagship Behemoth (R2.2): uma funcao JNI, sem estado."
+
+[lib]
+name = "rust_probe"
+crate-type = ["cdylib"]
+
+[profile.release]
+# Determinismo do ELF entre builds do mesmo commit: sem incremental,
+# opt-level fixo, strip no bindgen do AGP (empacotamento pagina-alinhado).
+opt-level = 2
+incremental = false
+codegen-units = 1
+
+[dependencies]
+# intencionalmente vazia — o probe nao pode puxar surface de dependencias
+# (sem libc extra, sem jni crate: a assinatura JNI e exportada a mao).

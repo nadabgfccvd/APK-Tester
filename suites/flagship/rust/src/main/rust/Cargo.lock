@@ -1,0 +1,8 @@
+# Cargo.lock do probe Rust (R2.2) — dependências intencionalmente vazias;
+# o lock existe para o `cargo build --locked` do CI fechar determinístico.
+# Este arquivo é regenerado pelo próprio cargo quando o manifest muda.
+version = 4
+
+[[package]]
+name = "rust_probe"
+version = "1.0.0"

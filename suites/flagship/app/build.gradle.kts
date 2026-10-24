@@ -119,6 +119,9 @@ android {
             )
             assets.srcDirs(
                 genAssetsDir.map { it.dir("assets") },
+                // R2.3: assets/locales/<tag>/strings.properties do
+                // gen-strings.py — lidos em runtime pelas sondas.
+                genStringsDir.map { it.dir("assets") },
                 genSim3dDir,
                 genBulkDir,
                 "src/main/assets",
@@ -209,8 +212,14 @@ tasks.register<Exec>("genBulk") {
 }
 
 // Dependencia do modulo do pilar 3D (biblioteca Java pura).
+// R2.2: :native e :rust entram nos DOIS flavors (a .so e minSdk 9-safe);
+// :compose entra SOMENTE no modern (minSdk 21 — o classic nunca compila
+// Kotlin/Compose e a lib nem participa do variant classic).
 dependencies {
     implementation(project(":sim3d"))
+    implementation(project(":native"))
+    implementation(project(":rust"))
+    modernImplementation(project(":compose"))
 }
 
 // preBuild e criada pelo AGP depois do evaluate; matching.configureEach

@@ -82,6 +82,21 @@ jobs:
             "platforms;android-36" "build-tools;35.0.0" > /dev/null
           echo "ANDROID_HOME=${ANDROID_HOME}" >> "${GITHUB_ENV}"
 
+      - name: "Toolchains dos módulos :native/:rust (R2.2): NDK + CMake + cargo-ndk"
+        run: |
+          yes | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" \
+            "ndk;27.2.12479018" "cmake;3.31.1" > /dev/null
+          echo "ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/27.2.12479018" >> "${GITHUB_ENV}"
+          echo "ANDROID_NDK_ROOT=${ANDROID_HOME}/ndk/27.2.12479018" >> "${GITHUB_ENV}"
+          if ! command -v cargo >/dev/null 2>&1; then
+            curl -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
+            echo "${HOME}/.cargo/bin" >> "${GITHUB_PATH}"
+          fi
+          if ! command -v cargo-ndk >/dev/null 2>&1; then
+            cargo install cargo-ndk --version 3.5.7 --locked
+          fi
+          cargo ndk --version
+
       - name: Build 1 — classic release (bulk quick) + modern release (bulk full)
         run: |
           cd suites/flagship

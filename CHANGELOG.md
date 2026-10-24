@@ -324,6 +324,32 @@ de compatibilidade verde).
   lacuna de cobertura em toda execução; o determinismo byte a byte dos 16
   geradores segue provado por `tools/verify-deterministic.sh` (16/16 PASS).
 
+### Adicionado (AUDIT_ROADMAP_V2 — R2.2/R2.3: substância do flagship)
+
+- Módulos `:native`, `:rust` e `:compose` (prometidos desde a A1, agora
+  reais): `:native` builda `libnative_probe.so` (CMake/NDK 27.2.12479018
+  pinnado, UMA função JNI, C puro, sem estado) nos dois flavors;
+  `:rust` builda `librust_probe.so` (cargo-ndk 3.5.7 --locked, função JNI
+  espelhada, zero dependências — Cargo.lock fecha vazio) via task
+  `rustBuild` ligada às tasks `merge*JniLibFolders/NativeLibs`;
+  `:compose` entrega UMA tela Compose real (material3 via BOM 2024.10.01,
+  Kotlin 2.0.20) consumida SOMENTE pelo flavor modern
+  (`modernImplementation`) — o classic minSdk 9 nunca compila
+  Kotlin/Compose. Toolchains baixadas da fonte oficial no CI (sdkmanager
+  ndk/cmake pinnados + rustup + cargo install --locked) — nada de binário
+  commitado (lei ADR 0002).
+- `tools/gen-strings.py` (R2.3): `assets/locales/<tag>/strings.properties`
+  para os 12 locales — os NAMED_STRINGS localizados viram asset REAL e
+  USADO em runtime (EngineProbeActivity do :app e ComposeProbeActivity do
+  :compose leem o arquivo com fallback pt-BR -> pt -> en); a categoria
+  "locales" do size-report passa a ter bytes. Saída: 12 -> 24 artefatos
+  (selftest com asserções novas; determinismo 2x verificado).
+- Re-baseline do size-report: medido no CI (padrão A9), nunca estimado à
+  mão — o CSV commitado é atualizado pelo artefato do primeiro run verde
+  com os módulos (categorias `so` e `locales` saem de 0 por medida, não
+  por promessa). A textura 4K (4096x4096 KTX2, W3) já integra o flagship
+  pelo preset full do gen-bulk — documentado.
+
 ### Corrigido (AUDIT_ROADMAP_V2 — R1.3: drift real do answer key)
 
 - `contracts/engines/expected-engines.json` + 32 contratos per-dir +

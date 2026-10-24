@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    R2.2 (AUDIT_ROADMAP_V2) — manifesto do :compose.
+    A activity e declarada AQUI (modulo) e o AGP funde no APK do flavor
+    modern (o :app depende via modernImplementation — o classic nunca a
+    recebe). exported auditado: true com action VIEW explicito, mesmo
+    padrao das sondas do :app (toda classe declarada existe no modulo).
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+
+        <activity
+            android:name=".ComposeProbeActivity"
+            android:label="Compose Probe (R2.2)"
+            android:exported="true" />
+
+    </application>
+
+</manifest>
