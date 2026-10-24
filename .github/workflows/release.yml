@@ -372,10 +372,13 @@ jobs:
               --aapt2 "${BT}/aapt2" --d8 "${BT}/d8" \
               --apksigner "${BT}/apksigner" --zipalign "${BT}/zipalign"
           done
-          # renomeia com o prefixo torture- (nomes únicos no release)
-          for f in minSdk9 sig-v1-only sig-v2-only sig-v3-only unaligned zip64 \
-                   huge-arsc multidex-8 unknown-perms exported-audit obfuscated; do
-            cp "dist/${f}.apk" "dist/apks/torture-$(echo "${f}" | tr 'A-Z' 'a-z').apk"
+          # renomeia com o prefixo torture- (nomes únicos no release; o
+          # empacotador muda DOIS nomes de modo: zip64 -> zip64-65k.apk e
+          # obfuscated -> obfuscated-r8.apk — por isso o rename segue os
+          # .apk PRODUZIDOS, não os nomes de modo)
+          for apk in dist/*.apk; do
+            base="$(basename "$apk" .apk)"
+            cp "$apk" "dist/apks/torture-$(echo "${base}" | tr 'A-Z' 'a-z').apk"
           done
           ls -l dist/apks
           test "$(ls dist/apks/*.apk | wc -l)" -eq 11
