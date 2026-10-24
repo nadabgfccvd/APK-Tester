@@ -262,3 +262,111 @@ observabilidade, R4 reconciliação.
 - **R4.3** SUPPORT.md linka M10-M12 do irmão + GAPs documentados.
 - Pendência restante (dono): publicar as issues dos GAPs de detecção NO repo
   irmão (sem acesso de escrita via PAT) — tudo documentado no answer key.
+
+---
+
+## Iteração R5 — 2026-10-24 — roadmap R5 curto: #35–#40 via learn, NDK 27
+nos READMEs, drafts de GAPs, v1.0.2
+
+**Escopo pedido (R5 "o que resta").** As 6 issues vivas do APKBot (#35
+latência do compat-nightly + #36–40 drift arsc/dex/locales/resources/so)
+confirmadas no ciclo de learn ou re-baselineadas (padrão A9); GAPs do
+detector para o repo irmão (PAT sem escrita); destino da draft v1.0.0;
+piso do NDK 27 nos READMEs; e release atualizada.
+
+### Executado e verificado
+
+- **#35 — causa raiz medida e corrigida** (`bot/checks/flakiness.py`):
+  a 1ª repetição do alvo `compat-nightly` (modo clone) bootstrap o
+  snapshot do `rd` no `~/.cache` e cronometrar esse cold-start junto das
+  3 repetições fabricou CV 1.02 ([0.614, 0.042, 0.099] no run 23 do
+  APKBot) sem instabilidade real. Correção: UMA execução de AQUECIMENTO
+  não cronometrada (resultado e exceção ignorados) antes das repetições.
+  Prova controlada no sandbox: script fake com cold-start de 0.6 s —
+  sem aquecimento CV 1.40 (assinatura exata do #35); com aquecimento,
+  0 findings e CV <= 0.6. Docstring, bot/README.md e CHANGELOG
+  atualizados.
+- **#36–40 — re-baseline JÁ medido; issues fechadas pelo próprio
+  learn.** A run 23 do APKBot (transição dos módulos R2.2/R2.3) aprendeu
+  a amostra nova por `learn_mode immediate` e abriu as 5 issues de
+  drift; o CSV commitado é idêntico à última amostra (verificado: 0
+  drift no bot local 2x). APKBot disparado por `workflow_dispatch` (run
+  24, commit b8a7170): as SEIS issues fecharam sozinhas às 16:57 UTC
+  com o comentário padrão "Resolvido na execução … não reproduzido" —
+  mecânica desenhada, zero intervenção manual.
+- **GAPs do detector → irmão: 403 REVERIFICADO com o PAT novo.** O
+  `GET /repos` do irmão mostra `permissions: push/admin true` — que
+  reflete o USUÁRIO, não os escopos do token; o probe real
+  (`POST /issues` com payload inválido) volta 403 "Resource not
+  accessible by personal access token". Entregável:
+  `docs/src/rustydroid-gaps.md` (novo, 13º capítulo do mdBook) com 4
+  drafts prontas para o dono colar como issues — tauri (marcadores
+  divergem do layout cargo-ndk), defold (`libdefold.so` vs
+  `libdmengine.so` real), twa-pwa (minimal marker set não documentado)
+  e scala/clojure/groovy/b4x (sem registro no detector de 28 ids) —
+  título e corpo em inglês, convenção das issues do irmão.
+- **Draft v1.0.0 — destino CONFIRMADO (não sumiu):** existe como draft
+  arquivada (id 422425698, renomeada "[ARQUIVADA] v1.0.0 (pré-fix,
+  draft) — NÃO publicar; superada pela v1.0.1", 8 assets, tag
+  desanexada `untagged-97f15be75446ceefe3e4` — o esperado após o
+  re-cut da v1.0.1). Drafts só aparecem em lista AUTENTICADA; na UI
+  fica sob o filtro de drafts. Registrado no CHANGELOG [1.0.2].
+- **Piso NDK 27 nos READMEs (nativo é modern-only):** README.md (PT) e
+  README.en.md (seção R2) agora dizem explicitamente "todos modern-only
+  (piso do NDK 27 = API 21, CXX1110; classic minSdk 9 framework-only,
+  SEM código nativo)"; `suites/flagship/README.md` marca `:native` e
+  `:rust` como "só modern" na tabela de módulos, remove o "stub
+  fallback" (mecanismo pré-R2.2 que não existe mais) e declara que
+  `:sim3d` é Java puro nos DOIS flavors; `docs/src/size-engineering.md`
+  perdeu o "quando `:native` entrar (A7+)" defasado.
+- **v1.0.2 cortada** (tag re-apontada para 7ff7bf5, mesmo padrão da
+  v1.0.1): CHANGELOG ganhou seção `[1.0.2]` (Corrigido / Adicionado /
+  Confirmado) e o Release workflow publica com as notas extraídas dela.
+
+### Correção de percurso (o sistema pegando o próprio agente)
+
+- O CI no b8a7170 FALHOU no "Gate v1.0" (e o Release no "Gate estático")
+  com zero-drift do contrato: a página nova do mdBook fez
+  `mdbook_chapters` ir de 12 para 13 e o `contracts/v1-gate.json`
+  commitado dizia 12 — o drift gate fazendo exatamente o seu trabalho.
+  Re-sincronizado por medição (`tools/v1-gate.py --sync`): diff de UMA
+  linha (12 → 13), commit 7ff7bf5, tag v1.0.2 re-cortada nele.
+
+### Mudanças do dono preservadas
+
+- `c206299 "Remove section from README"` (dono, 17:00 UTC) removeu a
+  seção "Re-auditoria independente (AUDIT_ROADMAP_V2)" do README.md PT,
+  e `ff2fc6c` (17:03 UTC) removeu a equivalente do README.en.md —
+  INTENCIONAIS e intocados por esta iteração; PT/EN ficaram SIMÉTRICOS
+  de novo (a observação de assimetria que esta entrada ia registrar
+  ficou obsoleta em 3 minutos: o dono resolveu os dois lados).
+
+### Checagens e resultados
+
+- `ruff check bot/` → All checks passed; `py_compile` OK.
+- Bot `--local` 2x (estado restaurado ao HEAD após cada uso): flakiness
+  [OK] 0 (antes [ACHOU] com o #35), size_drift [OK] 0, 32x32
+  activity_coverage OK.
+- APKBot run 24 (workflow_dispatch, b8a7170): success; #35–#40 fechadas
+  automaticamente; estado commitado (ac37a54).
+- Size Gate no b8a7170: success (zero drift do size-report.csv).
+- v1-gate selftest OK após o re-sync; contrato com diff de 1 linha.
+
+### Status no GitHub
+
+- main: 7ff7bf5 (b8a7170 R5 → ac37a54 estado do bot → c206299 dono →
+  7ff7bf5 re-sync). Issues abertas: 0 (seis fechadas às 16:57 UTC).
+- Release v1.0.2: tag re-cortada em 7ff7bf5; run 40114342424 em
+  andamento (flagship 2x para a prova de determinismo — acompanhar o
+  resultado antes de declarar publicada).
+
+### Próxima tarefa útil sugerida
+
+1. Confirmar a Release v1.0.2 publicada (run 40114342424) + download
+   anônimo do flagship (aceite: `GET /releases` >= 1 public pós-tag;
+   `curl -L` sem token → 200).
+2. Dono: colar as 4 drafts de `docs/src/rustydroid-gaps.md` como issues
+   no irmão (PAT segue sem escopo de Issues lá) e marcar aqui os
+   números criados.
+3. Dono: revisar os itens M10–M12 do irmão quando o RustyDroid retomar
+   (fora do escopo deste repo).
