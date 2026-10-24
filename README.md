@@ -163,34 +163,6 @@ Cada fase termina compilando verde. Critérios de saída detalhados em
 | A7 | Jobs nightly Tier B + `compat-nightly` + site de docs (mdBook) | **entregue** |
 | A8 | Gate v1.0: matriz completa verde, build determinístico provado, release v1.0.0 | **entregue (A8)** — `tools/v1-gate.py` avalia os 10 critérios da Definition of Done (contrato `contracts/v1-gate.json` com zero drift no CI); o workflow `Release` constrói as 6 famílias (flagship classic+modern, Tier A 14, Tier B 9 re-verificados do nightly verde, Tier C 9, escada 12, tortura 11 = 57 APKs), prova o determinismo com DUAS builds de release consecutivas do modern (`gradlew clean` entre elas, `verify-deterministic.sh --mode apk`), roda o gate com evidências dinâmicas e publica a release v1.0.0 com APKs + contratos anexados |
 
-## Re-auditoria independente (AUDIT_ROADMAP_V2, 2026-10-24)
-
-Execução integral das ondas R0–R4, com os fatos verificados no CI:
-
-- **R0 — desbloqueio:** guard `SPECS.get()` no `--verify-apk` do Tier A
-  (KeyError dos 9 builds Tier B, run 40076184463 → nightly 12/12 verde);
-  auto-issue em falha de BUILD do nightly (mecânica validada com canary);
-  release **v1.0.1 pública** (não-draft) com maxSdk (W0), formatos (W3) e
-  R0.1 — a v1.0.0 draft pré-fix não é publicada.
-- **R1 — compat REAL:** snapshot do CLI `rd` buildado da fonte pinada e
-  publicado como asset fixo (`rustydroid-cli-snapshot`, sha256 pinnado no
-  script, ADR 0004); bootstrap no `compat-nightly.sh` (download/integridade
-  falhando = FAIL, nunca SKIP); matriz cobre **32 engines + escada 12 +
-  tortura 11 + flagship classic** (os 14 Tier A vêm do último ci.yml
-  verde) — `resumo: OK=56 FAIL=0 SKIP=0 SEM_APK=0` no nightly; o answer
-  key foi re-escrito como o conjunto EMITIDO real do detector, verificado
-  contra os 32 APKs (9 entradas divergiam do registro — issue #23).
-- **R2 — substância do flagship:** módulos `:native`/`:rust`/`:compose`
-  reais (1 .so JNI + cargo-ndk + 1 tela Compose) — **todos modern-only**:
-  o piso do NDK 27 é API 21 (CXX1110) e o classic (minSdk 9) permanece
-  framework-only, SEM código nativo; **uma
-  activity real por engine** (32 sondas `.engines.*`, 39 activities, alvo
-  contratual >= 30 atingido) com cheque novo `activity_coverage` no
-  APKBot; locales como asset usado em runtime (12 arquivos
-  `assets/locales/`); size-report re-baselineado por medição de CI.
-- **R3 — observabilidade:** auto-issue generalizado do nightly
-  (`notify-failure`), badge do nightly no README, auto-issue do
-  size-gate fora da janela.
 
 ## APKBot — bot anti-regressão
 
