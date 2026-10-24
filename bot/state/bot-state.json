@@ -2324,156 +2324,156 @@
     "flakiness": {
       "targets": {
         "compat-nightly": {
-          "cv": 0.0207,
+          "cv": 0.0041,
           "durations_s": [
-            0.036,
-            0.034,
-            0.036
+            0.027,
+            0.027,
+            0.027
           ],
           "skipped": null
         },
         "fixture-pack:dry-run": {
-          "cv": 0.0133,
+          "cv": 0.0329,
           "durations_s": [
-            0.053,
-            0.053,
-            0.055
+            0.037,
+            0.04,
+            0.038
           ]
         },
         "fixture-pack:selftest": {
-          "cv": 0.0056,
+          "cv": 0.1048,
           "durations_s": [
-            0.999,
-            0.989,
-            0.986
+            0.83,
+            0.671,
+            0.668
           ]
         },
         "gen-arsc-stress": {
-          "cv": 0.0022,
+          "cv": 0.0096,
           "durations_s": [
-            3.85,
-            3.866,
-            3.846
+            2.462,
+            2.405,
+            2.438
           ]
         },
         "gen-assets": {
-          "cv": 0.0035,
+          "cv": 0.093,
           "durations_s": [
-            0.047,
-            0.048,
-            0.048
+            0.043,
+            0.035,
+            0.037
           ]
         },
         "gen-audio": {
-          "cv": 0.0058,
+          "cv": 0.0043,
           "durations_s": [
-            0.61,
-            0.606,
-            0.614
+            0.359,
+            0.356,
+            0.355
           ]
         },
         "gen-bulk": {
-          "cv": 0.0072,
+          "cv": 0.0513,
           "durations_s": [
-            0.205,
-            0.208,
-            0.205
+            0.172,
+            0.155,
+            0.154
           ]
         },
         "gen-buttons": {
-          "cv": 0.0083,
+          "cv": 0.0178,
           "durations_s": [
-            0.046,
-            0.047,
-            0.046
+            0.034,
+            0.033,
+            0.033
           ]
         },
         "gen-dex-stress": {
-          "cv": 0.009,
+          "cv": 0.0183,
           "durations_s": [
-            0.264,
-            0.269,
-            0.269
+            0.171,
+            0.172,
+            0.178
           ]
         },
         "gen-engine-fixtures": {
-          "cv": 0.0092,
+          "cv": 0.0613,
           "durations_s": [
-            0.074,
-            0.073,
-            0.074
+            0.059,
+            0.053,
+            0.051
           ]
         },
         "gen-flagship-manifest": {
-          "cv": 0.0064,
+          "cv": 0.0145,
           "durations_s": [
-            0.098,
-            0.098,
-            0.1
+            0.07,
+            0.072,
+            0.07
           ]
         },
         "gen-icons": {
-          "cv": 0.0045,
+          "cv": 0.0188,
           "durations_s": [
-            0.293,
-            0.296,
-            0.296
+            0.174,
+            0.177,
+            0.169
           ]
         },
         "gen-ladder": {
-          "cv": 0.0305,
+          "cv": 0.0189,
           "durations_s": [
-            0.049,
-            0.046,
-            0.045
+            0.034,
+            0.033,
+            0.032
           ]
         },
         "gen-meshes": {
-          "cv": 0.0011,
+          "cv": 0.0135,
           "durations_s": [
-            0.062,
-            0.062,
-            0.062
+            0.044,
+            0.043,
+            0.043
           ]
         },
         "gen-shaders": {
-          "cv": 0.0062,
+          "cv": 0.0078,
           "durations_s": [
-            0.507,
-            0.51,
-            0.515
+            0.296,
+            0.296,
+            0.301
           ]
         },
         "gen-strings": {
-          "cv": 0.0049,
+          "cv": 0.006,
           "durations_s": [
-            0.149,
-            0.148,
-            0.147
+            0.102,
+            0.101,
+            0.102
           ]
         },
         "gen-textures": {
-          "cv": 0.0382,
+          "cv": 0.0104,
           "durations_s": [
-            0.107,
-            0.115,
-            0.105
+            0.067,
+            0.067,
+            0.068
           ]
         },
         "gen-torture-contracts": {
-          "cv": 0.0074,
+          "cv": 0.0149,
           "durations_s": [
-            3.118,
-            3.175,
-            3.142
+            2.085,
+            2.017,
+            2.025
           ]
         },
         "gen-trap-manifest": {
-          "cv": 0.0094,
+          "cv": 0.0302,
           "durations_s": [
-            0.043,
-            0.043,
-            0.044
+            0.032,
+            0.03,
+            0.03
           ]
         }
       }
@@ -2481,7 +2481,7 @@
     "governance": {
       "bot_since_sha": "b212b248a04bbd36f949df34df411c12571c9180",
       "labels_count": 35,
-      "last_audited_sha": "ae1543d10724664c4e28528f587a8f7b67537bba",
+      "last_audited_sha": "664178650ae161b1982d68188503554cb0784854",
       "milestones_ok": true
     },
     "locale_sync": {
@@ -3851,6 +3851,22 @@
           },
           "date": "2026-10-24T08:15:48Z",
           "total_bytes": 953973254
+        },
+        {
+          "categories": {
+            "arsc": 942852,
+            "audio": 151497864,
+            "dex": 57612,
+            "locales": 0,
+            "meshes": 221282589,
+            "other": 369686667,
+            "resources": 850036,
+            "shaders": 2544034,
+            "so": 0,
+            "textures": 207111600
+          },
+          "date": "2026-10-24T08:18:45Z",
+          "total_bytes": 953973254
         }
       ]
     }
@@ -3879,17 +3895,7 @@
       "title": "links mortos: docs/src/compat-matrix.md"
     }
   },
-  "open_issues": {
-    "answerkey_drift:registry:arquivo-mudou": {
-      "check": "answerkey_drift",
-      "first_seen": "2026-10-24T08:07:05Z",
-      "number": 20,
-      "severity": "drift",
-      "target": "rustydroid:docs/engine-registry.md",
-      "title": "Arquivo do registro de engines do irmão mudou",
-      "url": "https://github.com/nadabgfccvd/APK-Tester/issues/20"
-    }
-  },
+  "open_issues": {},
   "runs": [
     {
       "checks_ran": 8,
@@ -4110,8 +4116,19 @@
         "new": 4,
         "regression": 0
       }
+    },
+    {
+      "checks_ran": 9,
+      "date": "2026-10-24T08:18:45Z",
+      "findings_count": {
+        "drift": 0,
+        "flaky": 0,
+        "info": 1,
+        "new": 0,
+        "regression": 0
+      }
     }
   ],
   "schema_version": 1,
-  "updated": "2026-10-24T08:16:56Z"
+  "updated": "2026-10-24T08:19:47Z"
 }
