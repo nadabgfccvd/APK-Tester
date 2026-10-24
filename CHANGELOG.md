@@ -43,8 +43,11 @@ de compatibilidade verde).
   `arsc-type-collision` (ARSc sintético estruturalmente honesto com dois
   chunks de tipo de ids 1/2 e o MESMO nome no pool — colisão real),
   `dex-corrupted` (checksum adler32 zerado + `map_off` = `0xFFFFFFFF`) e
-  `v3-rotation-lineage` (proof-of-rotation REAL: segunda keystore +
-  `apksigner rotate` + `--lineage`, v3-only).
+  `v3-rotation-lineage` (proof-of-rotation REAL: `apksigner rotate --out`
+  cria o lineage A -> B e o `sign` consome com OS DOIS signers via
+  `--next-signer` + `--lineage` — sintaxe validada localmente contra o
+  apksigner 35.0.0; a v3 block sai com a rotação A(24..32) -> B(33..)
+  embedded e o CI prova os DOIS certificados via `--print-certs`).
 - Mutação pós-build determinística (`--malformed-mutate`, stdlib only,
   mtimes 1980); as 5 patologias estruturais são unsigned de propósito
   (alvo de PARSER, não de instalação).

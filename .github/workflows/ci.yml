@@ -969,7 +969,9 @@ jobs:
                 f"map_off=0xffffffff; d8 reprova (rc={proc.returncode})")
 
           # v3-rotation-lineage: v3-only verdadeiro COM proof-of-rotation
-          # (o apksigner so consome --lineage quando o lineage e valido).
+          # real — print-certs deve mostrar os DOIS certificados da rotacao
+          # (chave A cobrindo SDKs antigos, chave B nos novos) e o apksigner
+          # so consumiu o --lineage quando ele era valido.
           proc = subprocess.run(
               [str(bt / "apksigner"), "verify", "--verbose",
                "--min-sdk-version", "28",
@@ -985,8 +987,22 @@ jobs:
           got = (flag("v1"), flag("v2"), flag("v3"))
           assert got == ("false", "false", "true"), \
               f"esquemas {got} != (false, false, true)\\n{out[:800]}"
-          print("[D4] ok v3-rotation-lineage: v1=false v2=false v3=true "
-                "(lineage A->B consumido pelo apksigner)")
+          proc2 = subprocess.run(
+              [str(bt / "apksigner"), "verify", "--print-certs",
+               "--min-sdk-version", "28",
+               str(dist / "v3-rotation-lineage.apk")],
+              capture_output=True, text=True)
+          certs = proc2.stdout + "\n" + proc2.stderr
+          assert "CN=APK Tester Rotation B" in certs, \
+              f"certificado da chave B ausente na rotacao:\\n{certs[:800]}"
+          assert "CN=APK Tester Fixture" in certs, \
+              f"certificado da chave A ausente na rotacao:\\n{certs[:800]}"
+          n_certs = certs.count("certificate DN:")
+          assert n_certs >= 2, \
+              f"rotacao deveria mostrar >= 2 signers, mostrou {n_certs}"
+          print("[D4] ok v3-rotation-lineage: v1=false v2=false v3=true; "
+                f"rotacao com {n_certs} certificados na v3 block "
+                "(A historico -> B alvo)")
           PY
 
       - name: Upload das fixtures (artefato de CI)

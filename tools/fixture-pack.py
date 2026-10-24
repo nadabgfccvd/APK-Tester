@@ -643,34 +643,40 @@ def build_plan(args, cfg: dict, work: str, out_apk: str, tools: dict,
                         "--seed", str(args.seed)],
             "cwd": None})
     else:
-        steps.append({
-            "id": "apksigner",
-            "description": f"assina com v1={cfg['v1']} v2={cfg['v2']} "
-                           f"v3={cfg['v3']} e grava em --out",
-            "command": [signer, "sign", "--ks", keystore, "--ks-pass",
-                        KS_PASS, "--ks-key-alias", KS_ALIAS,
-                        "--key-pass", KS_PASS,
-                        "--min-sdk-version", str(cfg["min_sdk"]),
-                        "--v1-signing-enabled", str(cfg["v1"]).lower(),
-                        "--v2-signing-enabled", str(cfg["v2"]).lower(),
-                        "--v3-signing-enabled", str(cfg["v3"]).lower(),
-                        "--out", out_apk, aligned], "cwd": None})
-    if mode == "v3-rotation-lineage":
-        # D4: proof-of-rotation REAL — a chave B assina com o lineage que
-        # prova a rotacao A -> B (apksigner rotate consome os dois keystores).
-        steps.append({
-            "id": "sign-with-lineage",
-            "description": "re-assina o APK final com a chave B + --lineage "
-                           "(proof-of-rotation A->B na v3 block)",
-            "command": [signer, "sign", "--ks", keystore_b, "--ks-pass",
-                        KS_PASS, "--ks-key-alias", KS_ALIAS,
-                        "--key-pass", KS_PASS,
-                        "--lineage", lineage, "--lineage-min-sdk-version",
-                        "28", "--min-sdk-version", "28",
-                        "--v1-signing-enabled", "false",
-                        "--v2-signing-enabled", "false",
-                        "--v3-signing-enabled", "true",
-                        "--out", out_apk, out_apk], "cwd": None})
+        if mode == "v3-rotation-lineage":
+            # D4: proof-of-rotation REAL (validado com o apksigner 35.0.0
+            # localmente): rotate cria o lineage A -> B e o sign consome o
+            # lineage com OS DOIS signers (--next-signer delimita A de B;
+            # a v3 block sai com a rotacao A(24..32) -> B(33..) embedded).
+            steps.append({
+                "id": "apksigner",
+                "description": "assina v3 com rotacao A->B (--next-signer + "
+                               "--lineage do apksigner rotate) e grava em --out",
+                "command": [signer, "sign", "--ks", keystore, "--ks-pass",
+                            KS_PASS, "--ks-key-alias", KS_ALIAS,
+                            "--key-pass", KS_PASS,
+                            "--next-signer", "--ks", keystore_b,
+                            "--ks-pass", KS_PASS, "--ks-key-alias", KS_ALIAS,
+                            "--key-pass", KS_PASS,
+                            "--lineage", lineage,
+                            "--min-sdk-version", str(cfg["min_sdk"]),
+                            "--v1-signing-enabled", "false",
+                            "--v2-signing-enabled", "false",
+                            "--v3-signing-enabled", "true",
+                            "--out", out_apk, aligned], "cwd": None})
+        else:
+            steps.append({
+                "id": "apksigner",
+                "description": f"assina com v1={cfg['v1']} v2={cfg['v2']} "
+                               f"v3={cfg['v3']} e grava em --out",
+                "command": [signer, "sign", "--ks", keystore, "--ks-pass",
+                            KS_PASS, "--ks-key-alias", KS_ALIAS,
+                            "--key-pass", KS_PASS,
+                            "--min-sdk-version", str(cfg["min_sdk"]),
+                            "--v1-signing-enabled", str(cfg["v1"]).lower(),
+                            "--v2-signing-enabled", str(cfg["v2"]).lower(),
+                            "--v3-signing-enabled", str(cfg["v3"]).lower(),
+                            "--out", out_apk, aligned], "cwd": None})
     if cfg["zip64"]:
         steps.append({
             "id": "zip64-augment",
