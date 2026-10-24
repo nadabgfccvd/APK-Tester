@@ -3,7 +3,7 @@
 # (sha256 sobre nome+sha de cada entrada, ordenados, META-INF
 # ignorado — tools/verify-deterministic.sh --canonical-out).
 # ATUALIZADO A CADA TAG pelo workflow Release (log de release:
-# muda por design; fora do zero-drift do CI). Tag: v1.0.1
-# Run: https://github.com/nadabgfccvd/APK-Tester/actions/runs/40104034422
+# muda por design; fora do zero-drift do CI). Tag: v1.0.2
+# Run: https://github.com/nadabgfccvd/APK-Tester/actions/runs/40114342424
 e3dc03dc81c47ccfce68e40abd3461f544afc693f27ec0d40255d2522c6ad432  flagship-modern-release.apk
 e3dc03dc81c47ccfce68e40abd3461f544afc693f27ec0d40255d2522c6ad432  app-modern-release.apk
