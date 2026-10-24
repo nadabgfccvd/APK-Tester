@@ -25,7 +25,7 @@ das duas builds de release consecutivas exigida pela Definition of Done.
 | id | critério (DoD) | prova estática (árvore) | prova dinâmica (workflow Release) |
 |---|---|---|---|
 | `apks_30_plus` | ≥ 30 APKs buildáveis de checkout limpo | 57 slots contados da árvore (32 engines + 2 flavors + 12 degraus + 11 fixtures + minSdk9) | contagem real dos APKs construídos no run |
-| `flagship_size_gate` | flagship ∈ [850, 1000] MiB, R8, CSV concilia | baseline commitado `size-report.csv` | medição fresca do APK de release + `size-budget.sh` |
+| `flagship_size_gate` | flagship ∈ [850, 1000] MiB, R8, CSV concilia | baseline commitado `size-report.csv` | medição fresca do APK — bytes **descomprimidos** por entrada (semântica do gate A6: tamanho é conteúdo) + `size-budget.sh` |
 | `permissions_audit` | contagens por protectionLevel casam com o manifesto | registry == auditoria == manifesto (1004 strings AOSP verbatim) | — (estática por construção) |
 | `minsdk9_apk` | APK minSdk 9 aceito pelo caminho de build | flavor `minsdk09` + fixture `minSdk9` + suite `sdk-ladder-09` | — |
 | `sim3d_golden` | golden reprodutível + probes GLES estruturados | contrato golden + registry de probes | — (byte a byte no job `flagship-3d`) |

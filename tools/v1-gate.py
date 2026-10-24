@@ -44,6 +44,7 @@ import subprocess
 import sys
 import tempfile
 import xml.etree.ElementTree as ET
+import zipfile
 from pathlib import Path
 
 SEED = 20261022
@@ -359,20 +360,31 @@ def check_flagship_size_gate(ctx: StaticContext, args) -> tuple:
         if not apk.is_file():
             return FAIL, m, f"APK nao encontrado: {apk}"
         data = apk.read_bytes()
-        m["release_apk_bytes"] = len(data)
-        m["release_apk_mib"] = round(len(data) / MIB, 2)
+        # Gate do DoD na semantica do A6 (tools/size-budget.sh): tamanho e
+        # CONTEUDO — bytes DESCOMPRIMIDOS por entrada (a alta entropia da
+        # carga faz o arquivo acompanhar o total; o gate nao depende da
+        # compressao do zip).
+        with zipfile.ZipFile(apk) as zf:
+            uncompressed = sum(info.file_size for info in zf.infolist())
+            entries = len(zf.infolist())
+        m["release_apk_file_bytes"] = len(data)
+        m["release_apk_file_mib"] = round(len(data) / MIB, 2)
+        m["release_uncompressed_bytes"] = uncompressed
+        m["release_uncompressed_mib"] = round(uncompressed / MIB, 2)
+        m["release_entries"] = entries
         m["release_apk_sha256"] = hashlib.sha256(data).hexdigest()
-        if args.min_mb * MIB <= len(data) <= args.max_mb * MIB:
+        if args.min_mb * MIB <= uncompressed <= args.max_mb * MIB:
             evidence = (
-                f"APK de release medido no workflow: {m['release_apk_mib']} "
-                f"MiB dentro de [{args.min_mb}, {args.max_mb}] (R8 full + "
-                "shrink; size-report.csv fresco anexado ao release)"
+                f"APK de release medido no workflow: {m['release_uncompressed_mib']} "
+                f"MiB DESCOMPRIMIDOS ({entries} entradas; semantica do gate A6 — "
+                f"tamanho e conteudo) dentro de [{args.min_mb}, {args.max_mb}] "
+                "(R8 full + shrink; size-report.csv fresco anexado ao release)"
             )
         else:
             status = FAIL
             evidence = (
-                f"APK de release fora do gate: {m['release_apk_mib']} MiB "
-                f"nao esta em [{args.min_mb}, {args.max_mb}]"
+                f"APK de release fora do gate: {m['release_uncompressed_mib']} "
+                f"MiB descomprimidos nao esta em [{args.min_mb}, {args.max_mb}]"
             )
     return status, m, evidence
 
@@ -914,6 +926,17 @@ def selftest() -> int:
     assert parse_int_const(src_buttons, "DEFAULT_BUTTONS") == 1200
     assert parse_int_const(src_buttons, "DEFAULT_ICONS") == 600
     assert parse_int_const(src_icons, "VECTOR_COUNT") == 600
+
+    # 6b) medicao descomprimida (semantica do gate A6): zip conhecido.
+    with tempfile.NamedTemporaryFile(suffix=".zip", delete=False) as tf:
+        zip_path = tf.name
+    with zipfile.ZipFile(zip_path, "w") as zf:
+        zf.writestr("a.bin", b"x" * 2048)
+        zf.writestr("b/c.bin", b"y" * 4096)
+    with zipfile.ZipFile(zip_path) as zf:
+        total = sum(info.file_size for info in zf.infolist())
+    os.unlink(zip_path)
+    assert total == 6144, f"total descomprimido errado: {total}"
 
     # 7) evidencia dinamica: com as flags do Release o gate fecha em pass.
     args_full = argparse.Namespace(
