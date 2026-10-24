@@ -76,6 +76,14 @@ def strip_updated(state):
     return {key: value for key, value in state.items() if key != "updated"}
 
 
+def strip_runs(state):
+    """Cópia do estado sem o histórico 'runs' — o NÚCLEO do estado é o que
+    muda baselines/issues/confirmações; o apêndice de execuções muda TODA
+    rodada e não deve, sozinho, gerar commit (ruído de 1 commit/6 h com
+    333 KB reescritos sem nada ter acontecido — A9/roadmap 5.2)."""
+    return {key: value for key, value in state.items() if key != "runs"}
+
+
 def parse_args(argv):
     """Argumentos de linha de comando + validação da seleção de checks."""
     parser = argparse.ArgumentParser(
@@ -369,17 +377,27 @@ def record_run(results, state, now):
     return counts
 
 
-def persist_state(repo_path, cfg, state, initial_hash, dry_run, notes):
-    """Salva o estado somente se o conteúdo mudou (hash ignora 'updated')."""
+def persist_state(repo_path, cfg, state, initial_hash, dry_run, notes,
+                  has_findings=False):
+    """Salva o estado somente se o NÚCLEO mudou (hash ignora 'updated' e
+    'runs') ou se esta execução teve findings — o histórico de execuções
+    sozinho não gera commit (A9/roadmap 5.2: reduzir o ruído de commits
+    [skip ci] a cada 6 h sem mudança real; runs só avança no arquivo quando
+    algo digno de memória aconteceu)."""
     if dry_run:
         notes.append("dry-run: estado não persistido")
         return False
-    if state_lib.dict_sha256(strip_updated(state)) == initial_hash:
-        notes.append("estado inalterado; nada a persistir")
+    core_changed = state_lib.dict_sha256(
+        strip_runs(strip_updated(state))) != initial_hash
+    if not core_changed and not has_findings:
+        notes.append("núcleo do estado inalterado e zero findings: nada a "
+                     "persistir (runs não geram commit sozinhos)")
         return False
     state_rel = cfg.get("state_path", DEFAULT_STATE_REL)
     state_lib.save_state(repo_path / state_rel, state)
-    notes.append(f"estado salvo em {state_rel}")
+    why = "mudança no núcleo (baselines/issues/confirmações)" \
+        if core_changed else "findings nesta execução"
+    notes.append(f"estado salvo em {state_rel} ({why})")
     return True
 
 
@@ -457,7 +475,7 @@ def main(argv=None):
     state_path = repo_path / cfg.get("state_path", DEFAULT_STATE_REL)
     state = state_lib.load_state(state_path)
     notes.extend(state.pop(state_lib.LOAD_NOTES_KEY, []))
-    initial_hash = state_lib.dict_sha256(strip_updated(state))
+    initial_hash = state_lib.dict_sha256(strip_runs(strip_updated(state)))
     now = state_lib.utcnow_iso()
 
     gh = build_gh(args, cfg, notes)
@@ -479,8 +497,11 @@ def main(argv=None):
     elif not args.local:
         notes.append("sincronização de issues ignorada: gh indisponível")
 
-    record_run(results, state, now)
-    saved = persist_state(repo_path, cfg, state, initial_hash, args.dry_run, notes)
+    counts = record_run(results, state, now)
+    issue_severities = counts.get("regression", 0) + counts.get("drift", 0) \
+        + counts.get("flaky", 0) + counts.get("new", 0)
+    saved = persist_state(repo_path, cfg, state, initial_hash, args.dry_run,
+                          notes, has_findings=issue_severities > 0)
     if not args.local and not args.dry_run:
         push_state(repo_path, cfg, saved, notes)
 

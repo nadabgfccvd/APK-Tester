@@ -112,7 +112,14 @@ aplicável (`(#42)`).
 - [ ] Contratos atualizados (`expected-engines.json`, auditorias,
       `suites.json`) quando o fixture ou o flagship mudam;
 - [ ] README do fixture/diretório atualizado e honesto quanto ao tier;
-- [ ] Nenhum binário commitado (apenas geradores e contratos);
+- [ ] Nenhum binário commitado (apenas geradores e contratos) — **exceção
+      documentada**: `gradle/wrapper/gradle-wrapper.jar` das suítes Gradle
+      (flagship e sdk-ladder), com sha256 pinado no sidecar
+      `gradle-wrapper.jar.sha256` ao lado de cada jar (verificação:
+      `cd suites/flagship/gradle/wrapper && sha256sum -c
+      gradle-wrapper.jar.sha256`); é a praxe padrão do ecossistema Gradle
+      (o wrapper é o bootstrap confiável do build) e a exceção está
+      registrada no ADR 0001;
 - [ ] Commits seguem Conventional Commits;
 - [ ] Descrição referencia issue e milestone (fase A0–A8);
 - [ ] Mudanças que alteram decisões de arquitetura acompanham um ADR em

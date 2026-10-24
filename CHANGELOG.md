@@ -10,6 +10,43 @@ de compatibilidade verde).
 
 ## [Unreleased]
 
+### Corrigido (A9 — governança e higiene, roadmap W5)
+
+- Política de binários × gradle-wrapper: a exceção agora é EXPLÍCITA e
+  verificável (roadmap 5.1) — os dois `gradle/wrapper/gradle-wrapper.jar`
+  (flagship + sdk-ladder, idênticos, sha256
+  `2db75c40…4880446`) ganham sidecars `gradle-wrapper.jar.sha256` para
+  `sha256sum -c`; a exceção está documentada no ADR 0001 (praxe padrão do
+  ecossistema Gradle: o wrapper é o bootstrap auditável do build; a
+  distribuição Gradle em si segue NÃO commitada, pinada no
+  gradle-wrapper.properties) e no checklist de PR do CONTRIBUTING.md.
+- `bot/apkbot.py`: persistência do estado para de gerar commit a cada 6 h
+  sem mudança real (roadmap 5.2) — o hash de comparação agora ignora o
+  histórico `runs` (apêndice que muda toda rodada); o estado só é
+  commitado quando o NÚCLEO muda (baselines/issues/confirmações) ou quando
+  a execução teve findings. Runs avançam no arquivo apenas quando algo
+  digno de memória aconteceu.
+- Identidade git (roadmap 5.3): tag **v1.0.0 recriada** no mesmo commit
+  da release com a identidade declarada do agente
+  (`xisto <xisto@users.noreply.github.com>`) — a original carregava a
+  identidade default do contêiner (`Z User <z@container>`, não
+  declarada). GOVERNANCE.md agora documenta a identidade git PRATICADA
+  (`xisto`, no `allowed_authors`), o incidente corrigido e a prevenção
+  (automações devem configurar user.name/user.email explicitamente; o
+  workflow do APKBot já configura `apkbot[bot]`), e ganha a nota sobre o
+  histórico squashed pré-1.0 (roadmap 5.6: intencional, registrado para
+  auditorias).
+- `tools/gen-engine-fixtures.py`: o contrato por diretório
+  (`suites/engines/<e>/expected-engines.json`) usa o MESMO schema do
+  contrato canônico e do build-tier-a (roadmap 5.4) — chaves `id` e
+  `notes` (antes `engine`/`note`: dois schemas para o mesmo artefato).
+  Os 9 contratos regenerados via `--sync-contracts` (zero drift).
+- `scripts/pack-tier-c.sh` (novo): o laço de empacotar+verificar as 9
+  fixtures Tier C, duplicado em triplicata nos workflows `ci.yml`,
+  `engines-nightly.yml` e `release.yml` (roadmap 5.5), virou um script
+  compartilhado (pack + verify por engine, toolcheck de build-tools,
+  exit != 0 na primeira falha). Os três workflows passam a chamá-lo.
+
 ### Corrigido (A9 — consistência de docs, roadmap W4)
 
 - `docs/assets/logo.svg`: o logotipo referenciado pelos dois READMEs agora

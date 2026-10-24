@@ -10,7 +10,7 @@ O objetivo é manter um nível de governança igual ao do próprio RustyDroid.
 | Papel | Quem | Responsabilidades |
 |---|---|---|
 | Owner / mantenedor principal | `nadabgfccvd` | decisões finais, merges para `main`, criação de releases e tags, aceitação/rejeição de ADRs, moderação (ver CODE_OF_CONDUCT.md) |
-| Agente de commits | `xisto-agent` | agente automatizado que executa tarefas técnicas delegadas (scaffolds, geradores, docs, commits e PRs) sob instruções registradas; **não** decide arquitetura nem faz merge — toda contribuição passa por revisão do owner |
+| Agente de commits | `xisto-agent` — identidade git **`xisto <xisto@users.noreply.github.com>`** | agente automatizado que executa tarefas técnicas delegadas (scaffolds, geradores, docs, commits e PRs) sob instruções registradas; **não** decide arquitetura nem faz merge — toda contribuição passa por revisão do owner |
 | Contribuidores | comunidade | issues, PRs, fixtures novos, docs; seguem CONTRIBUTING.md |
 | Revisores | nomeados pelo owner | revisam PRs específicos (ex.: toolchains Tier B) |
 
@@ -18,14 +18,33 @@ Regras do agente de commits: commits assinados/atribuídos ao agente nunca são
 mesclados por ele mesmo; mudanças em contratos (`contracts/`) e em ADRs exigem
 aprovação humana explícita.
 
+**Identidade git praticada (A9, roadmap 5.3):** o agente commita como
+`xisto <xisto@users.noreply.github.com>` (o rótulo do papel é
+"xisto-agent"; o nome git é `xisto` — os dois se referem ao mesmo
+agente, e `xisto` está no `allowed_authors` do APKBot). Tags e releases
+do agente usam a MESMA identidade. Incidente corrigido na A9: a tag
+v1.0.0 original foi criada com a identidade de contêiner
+`Z User <z@container>` (default do ambiente, não declarada) — a tag foi
+recriada no mesmo commit com a identidade `xisto`. Prevenção: qualquer
+automação que commita/tagueia DEVE configurar `user.name`/`user.email`
+explicitamente (nunca confiar no default do runner); o check
+`governance` do APKBot audita autores contra `allowed_authors`.
+
+**Histórico squashed (A9, roadmap 5.6):** o histórico público não começa
+no A0 — o período de scaffold foi squash-mergeado; o registro detalhado
+das iterações vive nas mensagens dos commits entregues e em
+`WORK_LOG.md`. Nota registrada para auditorias futuras: a ausência de
+commits granulares pré-1.0 é intencional, não lacuna.
+
 ## APKBot (automação anti-regressão)
 
 O **APKBot** é o bot autônomo anti-regressão do repositório: implementado em
 `bot/apkbot.py` e agendado pelo workflow
-[.github/workflows/apkbot.yml](.github/workflows/apkbot.yml), executa 8
+[.github/workflows/apkbot.yml](.github/workflows/apkbot.yml), executa 9
 verificações (determinismo entre execuções, flakiness, staleness, consistência
 da matriz de engines, drift do registro do RustyDroid, drift do AOSP, previsão
-de breach do gate de tamanho e auditoria de governança), mantém memória
+de breach do gate de tamanho, auditoria de governança e drift de tradução
+PT/EN dos READMEs), mantém memória
 persistente em `bot/state/` e registra achados em issues deduplicadas por
 fingerprint. Detalhes de operação em `bot/README.md`.
 

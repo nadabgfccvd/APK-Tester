@@ -512,9 +512,13 @@ def payload_report(seed: int, per_engine: dict) -> dict:
 # Contratos por diretório (--sync-contracts)
 # ---------------------------------------------------------------------------
 def dir_contract(engine: str) -> dict:
+    """Contrato por diretório — ESQUEMA UNIFICADO com build-tier-a.py e com
+    o contrato canônico contracts/engines/expected-engines.json (A9/roadmap
+    5.4: chaves canônicas ``id`` e ``notes``; antes este gerador emitia
+    ``engine``/``note``, um segundo schema para o mesmo artefato)."""
     spec = ENGINES[engine]
     return {
-        "engine": engine,
+        "id": f"engine-{engine.split('-')[1]}",
         "dir": engine,
         "tier": "C",
         "build": "fixture",
@@ -526,9 +530,9 @@ def dir_contract(engine: str) -> dict:
                         f"--out dist",
         "verify_command": f"python3 tools/gen-engine-fixtures.py "
                           f"--verify-apk dist/{engine}.apk --engine {engine}",
-        "note": "fixture de detecção; payload não executável (ADR 0003). "
-                "Empacotada por tools/fixture-pack.py, payloads por "
-                "tools/gen-engine-fixtures.py.",
+        "notes": "fixture de detecção; payload não executável (ADR 0003). "
+                 "Empacotada por tools/fixture-pack.py, payloads por "
+                 "tools/gen-engine-fixtures.py.",
     }
 
 

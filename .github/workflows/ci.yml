@@ -820,29 +820,12 @@ jobs:
             suites/engines/engine-32-twa-pwa/expected-engines.json
           echo "[A3] zero drift: contratos por diretório == contrato canônico"
 
-      - name: Empacotar as 9 fixtures Tier C (toolchain real do SDK)
+      - name: Empacotar e verificar as 9 fixtures Tier C (laço compartilhado)
         run: |
-          BT="${ANDROID_HOME}/build-tools/35.0.0"
-          mkdir -p dist
-          for e in engine-05-clojure engine-11-objc engine-18-maui-xamarin \
-                   engine-19-unity-mono engine-20-unity-il2cpp \
-                   engine-21-unreal engine-27-b4x-appinventor \
-                   engine-29-python-kivy-beeware engine-32-twa-pwa; do
-            python3 tools/fixture-pack.py --fixture "$e" --out dist \
-              --aapt2 "${BT}/aapt2" --d8 "${BT}/d8" \
-              --apksigner "${BT}/apksigner" --zipalign "${BT}/zipalign"
-          done
+          # A9/roadmap 5.5: pack+verify no mesmo laço compartilhado com
+          # engines-nightly.yml e release.yml (scripts/pack-tier-c.sh)
+          scripts/pack-tier-c.sh dist "${ANDROID_HOME}/build-tools/35.0.0"
           ls -l dist/
-
-      - name: Verificar cada APK contra o contrato (artefatos + sha256)
-        run: |
-          for e in engine-05-clojure engine-11-objc engine-18-maui-xamarin \
-                   engine-19-unity-mono engine-20-unity-il2cpp \
-                   engine-21-unreal engine-27-b4x-appinventor \
-                   engine-29-python-kivy-beeware engine-32-twa-pwa; do
-            python3 tools/gen-engine-fixtures.py \
-              --verify-apk "dist/${e}.apk" --engine "$e"
-          done
 
       - name: Copiar APKs para os diretórios dos contratos (suite smoke)
         run: |

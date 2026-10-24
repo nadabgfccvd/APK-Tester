@@ -41,3 +41,14 @@ limpo. O contrato comum dos geradores é `--seed` / `--out`.
 - Geração pesada (4K PBR, áudio longo, malhas) é mais lenta que com libs
   binárias — aceito: roda offline e é paralelizável.
 - Proibido commitar qualquer `dist/`, `build/` ou asset binário gerado.
+- **Exceção (A9, roadmap 5.1): `gradle/wrapper/gradle-wrapper.jar`.** As
+  suítes Gradle (flagship e sdk-ladder) commitam o jar do wrapper — é a
+  praxe padrão do ecossistema Gradle (o wrapper é o bootstrap confiável e
+  auditável do build; sem ele o clone não reproduz o build sem instalar
+  Gradle na mão). A exceção é delimitada e verificável: exatamente DOIS
+  jars idênticos (sha256
+  `2db75c40782f5e8ba1fc278a5574bab070adccb2d21ca5a6e5ed840888448046`),
+  cada um com sidecar `gradle-wrapper.jar.sha256` pinado ao lado para
+  `sha256sum -c`; a distribuição Gradle em si NÃO é commitada (o
+  `gradle-wrapper.properties` pinado a `gradle-8.11.1-bin.zip` é baixado
+  no build). Nenhum outro binário tem essa exceção.

@@ -5,9 +5,9 @@
     "dex-strings:anywheresoftware.b4a"
   ],
   "dir": "engine-27-b4x-appinventor",
-  "engine": "engine-27-b4x-appinventor",
+  "id": "engine-27",
   "language": "B4X/App Inventor",
-  "note": "fixture de detecção; payload não executável (ADR 0003). Empacotada por tools/fixture-pack.py, payloads por tools/gen-engine-fixtures.py.",
+  "notes": "fixture de detecção; payload não executável (ADR 0003). Empacotada por tools/fixture-pack.py, payloads por tools/gen-engine-fixtures.py.",
   "pack_command": "python3 tools/fixture-pack.py --fixture engine-27-b4x-appinventor --out dist",
   "payload_not_executable": true,
   "rustydroid_engines": [

@@ -5,9 +5,9 @@
     "assets/fixture-marker.txt"
   ],
   "dir": "engine-11-objc",
-  "engine": "engine-11-objc",
+  "id": "engine-11",
   "language": "Objective-C",
-  "note": "fixture de detecção; payload não executável (ADR 0003). Empacotada por tools/fixture-pack.py, payloads por tools/gen-engine-fixtures.py.",
+  "notes": "fixture de detecção; payload não executável (ADR 0003). Empacotada por tools/fixture-pack.py, payloads por tools/gen-engine-fixtures.py.",
   "pack_command": "python3 tools/fixture-pack.py --fixture engine-11-objc --out dist",
   "payload_not_executable": true,
   "rustydroid_engines": [

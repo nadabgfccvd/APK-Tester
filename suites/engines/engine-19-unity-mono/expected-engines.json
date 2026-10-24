@@ -6,9 +6,9 @@
     "lib/x86_64/libmonobdwgc-2.0.so"
   ],
   "dir": "engine-19-unity-mono",
-  "engine": "engine-19-unity-mono",
+  "id": "engine-19",
   "language": "C#/Unity Mono",
-  "note": "fixture de detecção; payload não executável (ADR 0003). Empacotada por tools/fixture-pack.py, payloads por tools/gen-engine-fixtures.py.",
+  "notes": "fixture de detecção; payload não executável (ADR 0003). Empacotada por tools/fixture-pack.py, payloads por tools/gen-engine-fixtures.py.",
   "pack_command": "python3 tools/fixture-pack.py --fixture engine-19-unity-mono --out dist",
   "payload_not_executable": true,
   "rustydroid_engines": [

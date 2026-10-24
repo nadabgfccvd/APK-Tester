@@ -162,15 +162,17 @@ jobs:
 
       - name: Empacotar as 9 fixtures Tier C
         run: |
-          BT_DIR="${ANDROID_HOME}/build-tools/${BT}"
+          # laço compartilhado (A9/roadmap 5.5): empacota E verifica cada
+          # fixture contra o contrato em uma única chamada
+          scripts/pack-tier-c.sh dist "${ANDROID_HOME}/build-tools/${BT}"
+          # posiciona os APKs nos diretórios das suítes (layout do artefato
+          # preservado: suites/engines/<engine>/dist/<engine>.apk)
           for e in engine-05-clojure engine-11-objc engine-18-maui-xamarin \
                    engine-19-unity-mono engine-20-unity-il2cpp \
                    engine-21-unreal engine-27-b4x-appinventor \
                    engine-29-python-kivy-beeware engine-32-twa-pwa; do
-            python3 tools/fixture-pack.py --fixture "$e" \
-              --out "suites/engines/$e/dist" \
-              --aapt2 "${BT_DIR}/aapt2" --d8 "${BT_DIR}/d8" \
-              --apksigner "${BT_DIR}/apksigner" --zipalign "${BT_DIR}/zipalign"
+            mkdir -p "suites/engines/$e/dist"
+            cp "dist/$e.apk" "suites/engines/$e/dist/$e.apk"
           done
 
       - name: Upload das fixtures Tier C (artefato de CI)
