@@ -212,9 +212,9 @@ entrou na A9/roadmap 3.6: CUSTOM_NORMAL deixou de ser orfa).
 - `android:localeConfig` (API 33) -> @xml/locales_config (12 locales do
   gen-strings)
 - `android:extractNativeLibs`: NAO declarado — o AGP 8 proibe o atributo no
-  manifesto-fonte; o empacotamento de libs nativas (useLegacyPackaging)
-  sera definido por flavor no build.gradle quando :native/:rust
-  existirem (A4)
+  manifesto-fonte; o empacotamento de libs nativas (useLegacyPackaging
+  = false, pagina-alinhado) e lei do build.gradle desde a A6 e vale
+  para as libs nativas REAIS de :native/:rust (R2.2 do roadmap V2)
 
 ## RustyDroid — diff esperado
 

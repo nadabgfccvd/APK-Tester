@@ -2,7 +2,7 @@
  "artifacts": [
   {
    "path": "contracts/flagship/manifest-audit.md",
-   "sha256": "8188a1d5200c44c0adbd0e12fe5be6423281495a64d20befbdca85007033d619"
+   "sha256": "83d8564133ef691a2e7eaa3c1bb518b7f95903fa76874a9f600529fef2f07bdf"
   },
   {
    "path": "contracts/flagship/permissions-audit.md",
