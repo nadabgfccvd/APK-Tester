@@ -40,7 +40,7 @@
         "B4X / App Inventor / Thunkable",
         "WebAssembly in-app"
       ],
-      "registry_sha": "414676bb08f040439dc5ebbf4e74562fbf4d35991332de6baab0f3479e8f58e8",
+      "registry_sha": "996ff3260b3b205538eecfb17cdefc9ca5692a3d8cf9dc8e7ba746a478614782",
       "source_path": "docs/engine-registry.md"
     },
     "determinism": {
@@ -2342,156 +2342,156 @@
     "flakiness": {
       "targets": {
         "compat-nightly": {
-          "cv": 0.013,
+          "cv": 0.0004,
           "durations_s": [
-            0.037,
-            0.038,
-            0.037
+            0.051,
+            0.051,
+            0.051
           ],
           "skipped": null
         },
         "fixture-pack:dry-run": {
-          "cv": 0.0179,
+          "cv": 0.0041,
           "durations_s": [
-            0.043,
-            0.042,
-            0.041
+            0.055,
+            0.055,
+            0.055
           ]
         },
         "fixture-pack:selftest": {
-          "cv": 0.0165,
+          "cv": 0.0073,
           "durations_s": [
-            0.717,
-            0.721,
-            0.744
+            1.002,
+            1.018,
+            1.002
           ]
         },
         "gen-arsc-stress": {
           "cv": 0.0044,
           "durations_s": [
-            2.384,
-            2.374,
-            2.358
+            3.89,
+            3.897,
+            3.857
           ]
         },
         "gen-assets": {
-          "cv": 0.0184,
+          "cv": 0.0046,
           "durations_s": [
-            0.037,
-            0.036,
-            0.035
+            0.046,
+            0.046,
+            0.046
           ]
         },
         "gen-audio": {
-          "cv": 0.0088,
+          "cv": 0.0108,
           "durations_s": [
-            0.358,
-            0.352,
-            0.35
+            0.626,
+            0.612,
+            0.627
           ]
         },
         "gen-bulk": {
-          "cv": 0.0036,
+          "cv": 0.007,
           "durations_s": [
-            0.155,
-            0.154,
-            0.155
+            0.202,
+            0.203,
+            0.206
           ]
         },
         "gen-buttons": {
-          "cv": 0.0036,
+          "cv": 0.004,
           "durations_s": [
-            0.036,
-            0.036,
-            0.036
+            0.048,
+            0.048,
+            0.048
           ]
         },
         "gen-dex-stress": {
-          "cv": 0.0051,
+          "cv": 0.0069,
           "durations_s": [
-            0.168,
-            0.166,
-            0.167
+            0.27,
+            0.267,
+            0.265
           ]
         },
         "gen-engine-fixtures": {
-          "cv": 0.0124,
+          "cv": 0.0066,
           "durations_s": [
-            0.054,
-            0.053,
-            0.053
+            0.073,
+            0.072,
+            0.073
           ]
         },
         "gen-flagship-manifest": {
-          "cv": 0.0039,
+          "cv": 0.0028,
           "durations_s": [
-            0.071,
-            0.07,
-            0.071
+            0.097,
+            0.097,
+            0.097
           ]
         },
         "gen-icons": {
-          "cv": 0.0113,
+          "cv": 0.0058,
           "durations_s": [
-            0.169,
-            0.168,
-            0.172
+            0.289,
+            0.293,
+            0.29
           ]
         },
         "gen-ladder": {
-          "cv": 0.0156,
+          "cv": 0.0197,
           "durations_s": [
-            0.035,
-            0.034,
-            0.034
+            0.046,
+            0.045,
+            0.044
           ]
         },
         "gen-meshes": {
-          "cv": 0.0044,
+          "cv": 0.0076,
           "durations_s": [
-            0.043,
-            0.043,
-            0.043
+            0.061,
+            0.06,
+            0.061
           ]
         },
         "gen-shaders": {
-          "cv": 0.0051,
+          "cv": 0.0037,
           "durations_s": [
-            0.295,
-            0.298,
-            0.297
+            0.508,
+            0.51,
+            0.512
           ]
         },
         "gen-strings": {
-          "cv": 0.0056,
+          "cv": 0.0046,
           "durations_s": [
-            0.101,
-            0.102,
-            0.102
+            0.152,
+            0.152,
+            0.153
           ]
         },
         "gen-textures": {
-          "cv": 0.0033,
+          "cv": 0.0091,
           "durations_s": [
-            0.064,
-            0.065,
-            0.065
+            0.104,
+            0.102,
+            0.103
           ]
         },
         "gen-torture-contracts": {
-          "cv": 0.0015,
+          "cv": 0.0133,
           "durations_s": [
-            1.966,
-            1.964,
-            1.971
+            3.132,
+            3.147,
+            3.228
           ]
         },
         "gen-trap-manifest": {
-          "cv": 0.0124,
+          "cv": 0.019,
           "durations_s": [
-            0.032,
-            0.031,
-            0.032
+            0.041,
+            0.043,
+            0.043
           ]
         }
       }
@@ -2499,7 +2499,7 @@
     "governance": {
       "bot_since_sha": "b212b248a04bbd36f949df34df411c12571c9180",
       "labels_count": 35,
-      "last_audited_sha": "f169e7bbbcf5bd6c501dbbcd56136b2432df39d0",
+      "last_audited_sha": "5bf4268fed63285974b6c347c8423f8649effed9",
       "milestones_ok": true
     },
     "locale_sync": {
@@ -4025,59 +4025,32 @@
           },
           "date": "2026-10-25T11:01:16Z",
           "total_bytes": 956493761
+        },
+        {
+          "categories": {
+            "arsc": 1388356,
+            "audio": 151497864,
+            "dex": 1089440,
+            "locales": 9130,
+            "meshes": 221282589,
+            "other": 369721544,
+            "resources": 871244,
+            "shaders": 2544034,
+            "so": 977960,
+            "textures": 207111600
+          },
+          "date": "2026-10-25T15:53:49Z",
+          "total_bytes": 956493761
         }
       ]
     }
   },
   "bot": "apkbot",
-  "confirmations": {
-    "answerkey_drift:567e460d1ac88daa1692a782aed6a06e6a8b15a96cfced550e65e26ed324c4cd": {
-      "check": "answerkey_drift",
-      "first_seen": "2026-10-25T11:01:16Z",
-      "payload": {
-        "confident": true,
-        "local_names_count": 32,
-        "named_rows": 28,
-        "names": [
-          "Java",
-          "Kotlin",
-          "Kotlin Multiplatform / Compose MP",
-          "Scala / Clojure / Groovy",
-          "C (NDK)",
-          "C++ (NDK)",
-          "Rust (cargo-ndk/xbuild)",
-          "Go (gomobile)",
-          "Objective-C/C (cross via NDK)",
-          "Zig / outras linguagens LLVM",
-          "Dart / Flutter",
-          "JS/TS (React Native / Expo)",
-          "HTML/JS (Cordova / Capacitor / Ionic)",
-          "HTML/JS (TWA / PWA)",
-          "JS/TS (NativeScript)",
-          "JS/TS (Tauri v2)",
-          "C# (.NET MAUI / Xamarin)",
-          "C# (Unity Mono)",
-          "C# (Unity IL2CPP)",
-          "C++ (Unreal)",
-          "GDScript/C# (Godot 3/4)",
-          "Lua (Defold / Solar2D / Cocos2d-x)",
-          "Python (Kivy / Buildozer / Chaquopy / BeeWare)",
-          "Haxe (OpenFL / Heaps)",
-          "Qt / QML (C++)",
-          "Avalonia (C#)",
-          "B4X / App Inventor / Thunkable",
-          "WebAssembly in-app"
-        ],
-        "registry_sha": "996ff3260b3b205538eecfb17cdefc9ca5692a3d8cf9dc8e7ba746a478614782",
-        "source_path": "docs/engine-registry.md"
-      },
-      "runs_seen": 1
-    }
-  },
+  "confirmations": {},
   "flap_history": {
     "answerkey_drift:registry:arquivo-mudou": {
-      "count": 3,
-      "last_seen": "2026-10-24T08:15:48Z",
+      "count": 4,
+      "last_seen": "2026-10-25T15:53:49Z",
       "title": "Arquivo do registro de engines do irmão mudou"
     },
     "governance:labels:divergencia": {
@@ -4404,8 +4377,19 @@
         "new": 0,
         "regression": 0
       }
+    },
+    {
+      "checks_ran": 11,
+      "date": "2026-10-25T15:53:49Z",
+      "findings_count": {
+        "drift": 1,
+        "flaky": 0,
+        "info": 2,
+        "new": 0,
+        "regression": 0
+      }
     }
   ],
   "schema_version": 1,
-  "updated": "2026-10-25T11:02:15Z"
+  "updated": "2026-10-25T15:55:04Z"
 }
