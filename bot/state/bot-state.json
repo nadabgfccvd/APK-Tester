@@ -2342,156 +2342,156 @@
     "flakiness": {
       "targets": {
         "compat-nightly": {
-          "cv": 0.0115,
+          "cv": 0.0037,
           "durations_s": [
-            0.048,
-            0.047,
-            0.047
+            0.06,
+            0.059,
+            0.06
           ],
           "skipped": null
         },
         "fixture-pack:dry-run": {
-          "cv": 0.0223,
+          "cv": 0.0011,
           "durations_s": [
-            0.056,
-            0.053,
-            0.053
+            0.065,
+            0.065,
+            0.065
           ]
         },
         "fixture-pack:selftest": {
-          "cv": 0.0256,
+          "cv": 0.0051,
           "durations_s": [
-            0.903,
-            0.854,
-            0.858
+            1.119,
+            1.105,
+            1.11
           ]
         },
         "gen-arsc-stress": {
-          "cv": 0.0066,
+          "cv": 0.0073,
           "durations_s": [
-            2.589,
-            2.625,
-            2.588
+            3.619,
+            3.561,
+            3.616
           ]
         },
         "gen-assets": {
-          "cv": 0.0184,
+          "cv": 0.0249,
           "durations_s": [
-            0.047,
-            0.045,
-            0.047
+            0.06,
+            0.056,
+            0.059
           ]
         },
         "gen-audio": {
-          "cv": 0.0098,
+          "cv": 0.0117,
           "durations_s": [
-            0.374,
-            0.365,
-            0.37
+            0.535,
+            0.522,
+            0.521
           ]
         },
         "gen-bulk": {
-          "cv": 0.022,
+          "cv": 0.001,
           "durations_s": [
-            0.204,
-            0.196,
-            0.194
+            0.228,
+            0.228,
+            0.228
           ]
         },
         "gen-buttons": {
-          "cv": 0.017,
+          "cv": 0.0108,
           "durations_s": [
-            0.048,
-            0.047,
-            0.049
+            0.058,
+            0.057,
+            0.056
           ]
         },
         "gen-dex-stress": {
-          "cv": 0.0067,
+          "cv": 0.0099,
           "durations_s": [
-            0.159,
-            0.161,
-            0.16
+            0.251,
+            0.248,
+            0.254
           ]
         },
         "gen-engine-fixtures": {
-          "cv": 0.0157,
-          "durations_s": [
-            0.063,
-            0.061,
-            0.06
-          ]
-        },
-        "gen-flagship-manifest": {
-          "cv": 0.009,
+          "cv": 0.0057,
           "durations_s": [
             0.083,
             0.082,
-            0.081
+            0.082
+          ]
+        },
+        "gen-flagship-manifest": {
+          "cv": 0.0033,
+          "durations_s": [
+            0.1,
+            0.101,
+            0.1
           ]
         },
         "gen-icons": {
-          "cv": 0.0076,
+          "cv": 0.0029,
           "durations_s": [
-            0.141,
-            0.139,
-            0.142
+            0.255,
+            0.256,
+            0.257
           ]
         },
         "gen-ladder": {
-          "cv": 0.0116,
+          "cv": 0.0094,
           "durations_s": [
-            0.046,
-            0.045,
-            0.044
+            0.056,
+            0.057,
+            0.057
           ]
         },
         "gen-meshes": {
-          "cv": 0.0029,
+          "cv": 0.0076,
           "durations_s": [
-            0.055,
-            0.056,
-            0.055
+            0.073,
+            0.072,
+            0.072
           ]
         },
         "gen-shaders": {
-          "cv": 0.0025,
+          "cv": 0.0178,
           "durations_s": [
-            0.307,
-            0.308,
-            0.309
+            0.513,
+            0.497,
+            0.492
           ]
         },
         "gen-strings": {
-          "cv": 0.0069,
+          "cv": 0.0124,
           "durations_s": [
-            0.125,
-            0.123,
-            0.123
+            0.16,
+            0.16,
+            0.156
           ]
         },
         "gen-textures": {
-          "cv": 0.0041,
+          "cv": 0.007,
           "durations_s": [
-            0.078,
-            0.077,
-            0.078
+            0.101,
+            0.101,
+            0.102
           ]
         },
         "gen-torture-contracts": {
-          "cv": 0.0035,
+          "cv": 0.0009,
           "durations_s": [
-            1.987,
-            1.98,
-            1.97
+            2.723,
+            2.727,
+            2.728
           ]
         },
         "gen-trap-manifest": {
-          "cv": 0.0152,
+          "cv": 0.0157,
           "durations_s": [
-            0.045,
-            0.044,
-            0.044
+            0.054,
+            0.055,
+            0.053
           ]
         }
       }
@@ -2499,7 +2499,7 @@
     "governance": {
       "bot_since_sha": "b212b248a04bbd36f949df34df411c12571c9180",
       "labels_count": 35,
-      "last_audited_sha": "c906ad14bf7b8257e4b5d0a70d9aa2a7a91fa549",
+      "last_audited_sha": "ba81152ff5d899cbc095750f253c94e7c6ff3557",
       "milestones_ok": true
     },
     "locale_sync": {
@@ -4633,6 +4633,22 @@
           },
           "date": "2026-11-06T13:58:57Z",
           "total_bytes": 956493761
+        },
+        {
+          "categories": {
+            "arsc": 1388356,
+            "audio": 151497864,
+            "dex": 1089440,
+            "locales": 9130,
+            "meshes": 221282589,
+            "other": 369721544,
+            "resources": 871244,
+            "shaders": 2544034,
+            "so": 977960,
+            "textures": 207111600
+          },
+          "date": "2026-11-06T22:54:21Z",
+          "total_bytes": 956493761
         }
       ]
     }
@@ -4663,17 +4679,6 @@
   },
   "open_issues": {},
   "runs": [
-    {
-      "checks_ran": 11,
-      "date": "2026-10-27T21:58:24Z",
-      "findings_count": {
-        "drift": 0,
-        "flaky": 0,
-        "info": 1,
-        "new": 0,
-        "regression": 0
-      }
-    },
     {
       "checks_ran": 11,
       "date": "2026-10-28T04:54:38Z",
@@ -4992,8 +4997,19 @@
         "new": 0,
         "regression": 0
       }
+    },
+    {
+      "checks_ran": 11,
+      "date": "2026-11-06T22:54:21Z",
+      "findings_count": {
+        "drift": 0,
+        "flaky": 0,
+        "info": 1,
+        "new": 0,
+        "regression": 0
+      }
     }
   ],
   "schema_version": 1,
-  "updated": "2026-11-06T14:00:03Z"
+  "updated": "2026-11-06T22:55:35Z"
 }
