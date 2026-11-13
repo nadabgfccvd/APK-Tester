@@ -2342,156 +2342,156 @@
     "flakiness": {
       "targets": {
         "compat-nightly": {
-          "cv": 0.0042,
+          "cv": 0.0093,
           "durations_s": [
-            0.052,
-            0.052,
-            0.052
+            0.057,
+            0.058,
+            0.058
           ],
           "skipped": null
         },
         "fixture-pack:dry-run": {
-          "cv": 0.0017,
+          "cv": 0.0202,
           "durations_s": [
-            0.052,
-            0.053,
-            0.052
+            0.057,
+            0.059,
+            0.057
           ]
         },
         "fixture-pack:selftest": {
-          "cv": 0.003,
+          "cv": 0.0118,
           "durations_s": [
-            0.888,
-            0.883,
-            0.882
+            0.931,
+            0.906,
+            0.928
           ]
         },
         "gen-arsc-stress": {
-          "cv": 0.0014,
+          "cv": 0.016,
           "durations_s": [
-            2.753,
-            2.751,
-            2.76
+            2.349,
+            2.267,
+            2.276
           ]
         },
         "gen-assets": {
-          "cv": 0.0062,
+          "cv": 0.0033,
           "durations_s": [
-            0.046,
-            0.046,
-            0.045
+            0.054,
+            0.054,
+            0.053
           ]
         },
         "gen-audio": {
-          "cv": 0.0018,
+          "cv": 0.0073,
           "durations_s": [
-            0.408,
-            0.41,
-            0.408
+            0.322,
+            0.321,
+            0.326
           ]
         },
         "gen-bulk": {
-          "cv": 0.0009,
+          "cv": 0.0068,
           "durations_s": [
-            0.186,
-            0.186,
-            0.185
-          ]
-        },
-        "gen-buttons": {
-          "cv": 0.0063,
-          "durations_s": [
-            0.046,
-            0.046,
-            0.046
-          ]
-        },
-        "gen-dex-stress": {
-          "cv": 0.0037,
-          "durations_s": [
-            0.186,
-            0.187,
-            0.186
-          ]
-        },
-        "gen-engine-fixtures": {
-          "cv": 0.0139,
-          "durations_s": [
-            0.067,
-            0.065,
-            0.065
-          ]
-        },
-        "gen-flagship-manifest": {
-          "cv": 0.0055,
-          "durations_s": [
-            0.081,
-            0.082,
-            0.082
-          ]
-        },
-        "gen-icons": {
-          "cv": 0.001,
-          "durations_s": [
-            0.179,
+            0.176,
             0.179,
             0.179
           ]
         },
-        "gen-ladder": {
-          "cv": 0.0061,
+        "gen-buttons": {
+          "cv": 0.0144,
           "durations_s": [
-            0.045,
-            0.045,
-            0.044
+            0.051,
+            0.05,
+            0.052
+          ]
+        },
+        "gen-dex-stress": {
+          "cv": 0.008,
+          "durations_s": [
+            0.174,
+            0.171,
+            0.174
+          ]
+        },
+        "gen-engine-fixtures": {
+          "cv": 0.0939,
+          "durations_s": [
+            0.083,
+            0.068,
+            0.069
+          ]
+        },
+        "gen-flagship-manifest": {
+          "cv": 0.0117,
+          "durations_s": [
+            0.088,
+            0.09,
+            0.09
+          ]
+        },
+        "gen-icons": {
+          "cv": 0.0084,
+          "durations_s": [
+            0.16,
+            0.157,
+            0.157
+          ]
+        },
+        "gen-ladder": {
+          "cv": 0.0031,
+          "durations_s": [
+            0.048,
+            0.048,
+            0.048
           ]
         },
         "gen-meshes": {
-          "cv": 0.0072,
+          "cv": 0.0112,
           "durations_s": [
+            0.055,
             0.057,
-            0.057,
-            0.057
+            0.055
           ]
         },
         "gen-shaders": {
-          "cv": 0.0066,
+          "cv": 0.006,
           "durations_s": [
-            0.356,
-            0.356,
-            0.361
+            0.304,
+            0.308,
+            0.308
           ]
         },
         "gen-strings": {
-          "cv": 0.0044,
+          "cv": 0.0227,
           "durations_s": [
+            0.125,
             0.124,
-            0.122,
-            0.123
+            0.119
           ]
         },
         "gen-textures": {
-          "cv": 0.0043,
+          "cv": 0.0182,
           "durations_s": [
-            0.082,
-            0.082,
-            0.082
+            0.074,
+            0.075,
+            0.077
           ]
         },
         "gen-torture-contracts": {
-          "cv": 0.0156,
+          "cv": 0.0081,
           "durations_s": [
-            2.134,
-            2.112,
-            2.191
+            1.674,
+            1.702,
+            1.703
           ]
         },
         "gen-trap-manifest": {
-          "cv": 0.0082,
+          "cv": 0.0164,
           "durations_s": [
-            0.043,
-            0.043,
-            0.043
+            0.048,
+            0.047,
+            0.046
           ]
         }
       }
@@ -2499,7 +2499,7 @@
     "governance": {
       "bot_since_sha": "b212b248a04bbd36f949df34df411c12571c9180",
       "labels_count": 35,
-      "last_audited_sha": "bd0bf2b9cc8df50687a2bddd1b8a2d1ebac3edd9",
+      "last_audited_sha": "f0294f1411dd0d2fe58b8a2a3807724dce6ba1b7",
       "milestones_ok": true
     },
     "locale_sync": {
@@ -4905,6 +4905,22 @@
           },
           "date": "2026-11-12T23:22:11Z",
           "total_bytes": 956493761
+        },
+        {
+          "categories": {
+            "arsc": 1388356,
+            "audio": 151497864,
+            "dex": 1089440,
+            "locales": 9130,
+            "meshes": 221282589,
+            "other": 369721544,
+            "resources": 871244,
+            "shaders": 2544034,
+            "so": 977960,
+            "textures": 207111600
+          },
+          "date": "2026-11-13T05:53:19Z",
+          "total_bytes": 956493761
         }
       ]
     }
@@ -4935,17 +4951,6 @@
   },
   "open_issues": {},
   "runs": [
-    {
-      "checks_ran": 11,
-      "date": "2026-11-02T05:16:15Z",
-      "findings_count": {
-        "drift": 1,
-        "flaky": 0,
-        "info": 2,
-        "new": 0,
-        "regression": 0
-      }
-    },
     {
       "checks_ran": 11,
       "date": "2026-11-02T15:14:20Z",
@@ -5264,8 +5269,19 @@
         "new": 0,
         "regression": 0
       }
+    },
+    {
+      "checks_ran": 11,
+      "date": "2026-11-13T05:53:19Z",
+      "findings_count": {
+        "drift": 0,
+        "flaky": 0,
+        "info": 1,
+        "new": 0,
+        "regression": 0
+      }
     }
   ],
   "schema_version": 1,
-  "updated": "2026-11-12T23:23:12Z"
+  "updated": "2026-11-13T05:54:18Z"
 }
